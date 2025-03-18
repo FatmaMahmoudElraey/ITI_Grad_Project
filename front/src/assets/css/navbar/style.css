@@ -1,0 +1,158 @@
+
+/* first layer */
+
+/* Search bar wrapper */
+.search-wrapper {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.items .dropdown-toggle::after {
+    margin-left: 10px;
+}
+.dropdown-menu{
+    background-color: black;
+}
+/* Search container */
+.dropdown-search {
+    max-width: 1000px;
+    width: 100%;
+    border-radius: 25px;
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    background-color: rgb(85, 82, 82);
+
+}
+
+/* Search Input and Icon */
+.search-container {
+    position: relative;
+    width: 100%;
+
+}
+
+.search-box {
+    border: none !important;
+    border-left: 1px solid rgb(153, 153, 153) !important;
+    width: 100%;
+    padding-right: 35px; /* Prevents text from overlapping the icon */
+    background-color: rgb(85, 82, 82) !important;
+    
+}
+
+.search-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    font-size: 18px;
+}
+
+/* Navbar Dropdown */
+#navbarScrollingDropdown {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Button Styling */
+.header-button {
+    background-color: #9cee69;
+    font-weight: bold;
+    color: black;
+    padding: 12px 20px;
+    border-radius: 5px;
+    border: none;
+    transition: 0.2s;
+    font-size: 16px;
+}
+
+.header-button:hover {
+    background-color: #84ca59;
+}
+
+/* Sign-in Link */
+.sign-in {
+    font-size: 14px;
+    padding: 8px 16px;
+}
+
+/* RESPONSIVE STYLES */
+@media (max-width: 992px) {
+    .search-wrapper {
+        width: 100%;
+    }
+
+    .dropdown-search {
+        max-width: 100%;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .search-box {
+        width: 100%;
+    }
+
+    .header-button {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+
+    .sign-in {
+        font-size: 13px;
+        padding: 6px 12px;
+    }
+}
+
+/* Ensure search bar visibility on small screens */
+@media (max-width: 768px) {
+    .search-wrapper {
+        width: 100%;
+        justify-content: center;
+        display: flex; /* Ensure it remains visible */
+    }
+
+    .dropdown-search {
+        flex-wrap: wrap;
+        padding: 5px;
+        display: flex; /* Ensure it remains visible */
+    }
+
+    .search-box {
+        width: 100%;
+        margin-top: 5px;
+        display: block; /* Ensure it remains visible */
+    }
+
+    .header-button {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+}
+
+
+/* second layer */
+
+.link {
+    margin-left: 30px !important;
+    font-size: 13px !important;
+}
+
+
+.navbar .dropdown:hover .dropdown-menu {
+    display: block !important;
+    margin-top: 0; 
+}
+
+.link .dropdown-toggle::after {
+    display: none; 
+}
+
+.learn {
+    border-left: 1px solid gray !important;
+    padding-block: 5px !important;
+    padding-left: 30px !important;
+    font-size: 14px !important;
+}

@@ -1,0 +1,23 @@
+
+.bg-gradient {
+    background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+  }
+  
+  .rounded-4 {
+    border-radius: 1rem;
+  }
+  
+  .btn:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s ease;
+  }
+  
+  .position-absolute {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+  }

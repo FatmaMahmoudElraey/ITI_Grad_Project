@@ -4,6 +4,10 @@ from .models import Category, Tag, Product, ProductReview, ProductFlag
 
 User = get_user_model()
 
+class UserPublicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username']
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -36,7 +40,7 @@ class ProductFlagSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    seller = serializers.StringRelatedField(read_only=True)
+    seller = UserPublicSerializer(read_only=True)
     category_name = serializers.CharField(source='category.name', read_only=True)
     tags_names = serializers.SlugRelatedField(
         many=True, read_only=True, slug_field='name', source='tags'

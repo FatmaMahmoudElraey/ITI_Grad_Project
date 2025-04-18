@@ -8,6 +8,8 @@ from .serializers import (
     ProductReviewSerializer,
     ProductFlagSerializer,
 )
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
 
 
 class CategoryViewSet(ModelViewSet):
@@ -22,6 +24,10 @@ class TagViewSet(ModelViewSet):
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.select_related('category', 'seller').prefetch_related('tags', 'reviews', 'flags')
     serializer_class = ProductSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['category', 'tags', 'price']
+    search_fields = ['title', 'description']
+    ordering_fields = ['price', 'created_at']
 
     def perform_create(self, serializer):
         serializer.save(seller=self.request.user)

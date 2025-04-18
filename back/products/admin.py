@@ -23,7 +23,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter = ('is_approved', 'category')
     ordering = ('-created_at',)
     raw_id_fields = ('seller',)
-    autocomplete_fields = ('tags','category')
+    autocomplete_fields = ('tags','category','seller')
 
 
 @admin.register(ProductReview)

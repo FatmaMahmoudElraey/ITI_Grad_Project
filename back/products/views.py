@@ -1,4 +1,5 @@
 from rest_framework.viewsets import ModelViewSet
+from rest_framework import serializers
 from .models import Category, Tag, Product, ProductReview, ProductFlag
 from .serializers import (
     CategorySerializer,
@@ -19,7 +20,7 @@ class TagViewSet(ModelViewSet):
     serializer_class = TagSerializer
 
 class ProductViewSet(ModelViewSet):
-    queryset = Product.objects.all()
+    queryset = Product.objects.select_related('category', 'seller').prefetch_related('tags', 'reviews', 'flags')
     serializer_class = ProductSerializer
 
     def perform_create(self, serializer):
@@ -38,6 +39,12 @@ class ProductFlagViewSet(ModelViewSet):
     serializer_class = ProductFlagSerializer
 
     def perform_create(self, serializer):
+        product = serializer.validated_data.get('product')
+        if ProductFlag.objects.filter(user=self.request.user, product=product).exists():
+            raise serializers.ValidationError("You have already flagged this product.")
         serializer.save(user=self.request.user)
 
 
+
+
+    

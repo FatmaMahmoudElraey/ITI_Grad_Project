@@ -22,7 +22,7 @@ class TagViewSet(ModelViewSet):
     serializer_class = TagSerializer
 
 class ProductViewSet(ModelViewSet):
-    queryset = Product.objects.select_related('category', 'seller').prefetch_related('tags', 'reviews', 'flags')
+    queryset = Product.objects.select_related('category', 'seller').prefetch_related('tags', 'reviews', 'flags', 'images')
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['category', 'tags', 'price']

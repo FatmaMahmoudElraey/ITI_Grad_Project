@@ -1,17 +1,21 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import './App.css'
-import Header from './components/Navbar.jsx'
+import SharedLayout from './sharedlayout/SharedLayout.jsx'
+import { Home } from "./pages/Home.jsx";
 
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
-    <>
-      <Header/>
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<SharedLayout />}>
+          <Route  index element={<Home />} />
+          <Route path="home"  element={<Home />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+    
   )
 }
 

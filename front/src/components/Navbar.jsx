@@ -66,7 +66,9 @@ export default function Header() {
           <Nav className="d-flex align-items-center">
             <Nav.Link href="#license" className="text-light me-3">License</Nav.Link>
             <Nav.Link href="#pricing" className="text-light me-3">Pricing</Nav.Link>
-            <button className="header-button">Get unlimited downloads</button>
+            <button className="header-button" style={{ backgroundColor: '#660ff1', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px' }}>
+              Get unlimited downloads
+            </button>
             <a className="sign-in mx-3 text-decoration-none text-light" href="#">Sign in</a>
           </Nav>
 

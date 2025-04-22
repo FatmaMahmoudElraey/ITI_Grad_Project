@@ -1,0 +1,41 @@
+.heat-title {
+    /* font-size: 2.5rem !important; */
+    font-weight: 300 !important;
+    color: #533a7a !important;
+    
+}
+.testimonial-carousel {
+    padding-bottom: 3rem;
+  }
+  
+  .carousel-indicators {
+    bottom: -50px;
+  }
+  
+  .carousel-indicators [data-bs-target] {
+    width: 10px  !important;
+    height:  10px !important;
+    border-radius: 50% ;
+    background-color: #660ff1 !important;
+    opacity: 0.5;
+    margin: 0 6px;
+  }
+  
+  .carousel-indicators .active {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+
+  .hover-card {
+    transition: transform 0.4s ease;
+  }
+  
+  .hover-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  @media (max-width: 768px) {
+    .card {
+      margin: 0 1rem;
+    }
+  }

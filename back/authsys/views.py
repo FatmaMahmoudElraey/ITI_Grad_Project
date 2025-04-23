@@ -1,3 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import redirect
+from django.conf import settings
 
-# Create your views here.
+def redirect_to_frontend(request, uid, token):
+    url = f"{settings.FRONTEND_URL}/activate/{uid}/{token}"
+    return redirect(url)

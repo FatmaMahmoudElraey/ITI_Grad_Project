@@ -13,7 +13,7 @@ export default function Header() {
       <Container fluid>
         
         {/* Logo & Brand Name */}
-        <Navbar.Brand href="#home" className="ms-3 text-light fw-bold fs-3 d-flex align-items-center">
+        <Navbar.Brand href="/" className="ms-3 text-light fw-bold fs-3 d-flex align-items-center">
           <img
             alt=""
             src={Logo}
@@ -64,8 +64,8 @@ export default function Header() {
 
           {/* Right-side Links */}
           <Nav className="d-flex align-items-center">
-            <Nav.Link href="#license" className="text-light me-3">License</Nav.Link>
-            <Nav.Link href="#pricing" className="text-light me-3">Pricing</Nav.Link>
+            <Nav.Link href="/about" className="text-light me-3">AboutUs</Nav.Link>
+            <Nav.Link href="/contact" className="text-light me-3">ContactUs</Nav.Link>
             <button className="header-button" style={{ backgroundColor: '#660ff1', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px' }}>
               Get unlimited downloads
             </button>

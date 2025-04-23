@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
+from django.core.validators import MinValueValidator, MaxValueValidator
+
 
 User = settings.AUTH_USER_MODEL
 
@@ -49,10 +51,19 @@ class Product(models.Model):
         return self.title
 
 
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='products/images/')
+    alt_text = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return f"Image for {self.product.title}"
+
+
 class ProductReview(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    rating = models.PositiveSmallIntegerField()
+    rating = models.PositiveSmallIntegerField(validators=[MinValueValidator(0), MaxValueValidator(5)])
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -1,0 +1,65 @@
+:root {
+  --primary: #660ff1;
+  --primary-shadow: rgba(102, 15, 241, 0.2);
+  --transition: all 0.3s ease;
+}
+
+.featured-templates {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.template-image-card {
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: 1rem;
+  box-shadow: 0 8px 20px var(--primary-shadow);
+  transition: var(--transition);
+}
+
+.template-image-card:hover {
+  transform: translateY(-10px);
+}
+
+.template-image {
+  height: 300px;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.template-image-card:hover .template-image {
+  transform: scale(1.1);
+}
+
+/* Overlay styles */
+.overlay {
+  background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.8));
+  opacity: 0;
+  transition: var(--transition);
+}
+
+.template-image-card:hover .overlay {
+  opacity: 1;
+}
+
+/* Override Bootstrap classes */
+.btn-primary, 
+.badge.bg-primary {
+  background-color: var(--primary) !important;
+  border-color: var(--primary);
+}
+
+.text-primary {
+  color: var(--primary) !important;
+}
+
+.title-underline {
+  width: 60px;
+  height: 3px;
+  background: var(--primary);
+}
+
+@media (max-width: 768px) {
+  .template-image {
+    height: 220px;
+  }
+}

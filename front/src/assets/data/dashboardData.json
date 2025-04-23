@@ -1,0 +1,226 @@
+{
+    "monthlySales": [
+      { "month": "Jan", "sales": 4000, "orders": 42 },
+      { "month": "Feb", "sales": 3000, "orders": 38 },
+      { "month": "Mar", "sales": 5000, "orders": 56 },
+      { "month": "Apr", "sales": 2780, "orders": 32 },
+      { "month": "May", "sales": 1890, "orders": 28 },
+      { "month": "Jun", "sales": 2390, "orders": 35 },
+      { "month": "Jul", "sales": 3490, "orders": 48 }
+    ],
+
+
+    "recentOrders": [
+      { "id": "#1001", "customer": "John Smith", "date": "2023-06-15", "amount": "$125.00", "status": "Completed" },
+      { "id": "#1002", "customer": "Sarah Johnson", "date": "2023-06-14", "amount": "$89.50", "status": "Processing" },
+      { "id": "#1003", "customer": "Michael Brown", "date": "2023-06-13", "amount": "$234.00", "status": "Completed" },
+      { "id": "#1004", "customer": "Emily Davis", "date": "2023-06-12", "amount": "$56.75", "status": "Shipped" },
+      { "id": "#1005", "customer": "Robert Wilson", "date": "2023-06-11", "amount": "$189.00", "status": "Processing" }
+    ],
+
+    
+    "dashboardStats": {
+      "totalSales": 18450,
+      "totalProducts": 28,
+      "pendingOrders": 7,
+      "totalRevenue": 15320
+    },
+
+
+    "categories": [
+      { "value": "electronics", "label": "Electronics" },
+      { "value": "clothing", "label": "Clothing" },
+      { "value": "home", "label": "Home & Kitchen" },
+      { "value": "books", "label": "Books" },
+      { "value": "beauty", "label": "Beauty & Personal Care" }
+    ],
+
+
+    "popularProducts": [
+      {
+        "id": 1,
+        "name": "Wireless Headphones",
+        "description": "Noise-cancelling Bluetooth headphones",
+        "category": "electronics",
+        "price": 199.99,
+        "stock": 25
+      },
+      {
+        "id": 2,
+        "name": "Organic Cotton T-Shirt",
+        "description": "Comfortable unisex t-shirt",
+        "category": "clothing",
+        "price": 29.99,
+        "stock": 50
+      },
+      {
+        "id": 3,
+        "name": "Smart Home Speaker",
+        "description": "Voice-controlled smart speaker",
+        "category": "electronics",
+        "price": 129.99,
+        "stock": 15
+      },
+      {
+        "id": 4,
+        "name": "Non-Stick Cookware Set",
+        "description": "10-piece kitchen cookware set",
+        "category": "home",
+        "price": 149.99,
+        "stock": 10
+      },
+      {
+        "id": 5,
+        "name": "Bestselling Novel",
+        "description": "Latest fiction bestseller",
+        "category": "books",
+        "price": 14.99,
+        "stock": 30
+      },
+      {
+        "id": 6,
+        "name": "Skincare Set",
+        "description": "Complete daily skincare routine",
+        "category": "beauty",
+        "price": 59.99,
+        "stock": 20
+      },
+      {
+        "id": 7,
+        "name": "Fitness Tracker",
+        "description": "Waterproof activity tracker",
+        "category": "electronics",
+        "price": 79.99,
+        "stock": 0
+      },
+      {
+        "id": 8,
+        "name": "Yoga Mat",
+        "description": "Eco-friendly non-slip mat",
+        "category": "home",
+        "price": 39.99,
+        "stock": 18
+      }
+    ],
+
+
+    "reviews": [
+      {
+        "id": 1,
+        "productId": 1,
+        "customer": "Alex Johnson",
+        "rating": 4.5,
+        "comment": "Excellent noise cancellation! Battery life is impressive.",
+        "date": "2025-04-15"
+      },
+      {
+        "id": 2,
+        "productId": 2,
+        "customer": "Sam Wilson",
+        "rating": 3.0,
+        "comment": "Comfortable but shrunk after washing.",
+        "date": "2025-04-10"
+      },
+      {
+        "id": 3,
+        "productId": 3,
+        "customer": "Taylor Smith",
+        "rating": 5.0,
+        "comment": "Perfect sound quality and easy setup!",
+        "date": "2025-04-05"
+      }
+    ],
+
+
+    "inboxMessages": [
+        {
+          "id": 1,
+          "sender": "Customer1",
+          "subject": "Question about Wireless Headphones",
+          "message": "Can you tell me more about the battery life of these headphones?",
+          "date": "2025-04-18",
+          "status": "unread",
+          "relatedProductId": 1
+        },
+        {
+          "id": 2,
+          "sender": "Customer2",
+          "subject": "Organic Cotton T-Shirt sizing",
+          "message": "What are the size measurements for the t-shirt?",
+          "date": "2025-04-16",
+          "status": "read",
+          "relatedProductId": 2
+        },
+        {
+          "id": 3,
+          "sender": "Customer3",
+          "subject": "Smart Home Speaker compatibility",
+          "message": "Does this speaker work with Android devices?",
+          "date": "2025-04-14",
+          "status": "unread",
+          "relatedProductId": 3
+        }
+      ]
+
+,
+
+
+        "payoutStats": {
+          "totalPayouts": 1400,
+          "pending": 350,
+          "nextPayout": 520,
+          "failed": 450
+        },
+        "recentPayouts": [
+          {
+            "id": "#PAY1001",
+            "amount": 200.00,
+            "date": "2025-04-15",
+            "status": "Completed",
+            "method": "Bank Transfer"
+          },
+          {
+            "id": "#PAY1002",
+            "amount": 350.00,
+            "date": "2025-04-01",
+            "status": "Pending",
+            "method": "PayPal"
+          },
+          {
+            "id": "#PAY1003",
+            "amount": 120.00,
+            "date": "2025-03-25",
+            "status": "Completed",
+            "method": "Bank Transfer"
+          },
+          {
+            "id": "#PAY1004",
+            "amount": 450.00,
+            "date": "2025-03-10",
+            "status": "Failed",
+            "method": "Stripe"
+          },
+          {
+            "id": "#PAY1005",
+            "amount": 280.00,
+            "date": "2025-02-28",
+            "status": "Completed",
+            "method": "PayPal"
+          }
+        ]
+        ,
+        "storeSettings": {
+    "storeName": "Tech Haven",
+    "storeDescription": "Your one-stop shop for the latest tech gadgets and accessories",
+    "storeLogo": "../../assets/images/navbar/logo.png",
+    "storeBanner": "https://via.placeholder.com/800x300",
+    "contactEmail": "contact@webify.com",
+    "socialMedia": {
+      "facebook": "Webify",
+      "instagram": "Webify",
+      "twitter": "Webify_official"
+    }
+  }
+      
+  }
+  

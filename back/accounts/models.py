@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.apps import apps
 
 class UserAccountManager(BaseUserManager):
     def create_user(self,email,name,password=None):
@@ -43,3 +44,19 @@ class UserAccount(AbstractUser):
 
     def __str__(self):
         return self.email
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(UserAccount, on_delete=models.CASCADE, related_name='userprofile')
+    bio = models.TextField(blank=True)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+    location = models.CharField(max_length=255, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
+
+    
+    def get_orders(self):
+        Order = apps.get_model('orders', 'Order')
+        return Order.objects.filter(user=self.user)
+
+
+    def __str__(self):
+        return self.user.email

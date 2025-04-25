@@ -3,9 +3,12 @@ import './index.css'
 import App from './App.jsx'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle';
-
+import store from './store/index.js';
+import { Provider } from 'react-redux';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 createRoot(document.getElementById('root')).render(
+  <Provider store={store}>        
   <App />
+  </Provider>
 )

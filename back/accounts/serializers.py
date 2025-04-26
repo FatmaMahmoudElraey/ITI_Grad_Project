@@ -30,7 +30,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     orders = serializers.SerializerMethodField()
     class Meta:
         model = UserProfile
-        fields = ('user', 'bio', 'profile_picture', 'location', 'birth_date', 'orders')
+        fields = ('user', 'bio', 'picture', 'location', 'birth_date', 'orders')
 
     def get_orders(self, obj):
         orders = Order.objects.filter(user=obj.user)

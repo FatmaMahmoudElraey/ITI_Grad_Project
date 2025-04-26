@@ -48,7 +48,7 @@ class UserAccount(AbstractUser):
 class UserProfile(models.Model):
     user = models.OneToOneField(UserAccount, on_delete=models.CASCADE, related_name='userprofile')
     bio = models.TextField(blank=True)
-    profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+    picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
     location = models.CharField(max_length=255, blank=True)
     birth_date = models.DateField(null=True, blank=True)
 

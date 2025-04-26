@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUserProfile, deleteUserAccount } from "../store/slices/usersSlice";
-import axios from "axios";
-import { ENDPOINTS } from "../api/constants";
+import { fetchUserProfile, deleteUserAccount, updateUserProfile } from "../store/slices/usersSlice";
 import { Card, Button, Container, Modal, Form, Row, Col, Badge } from "react-bootstrap";
 import { FaEdit, FaSignOutAlt, FaTrash, FaUser, FaDownload, FaCalendarAlt, FaStar, FaShoppingCart } from "react-icons/fa";
 import { motion } from "framer-motion";
@@ -21,25 +19,15 @@ export default function UserProfile() {
   useEffect(() => {
     const fetchUserIdAndProfile = async () => {
       try {
-        const response = await axios.get(ENDPOINTS.AUTH.ME, {
-          headers: {
-            Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
-          },
-        });
-        dispatch(fetchUserProfile(response.data.id))
-          .unwrap()
-          .catch(err => {
-            console.error("Failed to fetch profile:", err);
-            // navigate('/login');
-          });
+        await dispatch(fetchUserProfile()).unwrap();
       } catch (err) {
-        console.error("Failed to fetch user ID:", err);
-        // navigate('/login');
+        console.error("Failed to fetch profile:", err);
+        navigate('/login');
       }
     };
-
+  
     fetchUserIdAndProfile();
-  }, [dispatch]);
+  }, [dispatch, navigate]);
 
   useEffect(() => {
     if (userProfile) {
@@ -47,8 +35,9 @@ export default function UserProfile() {
         name: userProfile?.user?.name || "",
         bio: userProfile?.bio || "",
         location: userProfile?.location || "",
-        date_of_birth: userProfile?.date_of_birth || "",
-        picture: userProfile?.picture || "",
+        birth_date: userProfile?.birth_date || "",
+        picture: null,
+        pictureUrl: userProfile?.picture || "",
       });
     }
   }, [userProfile]);
@@ -65,21 +54,28 @@ export default function UserProfile() {
 
   const handleSaveProfile = async () => {
     try {
-      await dispatch(updateUserProfile({ 
-        userId: userProfile.id, 
-        profileData: formData 
-      })).unwrap();
+      const updatedProfile = await dispatch(updateUserProfile(formData)).unwrap();
+      
+      setFormData({
+        name: updatedProfile.user?.name || "",
+        bio: updatedProfile.bio || "",
+        location: updatedProfile.location || "",
+        birth_date: updatedProfile.birth_date || "",
+        picture: null,
+        pictureUrl: updatedProfile.picture || "",
+      });
       
       setShowEditModal(false);
-      // Profile will be automatically updated through redux state
     } catch (err) {
       console.error("Failed to update profile:", err);
     }
   };
+  
+  
 
   const handleDeleteAccount = async () => {
     try {
-      await dispatch(deleteUserAccount(userProfile.id)).unwrap();
+      await dispatch(deleteUserAccount(userProfile.user.id)).unwrap();
       sessionStorage.clear();
       navigate("/");
     } catch (err) {
@@ -87,8 +83,6 @@ export default function UserProfile() {
     }
   };
 
-  // Mock purchased products data
-  
 
   // Mock favorites data
   const favorites = [
@@ -155,7 +149,7 @@ export default function UserProfile() {
         <div
           className="position-absolute w-100 h-100"
           style={{
-            backgroundImage: "url('https://i.imgur.com/xnDMCwq.jpg')",
+            backgroundImage: "url('https://images.pexels.com/photos/430207/pexels-photo-430207.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1')",
             backgroundSize: "cover",
             backgroundPosition: "center",
             opacity: 0.2
@@ -178,10 +172,17 @@ export default function UserProfile() {
               }}
             >
               <img
-                src={userProfile?.picture || "https://i.imgur.com/Qtrsrk5.jpg"}
+                src={
+                  userProfile?.picture
+                    ? userProfile.picture.startsWith('http')
+                      ? userProfile.picture
+                      : `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}${userProfile.picture}`
+                    : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAb-vb97QXQeIb-chQJOKk3XouQGSsyrakSw&s"
+                }
                 alt="Profile"
                 className="w-100 h-100 object-fit-cover"
               />
+
               <div 
                 className="position-absolute bottom-0 end-0 p-1 bg-primary rounded-circle"
                 style={{ cursor: "pointer" }}
@@ -253,6 +254,13 @@ export default function UserProfile() {
                     <p className="mb-0">{userProfile?.location || "Not specified"}</p>
                   </div>
                 </div>
+                <div className="d-flex align-items-center mb-3">
+                  <FaLocationDot className="me-3 text-primary"/>
+                  <div>
+                    <small className="text-muted">Date of birth</small>
+                    <p className="mb-0">{userProfile?.birth_date || "Not specified"}</p>
+                  </div>
+                </div>
                 
                 <div className="d-flex align-items-center mb-3">
                   <FaCalendarAlt className="text-primary me-3" size={18} />
@@ -274,7 +282,7 @@ export default function UserProfile() {
                   <FaDownload className="text-primary me-3" size={18} />
                   <div>
                     <small className="text-muted">Total Downloads</small>
-                    <p className="mb-0 fw-bold">{purchasedProducts.reduce((sum, product) => sum + product.downloads, 0)}</p>
+                    <p className="mb-0 fw-bold">{purchasedProducts.reduce((sum, product) => sum + (product.downloads || 0), 0)}</p>
                   </div>
                 </div>
               </Card.Body>
@@ -359,16 +367,16 @@ export default function UserProfile() {
                                       <FaStar 
                                         key={i}
                                         size={12}
-                                        className={i < Math.floor(product.rating) ? "text-warning" : "text-muted"}
+                                        className={i < Math.floor(product.rating || 0) ? "text-warning" : "text-muted"}
                                       />
                                     ))}
                                   </div>
-                                  <span className="small text-muted ms-1">{product.rating}</span>
+                                  <span className="small text-muted ms-1">{product.rating || 0}</span>
                                 </div>
 
                                 <div className="d-flex justify-content-between small text-muted">
                                   <span>Price: ${product.price}</span>
-                                  <span>Downloads: {product.downloads}</span>
+                                  <span>Downloads: {product.downloads || 0}</span>
                                 </div>
                               </Card.Body>
 
@@ -517,7 +525,11 @@ export default function UserProfile() {
                     src={
                       formData.picture 
                         ? URL.createObjectURL(formData.picture) 
-                        : userProfile?.picture || "https://i.imgur.com/Qtrsrk5.jpg"
+                        : formData.pictureUrl
+                          ? formData.pictureUrl.startsWith('http')
+                            ? formData.pictureUrl
+                            : `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}${formData.pictureUrl}`
+                          : "https://i.imgur.com/Qtrsrk5.jpg"
                     }
                     alt="Profile Preview"
                     className="w-100 h-100 object-fit-cover"
@@ -529,7 +541,11 @@ export default function UserProfile() {
                     <Form.Control
                       type="file"
                       accept="image/*"
-                      onChange={(e) => setFormData({ ...formData, picture: e.target.files[0] })}
+                      onChange={(e) => {
+                        if (e.target.files[0]) {
+                          setFormData({ ...formData, picture: e.target.files[0] });
+                        }
+                      }}
                       className="d-none"
                     />
                   </Form.Label>
@@ -567,8 +583,8 @@ export default function UserProfile() {
                       <Form.Label>Date of Birth</Form.Label>
                       <Form.Control
                         type="date"
-                        value={formData.date_of_birth}
-                        onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
+                        value={formData.birth_date}
+                        onChange={(e) => setFormData({ ...formData, birth_date: e.target.value })}
                       />
                     </Form.Group>
                   </Col>

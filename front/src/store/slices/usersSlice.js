@@ -42,9 +42,9 @@ export const fetchUserDetails = createAsyncThunk(
 
 export const fetchUserProfile = createAsyncThunk(
   'users/fetchProfile',
-  async (userId, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get(`${ENDPOINTS.USER_PROFILE}${userId}/`);
+      const response = await api.get(ENDPOINTS.USER_PROFILE);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch user profile');
@@ -54,18 +54,18 @@ export const fetchUserProfile = createAsyncThunk(
 
 export const updateUserProfile = createAsyncThunk(
   'users/updateProfile',
-  async ({ userId, profileData }, { rejectWithValue }) => {
+  async (profileData, { rejectWithValue }) => {
     try {
       const formData = new FormData();
       Object.keys(profileData).forEach(key => {
         if (key === 'picture' && profileData[key] instanceof File) {
-          formData.append('profile_picture', profileData[key]);
+          formData.append('picture', profileData[key]);
         } else {
           formData.append(key, profileData[key]);
         }
       });
 
-      const response = await api.patch(`${ENDPOINTS.USER_PROFILE}${userId}/`, formData, {
+      const response = await api.patch(ENDPOINTS.USER_PROFILE, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -76,6 +76,7 @@ export const updateUserProfile = createAsyncThunk(
     }
   }
 );
+
 
 export const deleteUserAccount = createAsyncThunk(
   'users/deleteAccount',

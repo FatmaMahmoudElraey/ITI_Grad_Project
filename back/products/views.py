@@ -10,7 +10,7 @@ from .serializers import (
 )
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
-
+from rest_framework.exceptions import PermissionDenied
 
 class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.all()
@@ -30,7 +30,11 @@ class ProductViewSet(ModelViewSet):
     ordering_fields = ['price', 'created_at']
 
     def perform_create(self, serializer):
-        serializer.save(seller=self.request.user)
+        user = self.request.user
+        if user.role != 'seller' and not user.is_superuser:
+            raise PermissionDenied("Only sellers or admins can create products.")
+        serializer.save(seller=user)
+
 
 class ProductReviewViewSet(ModelViewSet):
     queryset = ProductReview.objects.all()

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ChevronRight } from 'react-bootstrap-icons';
 import { FaArrowRight } from 'react-icons/fa';
 
 const CategoriesSection = () => {
@@ -20,44 +19,43 @@ const CategoriesSection = () => {
     };
 
     window.addEventListener('scroll', handleScroll);
-    // Initial check
     setTimeout(handleScroll, 100);
-    
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const categories = [
     { 
       name: 'Books', 
-      image: 'https://img.freepik.com/free-photo/website-design-content-layout-graphic_53876-21203.jpg?t=st=1745243583~exp=1745247183~hmac=cce5376425e88dfc7647d706840f7af539915f625e68962c547aba38968f16ab&w=1380', 
+      image: 'https://img.freepik.com/free-photo/website-design-content-layout-graphic_53876-21203.jpg', 
       bgColor: '#f1f7ff',
       textColor: '#1565c0',
       count: '2,543 items'
     },
     { 
       name: 'Electronics', 
-      image: 'https://img.freepik.com/free-photo/website-design-content-layout-graphic_53876-21203.jpg?t=st=1745243583~exp=1745247183~hmac=cce5376425e88dfc7647d706840f7af539915f625e68962c547aba38968f16ab&w=1380', 
+      image: 'https://img.freepik.com/free-photo/website-design-content-layout-graphic_53876-21203.jpg', 
       bgColor: '#f2f9f4',
       textColor: '#2e7d32',
       count: '1,789 items'
     },
     { 
       name: 'Fashion', 
-      image: 'https://img.freepik.com/free-photo/website-design-content-layout-graphic_53876-21203.jpg?t=st=1745243583~exp=1745247183~hmac=cce5376425e88dfc7647d706840f7af539915f625e68962c547aba38968f16ab&w=1380', 
+      image: 'https://img.freepik.com/free-photo/website-design-content-layout-graphic_53876-21203.jpg', 
       bgColor: '#fff8f0',
       textColor: '#ef6c00',
       count: '3,156 items'
     },
     { 
       name: 'Food', 
-      image: 'https://img.freepik.com/free-photo/website-design-content-layout-graphic_53876-21203.jpg?t=st=1745243583~exp=1745247183~hmac=cce5376425e88dfc7647d706840f7af539915f625e68962c547aba38968f16ab&w=1380', 
+      image: 'https://img.freepik.com/free-photo/website-design-content-layout-graphic_53876-21203.jpg', 
       bgColor: '#fff5f5',
       textColor: '#c62828',
       count: '952 items'
     },
     { 
       name: 'Art', 
-      image: 'https://img.freepik.com/free-photo/website-design-content-layout-graphic_53876-21203.jpg?t=st=1745243583~exp=1745247183~hmac=cce5376425e88dfc7647d706840f7af539915f625e68962c547aba38968f16ab&w=1380', 
+      image: 'https://img.freepik.com/free-photo/website-design-content-layout-graphic_53876-21203.jpg', 
       bgColor: '#f9f4fb',
       textColor: '#7b1fa2',
       count: '1,345 items'
@@ -78,7 +76,7 @@ const CategoriesSection = () => {
     },
     { 
       name: 'Home & Garden', 
-      image: 'https://img.freepik.com/free-photo/website-design-content-layout-graphic_53876-21203.jpg?t=st=1745243583~exp=1745247183~hmac=cce5376425e88dfc7647d706840f7af539915f625e68962c547aba38968f16ab&w=1380', 
+      image: 'https://img.freepik.com/free-photo/website-design-content-layout-graphic_53876-21203.jpg', 
       bgColor: '#f4f5fa',
       textColor: '#283593',
       count: '2,076 items'
@@ -88,44 +86,42 @@ const CategoriesSection = () => {
   return (
     <section id="category-section" className="py-5">
       <Container>
-        <div className="d-flex justify-content-between align-items-center mb-5" 
+        <div 
+          className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-5"
           style={{ 
             opacity: isVisible ? 1 : 0, 
             transform: `translateY(${isVisible ? 0 : '20px'})`,
             transition: 'opacity 0.6s ease-out, transform 0.6s ease-out',
           }}
         >
-          <div>
+          <div className="text-center text-md-start mb-4 mb-md-0">
             <h6 className="text-success text-uppercase mb-1 fw-bold" style={{ letterSpacing: '1.5px' }}>
               Explore
             </h6>
-            <h2 className="display-6 fw-bold mb-0 text-body-secondary">Shop by Category</h2>
+            <h2 className="display-6 fw-bold mb-0 text-body-secondary">
+              Shop by Category
+            </h2>
           </div>
-          
-          {/* <Link to="/categories" className="text-decoration-none d-none d-md-flex align-items-center">
-            <span className="me-2 fw-medium">View All Categories</span>
-            <div className="rounded-circle bg-primary d-flex align-items-center justify-content-center" 
-              style={{ width: '32px', height: '32px', color: 'white' }}>
-              <ArrowRight size={18} />
-            </div>
-          </Link> */}
-          
+
           <Link to="/categories">
             <Button 
-                        variant="outline-success" 
-                        size="lg" 
-                        className="rounded-pill px-5 py-3 fw-bold"
-                        style={{ letterSpacing: '0.5px' }}
-                      >
-                        Browse All Categories
-                        <FaArrowRight className="ms-2" />
-                      </Button>
+              variant="outline-success" 
+              size="lg" 
+              className="rounded-pill px-5 py-3 fw-bold"
+              style={{ letterSpacing: '0.5px' }}
+            >
+              Browse All Categories
+              <FaArrowRight className="ms-2" />
+            </Button>
           </Link>
         </div>
         
         <Row className="g-4">
           {categories.map((category, index) => (
-            <Col key={index} xs={6} sm={4} md={3} className="mb-3"
+            <Col 
+              key={index} 
+              xs={12} sm={6} md={4} lg={3}
+              className="d-flex"
               style={{ 
                 opacity: isVisible ? 1 : 0, 
                 transform: `translateY(${isVisible ? 0 : '30px'})`,
@@ -134,12 +130,12 @@ const CategoriesSection = () => {
             >
               <Link 
                 to={`/category/${category.name.toLowerCase()}`} 
-                className="text-decoration-none"
+                className="text-decoration-none w-100"
                 onMouseEnter={() => setHoveredIndex(index)}
                 onMouseLeave={() => setHoveredIndex(null)}
               >
                 <Card 
-                  className="h-100 border-0 rounded-4 overflow-hidden"
+                  className="h-100 border-0 rounded-4 overflow-hidden w-100"
                   style={{ 
                     transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                     transform: hoveredIndex === index ? 'translateY(-12px)' : 'translateY(0)',
@@ -185,55 +181,17 @@ const CategoriesSection = () => {
                     >
                       {category.name}
                     </Card.Title>
-                    <p className="text-muted small mb-2">{category.count}</p>
-                    
-                    {/* <div 
-                      className="mt-2 d-inline-flex align-items-center justify-content-center"
-                      style={{ 
-                        transition: 'all 0.3s ease',
-                        opacity: hoveredIndex === index ? 1 : 0,
-                        height: hoveredIndex === index ? '24px' : '0',
-                        overflow: 'hidden'
-                      }}
-                    >
-                      <span style={{ 
-                        color: category.textColor, 
-                        fontWeight: 500,
-                        fontSize: '14px'
-                      }}>
-                        Shop Now
-                      </span>
-                      <ChevronRight size={14} style={{ color: category.textColor, marginLeft: '3px' }} />
-                    </div> */}
+                    <p className="text-muted small mb-0">{category.count}</p>
                   </Card.Body>
                 </Card>
               </Link>
             </Col>
           ))}
         </Row>
-        
-        <div 
-          className="text-center mt-5"
-          style={{ 
-            opacity: isVisible ? 1 : 0, 
-            transform: `translateY(${isVisible ? 0 : '20px'})`,
-            transition: 'opacity 0.6s ease-out 0.8s, transform 0.6s ease-out 0.8s',
-          }}
-        >
-          {/* <Link to="/categories">
-            <Button 
-              variant="primary" 
-              size="lg"
-              className="rounded-pill px-4 py-2 fw-medium d-inline-flex align-items-center"
-              style={{ boxShadow: '0 4px 12px rgba(13, 110, 253, 0.25)' }}
-            >
-              Browse All Categories <ArrowRight size={18} className="ms-2" />
-            </Button>
-          </Link> */}
-        </div>
+
       </Container>
 
-      <style jsx>{`
+      <style jsx="true">{`
         @keyframes fadeIn {
           from { opacity: 0; }
           to { opacity: 1; }

@@ -1,158 +1,356 @@
+/* Navbar Styles */
+.top-navbar {
+  z-index: 1030;
+}
 
-/* first layer */
+.second-navbar {
+  z-index: 1029;
+}
 
-/* Search bar wrapper */
+/* Logo & Brand */
+.navbar-brand {
+  white-space: nowrap;
+}
+
+/* Search Box Styles */
 .search-wrapper {
-    flex-grow: 1;
-    display: flex;
-    justify-content: center;
+  flex-grow: 1;
 }
 
-.items .dropdown-toggle::after {
-    margin-left: 10px;
-}
-.dropdown-menu{
-    background-color: black;
-}
-/* Search container */
 .dropdown-search {
-    max-width: 1000px;
-    width: 100%;
-    border-radius: 25px;
-    padding: 5px 10px;
-    display: flex;
-    align-items: center;
-    background-color: rgb(85, 82, 82);
-
-}
-
-/* Search Input and Icon */
-.search-container {
-    position: relative;
-    width: 100%;
-
+  border-radius: 20px;
+  background-color: rgb(85, 82, 82);
+  padding: 4px 8px;
 }
 
 .search-box {
-    border: none !important;
-    border-left: 1px solid rgb(153, 153, 153) !important;
-    width: 100%;
-    padding-right: 35px; /* Prevents text from overlapping the icon */
-    background-color: rgb(85, 82, 82) !important;
-    
+  height: 34px;
+  border: none !important;
+  border-left: 1px solid rgb(153, 153, 153) !important;
+  background-color: rgb(85, 82, 82) !important;
+  color: white !important;
+  font-size: 14px;
+  border-radius: 0 20px 20px 0 !important;
+}
+
+.search-box::placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
 }
 
 .search-icon {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: white;
-    font-size: 18px;
+  color: white;
+  font-size: 16px;
+  z-index: 4;
 }
 
 /* Navbar Dropdown */
-#navbarScrollingDropdown {
-    font-size: 14px;
-    font-weight: bold;
+.navbar-dark .navbar-nav .nav-link {
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+  color: rgba(255, 255, 255, 1);
+}
+
+.dropdown-menu {
+  background-color: #343a40;
+  border: none;
+}
+
+.dropdown-item {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  padding: 8px 16px;
+}
+
+.dropdown-item:hover {
+  background-color: #495057;
+  color: white;
 }
 
 /* Button Styling */
 .header-button {
-    background-color: #9cee69;
-    font-weight: bold;
-    color: black;
-    padding: 12px 20px;
-    border-radius: 5px;
-    border: none;
-    transition: 0.2s;
-    font-size: 16px;
+  background-color: rgb(102, 15, 241) !important;
+  font-weight: bold;
+  color: white;
+  border: none !important;
+  transition: 0.2s;
+  white-space: nowrap;
 }
 
 .header-button:hover {
-    background-color: #84ca59;
+  background-color: rgb(75, 7, 185) !important;
+}
+.header-button.mobile-button {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
 }
 
-/* Sign-in Link */
-.sign-in {
-    font-size: 14px;
-    padding: 8px 16px;
+/* Second Navbar Styles */
+.second-navbar .navbar-nav {
+  align-items: center;
 }
-
-/* RESPONSIVE STYLES */
-@media (max-width: 992px) {
-    .search-wrapper {
-        width: 100%;
-    }
-
-    .dropdown-search {
-        max-width: 100%;
-        flex-direction: row;
-        align-items: center;
-    }
-
-    .search-box {
-        width: 100%;
-    }
-
-    .header-button {
-        padding: 8px 16px;
-        font-size: 13px;
-    }
-
-    .sign-in {
-        font-size: 13px;
-        padding: 6px 12px;
-    }
-}
-
-/* Ensure search bar visibility on small screens */
-@media (max-width: 768px) {
-    .search-wrapper {
-        width: 100%;
-        justify-content: center;
-        display: flex; /* Ensure it remains visible */
-    }
-
-    .dropdown-search {
-        flex-wrap: wrap;
-        padding: 5px;
-        display: flex; /* Ensure it remains visible */
-    }
-
-    .search-box {
-        width: 100%;
-        margin-top: 5px;
-        display: block; /* Ensure it remains visible */
-    }
-
-    .header-button {
-        padding: 8px 10px;
-        font-size: 12px;
-    }
-}
-
-
-/* second layer */
 
 .link {
-    margin-left: 30px !important;
-    font-size: 13px !important;
-}
-
-
-.navbar .dropdown:hover .dropdown-menu {
-    display: block !important;
-    margin-top: 0; 
-}
-
-.link .dropdown-toggle::after {
-    display: none; 
+  font-size: 13px !important;
+  padding: 8px 12px !important;
 }
 
 .learn {
-    border-left: 1px solid gray !important;
-    padding-block: 5px !important;
-    padding-left: 30px !important;
-    font-size: 14px !important;
+  border-left: 1px solid gray !important;
+  padding-left: 20px !important;
+  font-size: 14px !important;
+}
+
+/* Hover dropdown for second navbar */
+.second-navbar .dropdown:hover .dropdown-menu {
+  display: block;
+  margin-top: 0; 
+}
+
+.second-navbar .dropdown-toggle::after {
+  display: none; 
+}
+
+/* Mobile Top Row */
+.top-navbar .mobile-top-row {
+  padding: 0.5rem 0;
+}
+
+/* Mobile Layout */
+@media (max-width: 1199.98px) {
+  .navbar-brand {
+    font-size: 1.25rem !important;
+  }
+  
+  .link {
+    font-size: 12px !important;
+    padding: 6px 8px !important;
+    margin-left: 0 !important;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .top-navbar .container-fluid {
+    position: relative;
+  }
+  
+  .top-navbar .navbar-toggler {
+    position: absolute;
+    right: 15px;
+  }
+  
+  .top-navbar .flex-grow-1 {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .top-navbar .mobile-search-icon {
+    margin-right: 1rem;
+  }
+  
+  .search-wrapper {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  .dropdown-search {
+    width: 100%;
+  }
+  
+  .header-button {
+    width: 100%;
+    margin: 0.5rem 0;
+  }
+  
+  .second-navbar .navbar-nav {
+    padding-top: 1rem;
+  }
+  
+  .learn {
+    border-left: none !important;
+    padding-left: 12px !important;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .navbar-brand {
+    font-size: 1.1rem !important;
+  }
+  
+  .search-box {
+    margin-top: 0.5rem;
+  }
+  
+  .second-navbar .dropdown-menu {
+    position: static !important;
+    float: none;
+    width: 100%;
+  }
+  
+  .link {
+    padding: 8px 0 !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .navbar-brand span {
+    display: none;
+  }
+  
+  .search-box {
+    font-size: 13px;
+  }
+  
+  .header-button {
+    font-size: 14px;
+    padding: 6px 12px;
+  }
+}
+
+
+/* Navbar Styles */
+.top-navbar {
+  z-index: 1030;
+}
+
+/* Mobile Layout */
+@media (max-width: 991.98px) {
+  .top-navbar .mobile-center-group {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .top-navbar .navbar-brand {
+    flex-shrink: 0;
+    margin-right: 0;
+  }
+  
+  .top-navbar .navbar-toggler {
+    margin-left: auto;
+  }
+  
+  .second-navbar-links {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 1rem;
+    margin-top: 1rem;
+  }
+}
+
+/* Desktop Layout */
+@media (min-width: 992px) {
+  .second-navbar-links {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
+  }
+  
+  .second-navbar-links .nav-link {
+    margin: 0 0.5rem;
+  }
+}
+
+/* Search Box Styles */
+.search-wrapper {
+  flex-grow: 1;
+}
+
+.search-container {
+  position: relative;
+}
+
+.search-box {
+  height: 40px;
+  border: none !important;
+  background-color: rgb(85, 82, 82) !important;
+  color: white !important;
+  border-radius: 20px !important;
+  padding-left: 15px !important;
+}
+
+.search-icon {
+  color: white;
+  font-size: 18px;
+}
+
+/* Button Styling */
+.header-button {
+  background-color: #82b440;
+  font-weight: bold;
+  color: white;
+  border: none;
+  transition: 0.2s;
+}
+
+.header-button:hover {
+  background-color: #719e3a;
+}
+
+/* Link Styling */
+.link {
+  font-size: 13px !important;
+  padding: 8px 12px !important;
+}
+
+/* Mobile Search Modal */
+.mobile-search-modal .modal-content {
+  background-color: #343a40;
+  border: none;
+}
+
+/* Categories Popover */
+.categories-popover {
+  width: 200px;
+  border-radius: 10px;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.categories-popover .popover-body {
+  padding: 0;
+}
+
+.categories-popover .nav-link {
+  border-radius: 0;
+  transition: background-color 0.2s;
+}
+
+.categories-popover .nav-link:hover {
+  background-color: #f8f9fa;
+}
+
+/* Categories Toggle Button */
+.categories-toggle {
+  padding: 0.25rem 1rem;
+  border-width: 2px;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+}
+
+.categories-toggle:hover {
+  background-color: rgba(255,255,255,0.1);
+}
+
+.categories-toggle.active {
+  background-color: rgba(255,255,255,0.2);
+}
+
+/* Mobile Layout Adjustments */
+@media (max-width: 991.98px) {
+  .top-navbar .navbar-brand {
+    flex: 0 0 auto;
+  }
+  
+  .categories-toggle {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .mobile-search-icon {
+    margin-left: auto;
+  }
 }

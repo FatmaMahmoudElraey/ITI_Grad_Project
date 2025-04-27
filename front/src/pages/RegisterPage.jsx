@@ -5,7 +5,8 @@ import { registerUser, clearError } from '../store/slices/authSlice';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
-    name: '',
+    first_name: '',
+    last_name: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -29,10 +30,10 @@ export default function RegisterPage() {
   }, [isAuthenticated, navigate, dispatch]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name , value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
     
     if (formErrors[name]) {
@@ -41,13 +42,17 @@ export default function RegisterPage() {
         [name]: ''
       });
     }
+
   };
 
   const validateForm = () => {
     const errors = {};
     
-    if (!formData.name) {
-      errors.name = 'Name is required';
+    if (!formData.first_name) {
+      errors.first_name = 'First Name is required';
+    }
+    if (!formData.last_name) {
+      errors.last_name = 'Last Name is required';
     }
     
     if (!formData.email) {
@@ -87,7 +92,8 @@ export default function RegisterPage() {
       if (!resultAction.error) {
         setRegistrationSuccess(true);
         setFormData({
-          name: '',
+          first_name: '',
+          last_name: '',
           email: '',
           password: '',
           confirmPassword: '',
@@ -143,19 +149,35 @@ export default function RegisterPage() {
                       
                       <form onSubmit={handleSubmit}>
                         <div className="form-outline mb-4">
-                          <label className="form-label" htmlFor="name">
-                            Full Name
+                          <label className="form-label" htmlFor="first_name">
+                            First Name
                           </label>
                           <input
                             type="text"
-                            id="name"
-                            name="name"
-                            value={formData.name}
+                            id="first_name"
+                            name="first_name"
+                            value={formData.first_name}
                             onChange={handleChange}
-                            className={`form-control form-control-lg ${formErrors.name ? 'is-invalid' : ''}`}
+                            className={`form-control form-control-lg ${formErrors.first_name ? 'is-invalid' : ''}`}
                           />
-                          {formErrors.name && (
-                            <div className="invalid-feedback">{formErrors.name}</div>
+                          {formErrors.first_name && (
+                            <div className="invalid-feedback">{formErrors.first_name}</div>
+                          )}
+                        </div>
+                        <div className="form-outline mb-4">
+                          <label className="form-label" htmlFor="last_name">
+                            Last Name
+                          </label>
+                          <input
+                            type="text"
+                            id="last_name"
+                            name="last_name"
+                            value={formData.last_name}
+                            onChange={handleChange}
+                            className={`form-control form-control-lg ${formErrors.last_name ? 'is-invalid' : ''}`}
+                          />
+                          {formErrors.last_name && (
+                            <div className="invalid-feedback">{formErrors.last_name}</div>
                           )}
                         </div>
 

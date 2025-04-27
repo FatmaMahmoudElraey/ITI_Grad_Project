@@ -1,0 +1,29 @@
+{% load i18n %}
+
+{% block subject %}
+{% trans "Account activation on" %} {{ site_name }}
+{% endblock subject %}
+
+{% block text_body %}
+{% trans "You're receiving this email because you need to finish activation process on" %} {{ site_name }}.
+
+{% trans "Please go to the following page to activate account:" %}
+{{ protocol }}://{{ domain }}/{{ url|safe }}
+
+{% trans "Thanks for using our site!" %}
+
+{% trans "Sincerely" %},
+{{ site_name }} Team
+{% endblock text_body %}
+
+{% block html_body %}
+<p>{% trans "You're receiving this email because you need to finish activation process on" %} {{ site_name }}.</p>
+
+<p>{% trans "Please go to the following page to activate account:" %}</p>
+<p><a href="{{ protocol }}://{{ domain }}/{{ url|safe }}">{{ protocol }}://{{ domain }}/{{ url|safe }}</a></p>
+
+<p>{% trans "Thanks for using our site!" %}</p>
+
+<p>{% trans "Sincerely" %},</p>
+<p>{{ site_name }} Team</p>
+{% endblock html_body %}

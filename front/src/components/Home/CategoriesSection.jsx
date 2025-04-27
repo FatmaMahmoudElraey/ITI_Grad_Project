@@ -181,6 +181,7 @@ const CategoriesSection = () => {
                     >
                       {category.name}
                     </Card.Title>
+                    
                     <p className="text-muted small mb-0">{category.count}</p>
                   </Card.Body>
                 </Card>

@@ -16,6 +16,7 @@ import Reviews from "./pages/seller/Reviews.jsx";
 import Inbox from "./pages/seller/Inbox.jsx";
 import Orders from "./pages/seller/Orders.jsx";
 import StoreSettings from "./pages/seller/StoreSettings.jsx";
+import UserProfile from "./pages/UserProfile.jsx";
 
 
 
@@ -39,6 +40,7 @@ function App() {
           <Route path="seller/orders" element={<Orders />} />
           <Route path="seller/reviews" element={<Reviews />} />
           <Route path="seller/inbox" element={<Inbox />} />
+          <Route path="profile" element={<UserProfile />} />
           <Route path="seller/store-settings" element={<StoreSettings />} />
         </Route>
       </Routes>

@@ -1,5 +1,3 @@
-
-
 from pathlib import Path
 from datetime import timedelta
 import os
@@ -41,6 +39,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'djoser',
     'corsheaders',
+    "channels",
     'accounts.apps.AccountsConfig',
     'authsys.apps.AuthsysConfig',
     'products',
@@ -59,6 +58,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+ASGI_APPLICATION = "webify.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
 
 REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']

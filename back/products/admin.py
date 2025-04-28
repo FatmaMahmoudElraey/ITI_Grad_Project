@@ -25,11 +25,20 @@ class ProductAdmin(admin.ModelAdmin):
     raw_id_fields = ('seller',)
     autocomplete_fields = ('tags','category','seller')
 
+@admin.register(ProductImage)
+class ProductImageAdmin(admin.ModelAdmin):
+    list_display = ('product', 'image')
+    search_fields = ('product__title',)
+    list_filter = ('product',)
+    ordering = ('-id',)
+    raw_id_fields = ('product',)
+    autocomplete_fields = ('product',)
+
 
 @admin.register(ProductReview)
 class ProductReviewAdmin(admin.ModelAdmin):
     list_display = ('product', 'user', 'rating', 'created_at')
-    search_fields = ('product__title', 'user__username')
+    search_fields = ('product__title', 'user__name')
     list_filter = ('rating',)
     ordering = ('-created_at',)
     raw_id_fields = ('product', 'user')
@@ -38,7 +47,7 @@ class ProductReviewAdmin(admin.ModelAdmin):
 @admin.register(ProductFlag)
 class ProductFlagAdmin(admin.ModelAdmin):
     list_display = ('product', 'user', 'reason', 'created_at')
-    search_fields = ('product__title', 'user__username')
+    search_fields = ('product__title', 'user__name')
     list_filter = ('reason',)
     ordering = ('-created_at',)
     raw_id_fields = ('product', 'user')

@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions, viewsets
 from django.contrib.auth import get_user_model
-from .serializers import UserSerializer, UserProfileSerializer
-from .models import UserProfile
+from .serializers import UserSerializer, UserProfileSerializer, FavoriteSerializer
+from .models import Favorite
 
 User = get_user_model()
 
@@ -23,3 +23,12 @@ class UserProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
     def perform_update(self, serializer):
         serializer.save(user=self.request.user)
     
+class FavoriteViewSet(viewsets.ModelViewSet):
+    serializer_class = FavoriteSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Favorite.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

@@ -7,9 +7,13 @@ export const ENDPOINTS = {
   LOGIN: `${BASE_URL}/api/auth/jwt/create/`,
   REGISTER: `${BASE_URL}/api/auth/users/`,
   REFRESH_TOKEN: `${BASE_URL}/api/auth/jwt/refresh/`,
+  CUSTOMERS: `${BASE_URL}/api/auth/customers/`,
   USER_DETAILS: `${BASE_URL}/api/auth/users/me/`,
   USER_PROFILE: `${BASE_URL}/api/auth/users/me/profile/`,
   FAVORITES: `${BASE_URL}/api/auth/favorites/`,
+
+  // Chat
+  CHAT_MESSAGES: `${BASE_URL}/api/auth/chat-messages/`,
 
   // Products
   CATEGORIES: `${BASE_URL}/api/categories/`,

@@ -15,7 +15,7 @@ class Cart(models.Model):
 
 
     def __str__(self):
-        return f"{self.user.username}'s cart"
+        return f"{self.user.name}'s cart"
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
@@ -35,7 +35,6 @@ class CartItem(models.Model):
     def save(self, *args, **kwargs):
         if self.quantity <= 0:
             raise ValueError("Quantity must be greater than zero.")
-        self.price = self.product.price
         super().save(*args, **kwargs)
 
 
@@ -56,7 +55,7 @@ class Order(models.Model):
     
     
     def __str__(self):
-        return f"Order #{self.id} by {self.user.username}"
+        return f"Order #{self.id} by {self.user.name}"
     
 
 
@@ -92,4 +91,4 @@ class Subscription(models.Model):
         return self.is_active and self.end_date >= timezone.now()
 
     def __str__(self):
-        return f"{self.user.username} - {self.plan.name}"
+        return f"{self.user.name} - {self.plan.name}"

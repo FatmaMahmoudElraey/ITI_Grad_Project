@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from orders.models import Order
+from products.models import Product
 
 class UserAccountManager(BaseUserManager):
     def create_user(self, email, first_name, last_name, password=None, name=None):
@@ -57,6 +58,16 @@ class UserAccount(AbstractUser):
         self.name = self.get_full_name()
         super().save(*args, **kwargs)
 
+class Favorite(models.Model):
+    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='favorites')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='favorites')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'product')
+
+    def __str__(self):
+        return f"{self.user.email} - {self.product.title}"
 
 class UserProfile(models.Model):
     user = models.OneToOneField(UserAccount, on_delete=models.CASCADE, related_name='userprofile')
@@ -72,3 +83,5 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.email
+    
+

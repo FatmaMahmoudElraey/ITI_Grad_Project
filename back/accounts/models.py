@@ -85,3 +85,28 @@ class UserProfile(models.Model):
         return self.user.email
     
 
+class ChatMessage(models.Model):
+    user = models.ForeignKey(UserAccount, on_delete=models.SET_NULL, null=True, related_name="user")
+    sender = models.ForeignKey(UserAccount, on_delete=models.SET_NULL, null=True, related_name="sender")
+    reciever = models.ForeignKey(UserAccount, on_delete=models.SET_NULL, null=True, related_name="reciever")
+
+    message = models.CharField(max_length=10000000000)
+
+    is_read = models.BooleanField(default=False)
+    date = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['date']
+        verbose_name_plural = "Message"
+
+    def __str__(self):
+        return f"{self.sender} - {self.reciever}"
+
+    @property
+    def sender_profile(self):
+        sender_profile = UserProfile.objects.get(user=self.sender)
+        return sender_profile
+    @property
+    def reciever_profile(self):
+        reciever_profile = UserProfile.objects.get(user=self.reciever)
+        return reciever_profile

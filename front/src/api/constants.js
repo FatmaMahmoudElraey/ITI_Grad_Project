@@ -9,6 +9,7 @@ export const ENDPOINTS = {
   REFRESH_TOKEN: `${BASE_URL}/api/auth/jwt/refresh/`,
   USER_DETAILS: `${BASE_URL}/api/auth/users/me/`,
   USER_PROFILE: `${BASE_URL}/api/auth/users/me/profile/`,
+  FAVORITES: `${BASE_URL}/api/auth/favorites/`,
 
   // Products
   CATEGORIES: `${BASE_URL}/api/categories/`,

@@ -37,7 +37,7 @@ class OrderViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user)
+        return Order.objects.filter(user=self.request.user).prefetch_related('items')
 
     def perform_create(self, serializer):
         cart = Cart.objects.get(user=self.request.user)

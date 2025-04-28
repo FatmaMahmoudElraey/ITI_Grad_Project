@@ -5,9 +5,10 @@ from .models import Category, Tag, Product, ProductReview, ProductFlag, ProductI
 User = get_user_model()
 
 class UserPublicSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='get_full_name', read_only=True)
     class Meta:
         model = User
-        fields = ['id', 'username']
+        fields = ['id', 'name']
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -41,7 +42,7 @@ class ProductFlagSerializer(serializers.ModelSerializer):
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImage
-        fields = ['id', 'image', 'alt_text']
+        fields = ['id', 'image']
 
 class ProductSerializer(serializers.ModelSerializer):
     seller = UserPublicSerializer(read_only=True)
@@ -56,7 +57,7 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = [
             'id', 'seller', 'title', 'description', 'category_name', 'tags_names',
-            'file', 'preview_image', 'preview_video', 'live_demo_url',
+            'file', 'preview_video', 'live_demo_url',
             'price', 'is_in_subscription', 'is_approved',
             'created_at', 'reviews', 'flags', 'images'
         ]

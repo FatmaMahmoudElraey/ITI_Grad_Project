@@ -1,8 +1,10 @@
 from rest_framework import serializers
 from djoser.serializers import UserCreateSerializer
-from .models import UserAccount, UserProfile
+from .models import UserAccount, UserProfile, Favorite
 from django.contrib.auth import get_user_model
 from orders.serializers import OrderSerializer
+from products.serializers import ProductSerializer
+from products.models import Product
 from orders.models import Order
 User = get_user_model()
 
@@ -10,20 +12,27 @@ User = get_user_model()
 class UserCreateSerializer(UserCreateSerializer):
     class Meta(UserCreateSerializer.Meta):
         model = User
-        fields = ('id', 'email', 'name', 'password')#TODO: CHANGE to fname, lname ... etc.
+        fields = ('id', 'email', 'name', 'first_name', 'last_name', 'password')#TODO: CHANGE to fname, lname ... etc.
 
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("id", "email", "name")
+        fields = ("id", "email", "name", "first_name", "last_name", "is_active", "is_staff", "role")
 
 class CustomUserSerializer(UserSerializer):
     class Meta(UserSerializer.Meta):
         model = UserAccount
         fields = ('id', 'email', 'name')
 
+class FavoriteSerializer(serializers.ModelSerializer):
+    user = CustomUserSerializer(read_only=True)
+    product = ProductSerializer(read_only=True)
+
+    class Meta:
+        model = Favorite
+        fields = ('id', 'user', 'product')
 
 class UserProfileSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer(read_only=True)

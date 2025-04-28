@@ -1,179 +1,164 @@
-import React from 'react';
-import { Navbar, Container, NavDropdown, Nav } from 'react-bootstrap';
-import { FiSearch } from 'react-icons/fi'; 
-import { FaArrowRightLong  } from "react-icons/fa6";
-
-import Logo from '../assets/images/navbar/logo.png'; 
+import React, { useState } from 'react';
+import { Navbar, Container, Nav, Form, Button, Modal } from 'react-bootstrap';
+import { FiSearch } from 'react-icons/fi';
+import Logo from '../assets/images/navbar/logo.png';
 import '../assets/css/navbar/style.css';
 
 export default function Header() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    console.log('Searching for:', searchQuery);
+    setShowMobileSearch(false);
+  };
+
+  // Links that we reuse (only one time defined)
+  const navLinks = (
+    <>
+      <Nav.Link href="/about" className="text-light py-2">About Us</Nav.Link>
+      <Nav.Link href="/contact" className="text-light py-2">Contact Us</Nav.Link>
+      <Nav.Link href="#" className="text-light py-2">Sign in</Nav.Link>
+    </>
+  );
+
   return (
     <>
-    <Navbar expand="lg" className="bg-dark text-light py-2">
-      <Container fluid>
-        
-        {/* Logo & Brand Name */}
-        <Navbar.Brand href="/" className="ms-3 text-light fw-bold fs-3 d-flex align-items-center">
-          <img
-            alt=""
-            src={Logo}
-            width="45"
-            height="35"
-            className="d-inline-block align-top me-2"
-          />
-          <span>WEBIFY</span>
-        </Navbar.Brand>
+      {/* Top Navbar */}
+      <Navbar expand="lg" bg="dark" data-bs-theme="dark" className="bg-dark text-light py-2 top-navbar">
+        <Container fluid>
+          {/* Mobile Header - visible only on small screens */}
+          <div className="d-flex d-lg-none w-100 align-items-center">
+            {/* Logo on left */}
+            <Navbar.Brand href="/" className="text-light fw-bold d-flex align-items-center me-auto">
+              <img
+                alt="Logo"
+                src={Logo}
+                width="30"
+                height="24"
+                className="d-inline-block align-top"
+              />
+            </Navbar.Brand>
 
-        {/* Navbar Toggle for Mobile */}
-        <Navbar.Toggle aria-controls="navbarScroll" className="border-0 bg-transparent" />
-
-        <Navbar.Collapse id="navbarScroll" className="justify-content-between">
-          
-          {/* Search Box with Dropdown & Icon */}
-          <div className="search-wrapper mx-auto">
-            <div className="d-flex align-items-center  dropdown-search">
-              <NavDropdown title="All Items" id="navbarScrollingDropdown" className="px-2 items ">
-                <NavDropdown.Item href="#action3" className='bg-dark text-light'>All Items</NavDropdown.Item>
-                <NavDropdown.Item href="#action4" className='bg-dark text-light'>Stock Video</NavDropdown.Item>
-                <NavDropdown.Item href="#action4" className='bg-dark text-light'>Video Templates</NavDropdown.Item>
-                <NavDropdown.Item href="#action4" className='bg-dark text-light'>Music</NavDropdown.Item>
-                <NavDropdown.Item href="#action4" className='bg-dark text-light'>Sound Effects</NavDropdown.Item>
-                <NavDropdown.Item href="#action4" className='bg-dark text-light'>Graphic Templates</NavDropdown.Item>
-                <NavDropdown.Item href="#action4" className='bg-dark text-light'>Graphics</NavDropdown.Item>
-                <NavDropdown.Item href="#action4" className='bg-dark text-light'>3D</NavDropdown.Item>
-                <NavDropdown.Item href="#action4" className='bg-dark text-light'>Presentation Templates</NavDropdown.Item>
-                <NavDropdown.Item href="#action4" className='bg-dark text-light'>Photos</NavDropdown.Item>
-                <NavDropdown.Item href="#action4" className='bg-dark text-light'>Fonts</NavDropdown.Item>
-                <NavDropdown.Item href="#action4" className='bg-dark text-light'>Add-ons</NavDropdown.Item>
-                <NavDropdown.Item href="#action4" className='bg-dark text-light'>Web Templates</NavDropdown.Item>
-                <NavDropdown.Item href="#action4" className='bg-dark text-light'>CMS Templates</NavDropdown.Item>
-                <NavDropdown.Item href="#action5" className='bg-dark text-light'>WordPress</NavDropdown.Item>
-              </NavDropdown>
-
-              <div className="search-container">
-                <FiSearch className="search-icon" />
-                <input 
-                  type="text" 
-                  placeholder="Search" 
-                  className="form-control search-box px-3" 
-                  aria-label="Search" 
-                />
-              </div>
+            {/* Centered search and button */}
+            <div className="d-flex align-items-center mobile-center-group">
+              <FiSearch 
+                className="text-light me-3 mobile-search-icon" 
+                size={20} 
+                onClick={() => setShowMobileSearch(true)}
+              />
+              <Button variant="primary" className="header-button mobile-button" size="sm">
+                Get unlimited downloads
+              </Button>
             </div>
+
+            {/* Burger menu on right */}
+            <Navbar.Toggle aria-controls="mainNavbar" className="border-0 bg-transparent ms-2" />
           </div>
 
-          {/* Right-side Links */}
-          <Nav className="d-flex align-items-center">
-            <Nav.Link href="/about" className="text-light me-3">AboutUs</Nav.Link>
-            <Nav.Link href="/contact" className="text-light me-3">ContactUs</Nav.Link>
-            <button className="header-button" style={{ backgroundColor: '#660ff1', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px' }}>
-              Get unlimited downloads
-            </button>
-            <a className="sign-in mx-3 text-decoration-none text-light" href="#">Sign in</a>
-          </Nav>
+          {/* Desktop Layout - visible only on large screens */}
+          <div className="d-none d-lg-flex w-100 align-items-center">
+            <Navbar.Brand href="/" className="text-light fw-bold fs-4 d-flex align-items-center me-3">
+              <img
+                alt="Logo"
+                src={Logo}
+                width="40"
+                height="32"
+                className="d-inline-block align-top me-2"
+              />
+              <span>WEBIFY</span>
+            </Navbar.Brand>
 
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
-    
-    <Navbar bg="dark" data-bs-theme="dark">
-          <Nav className="me-auto ms-2">
-          <NavDropdown  onClick={(e) => e.preventDefault()} title="Stock Video" id="stockVideoDropdown" className="link text-light">
-            <NavDropdown.Item href="#action1">Stock Footage</NavDropdown.Item>
-            <NavDropdown.Item href="#action2">Motion Graphics</NavDropdown.Item>
-            <NavDropdown.Item href="#action3">All Stock Video <FaArrowRightLong className='ms-2' /></NavDropdown.Item>
-          </NavDropdown>
-          <NavDropdown  onClick={(e) => e.preventDefault()} title="Video Templates" id="videoTemplatesDropdown" className="link text-light">
-            <NavDropdown.Item href="#action1">After Effects</NavDropdown.Item>
-            <NavDropdown.Item href="#action2">Premiere Pro</NavDropdown.Item>
-            <NavDropdown.Item href="#action3">Apple Motion</NavDropdown.Item>
-            <NavDropdown.Item href="#action4">Find Cut Pro</NavDropdown.Item>
-            <NavDropdown.Item href="#action5">DeVinci Resolve</NavDropdown.Item>
-            <NavDropdown.Item href="#action6">All Video Templates <FaArrowRightLong className='ms-2' /></NavDropdown.Item>
-          </NavDropdown>
-          <NavDropdown  onClick={(e) => e.preventDefault()} title="Music" id="musicDropdown" className="link text-light">
-            <NavDropdown.Item href="#action1">Royalty-Free Music</NavDropdown.Item>
-            <NavDropdown.Item href="#action2">Logos & Idents</NavDropdown.Item>
-            <NavDropdown.Item href="#action3">All Music <FaArrowRightLong className='ms-2' /></NavDropdown.Item>
-          </NavDropdown>
-          <NavDropdown  onClick={(e) => e.preventDefault()} title="Sound Effects" id="stockVideoDropdown" className="link text-light">
-            <NavDropdown.Item href="#action1">Game Sounds</NavDropdown.Item>
-            <NavDropdown.Item href="#action2">Transitions & Movement</NavDropdown.Item>
-            <NavDropdown.Item href="#action3">Domestic Sounds</NavDropdown.Item>
-            <NavDropdown.Item href="#action3">Human Sounds</NavDropdown.Item>
-            <NavDropdown.Item href="#action3">Urban Sounds</NavDropdown.Item>
-            <NavDropdown.Item href="#action3">Natural Sounds</NavDropdown.Item>
-            <NavDropdown.Item href="#action3">Futuristic Sounds</NavDropdown.Item>
-            <NavDropdown.Item href="#action3">Interface Sounds</NavDropdown.Item>
-            <NavDropdown.Item href="#action3">Cartoon Sounds</NavDropdown.Item>
-            <NavDropdown.Item href="#action3">Industrial Sounds</NavDropdown.Item>
-            <NavDropdown.Item href="#action3">Sounds Packs</NavDropdown.Item>
-            <NavDropdown.Item href="#action3">Miscellaneous</NavDropdown.Item>
-            <NavDropdown.Item href="#action3">Sound</NavDropdown.Item>
-            <NavDropdown.Item href="#action3">All Sound Effects <FaArrowRightLong className='ms-2' /></NavDropdown.Item>
-          </NavDropdown>
-          <NavDropdown  onClick={(e) => e.preventDefault()} title="Graphic Templates" id="videoTemplatesDropdown" className="link text-light">
-            <NavDropdown.Item href="#action1">Adobe Photoshope</NavDropdown.Item>
-            <NavDropdown.Item href="#action1">Adobe Illustrator</NavDropdown.Item>
-            <NavDropdown.Item href="#action1">Adobe InDesign</NavDropdown.Item>
-            <NavDropdown.Item href="#action1">Adobe XD</NavDropdown.Item>
-            <NavDropdown.Item href="#action2">Figma</NavDropdown.Item>
-            <NavDropdown.Item href="#action2">Sketch</NavDropdown.Item>
-            <NavDropdown.Item href="#action2">Canva</NavDropdown.Item>
-            <NavDropdown.Item href="#action2">Microsoft Word</NavDropdown.Item>
-            <NavDropdown.Item href="#action3">All Graphic Templates <FaArrowRightLong className='ms-2' /></NavDropdown.Item>
-          </NavDropdown>
-          <NavDropdown  onClick={(e) => e.preventDefault()} title="Graphics" id="musicDropdown" className="link text-light">
-            <NavDropdown.Item href="#action1">Backgrounds</NavDropdown.Item>
-            <NavDropdown.Item href="#action2">Textures</NavDropdown.Item>
-            <NavDropdown.Item href="#action2">Social</NavDropdown.Item>
-            <NavDropdown.Item href="#action2">Patterns</NavDropdown.Item>
-            <NavDropdown.Item href="#action2">Icons</NavDropdown.Item>
-            <NavDropdown.Item href="#action2">Objects</NavDropdown.Item>
-            <NavDropdown.Item href="#action2">Illustrations</NavDropdown.Item>
-            <NavDropdown.Item href="#action3">All Graphics <FaArrowRightLong className='ms-2' /></NavDropdown.Item>
-          </NavDropdown>
-          <NavDropdown  onClick={(e) => e.preventDefault()} title="3D" id="stockVideoDropdown" className="link text-light">
-            <NavDropdown.Item href="#action1">Models</NavDropdown.Item>
-            <NavDropdown.Item href="#action2">Templates</NavDropdown.Item>
-            <NavDropdown.Item href="#action2">Renders</NavDropdown.Item>
-            <NavDropdown.Item href="#action3">All 3D <FaArrowRightLong className='ms-2' /></NavDropdown.Item>
-          </NavDropdown>
-          <NavDropdown  onClick={(e) => e.preventDefault()} title="Presentaion Templates" id="videoTemplatesDropdown" className="link text-light">
-            <NavDropdown.Item href="#action1">Keynote</NavDropdown.Item>
-            <NavDropdown.Item href="#action2">PowerPoint</NavDropdown.Item>
-            <NavDropdown.Item href="#action2">Google Slides</NavDropdown.Item>
-            <NavDropdown.Item href="#action3">All Presentaion Templates <FaArrowRightLong className='ms-2' /></NavDropdown.Item>
-          </NavDropdown>
-          <Nav.Link href="#pricing" className='link'>Photos</Nav.Link>
-          <NavDropdown  onClick={(e) => e.preventDefault()} title="Fonts" id="stockVideoDropdown" className="link text-light">
-            <NavDropdown.Item href="#action1">Serif</NavDropdown.Item>
-            <NavDropdown.Item href="#action2">Sans-Serif</NavDropdown.Item>
-            <NavDropdown.Item href="#action2">Script and Handwritten</NavDropdown.Item>
-            <NavDropdown.Item href="#action2">Decorative</NavDropdown.Item>
-            <NavDropdown.Item href="#action3">All Fonts <FaArrowRightLong className='ms-2' /></NavDropdown.Item>
-          </NavDropdown>
-          <NavDropdown  onClick={(e) => e.preventDefault()} title="Add-ons" id="videoTemplatesDropdown" className="link text-light">
-            <NavDropdown.Item href="#action1">Adobe Photoshop</NavDropdown.Item>
-            <NavDropdown.Item href="#action1">Adobe Lightroom</NavDropdown.Item>
-            <NavDropdown.Item href="#action1">Adobe Illustrator</NavDropdown.Item>
-            <NavDropdown.Item href="#action2">Procreate</NavDropdown.Item>
-            <NavDropdown.Item href="#action3">All Add-ons <FaArrowRightLong className='ms-2' /></NavDropdown.Item>
-          </NavDropdown>
-          <NavDropdown  onClick={(e) => e.preventDefault()} title="More" id="musicDropdown" className="link text-light">
-            <NavDropdown.Item href="#action1">Web Templates <FaArrowRightLong className='ms-2' /></NavDropdown.Item>
-            <NavDropdown.Item href="#action1">CMS Templates <FaArrowRightLong className='ms-2' /></NavDropdown.Item>
-            <NavDropdown.Item href="#action2">WordPress <FaArrowRightLong className='ms-2' /></NavDropdown.Item>
-            <NavDropdown.Item href="#action3">Extensions <FaArrowRightLong className='ms-2' /></NavDropdown.Item>
-            <NavDropdown.Item href="#action3">Free Files </NavDropdown.Item>
-            <NavDropdown.Item href="#action3">Popular Searches</NavDropdown.Item>
-          </NavDropdown>
-            
-          </Nav>
-          <Nav.Link href="#pricing" className='me-5 learn text-light'>Learn</Nav.Link>
+            {/* Search Box */}
+            <Form onSubmit={handleSearch} className="search-wrapper flex-grow-1 mx-3">
+              <div className="d-flex align-items-center dropdown-search w-100">
+                <div className="search-container position-relative flex-grow-1">
+                  <FiSearch className="search-icon position-absolute top-50 translate-middle-y end-0 me-2" />
+                  <Form.Control
+                    type="search"
+                    placeholder="Search for items..."
+                    className="search-box ps-3 pe-4"
+                    aria-label="Search"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+            </Form>
 
+            {/* Right-side Links */}
+            <Nav className="d-flex align-items-center">
+              {navLinks}
+              <Button variant="primary" className="header-button ms-3">
+                Get unlimited downloads
+              </Button>
+            </Nav>
+          </div>
+
+          {/* Mobile Collapsible Menu */}
+          <Navbar.Collapse id="mainNavbar" className="d-lg-none mt-2">
+            <Nav className="flex-column  d-lg-none">
+              {navLinks}
+            </Nav>
+          </Navbar.Collapse>
+        </Container>
       </Navbar>
-    <></>
+
+      {/* Mobile Search Modal */}
+      <Modal 
+        show={showMobileSearch} 
+        onHide={() => setShowMobileSearch(false)}
+        className="mobile-search-modal"
+      >
+        <Modal.Header closeButton className="bg-dark text-light border-0">
+          <Modal.Title>Search</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="bg-dark">
+          <Form onSubmit={handleSearch}>
+            <div className="search-container position-relative">
+              <FiSearch className="search-icon position-absolute top-50 translate-middle-y start-0 ms-3" />
+              <Form.Control
+                type="search"
+                placeholder="Search for items..."
+                className="search-box ps-5"
+                aria-label="Search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <Button 
+              variant="primary" 
+              type="submit" 
+              className="w-100 mt-3 header-button"
+            >
+              Search
+            </Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
+
+      {/* Bottom Navbar */}
+      <Navbar expand="lg" bg="dark" data-bs-theme="dark" className="second-navbar py-1">
+        <Container fluid>
+          <Navbar.Toggle aria-controls="secondNavbar" className="border-0 bg-transparent ms-auto" />
+          <Navbar.Collapse id="secondNavbar">
+            <Nav className="me-auto flex-wrap">
+              <Nav.Link href="#stock-video" className="link text-light mx-lg-1 mx-xl-2">Stock Video</Nav.Link>
+              <Nav.Link href="#video-templates" className="link text-light mx-lg-1 mx-xl-2">Video Templates</Nav.Link>
+              <Nav.Link href="#music" className="link text-light mx-lg-1 mx-xl-2">Music</Nav.Link>
+              <Nav.Link href="#sound-effects" className="link text-light mx-lg-1 mx-xl-2">Sound Effects</Nav.Link>
+              <Nav.Link href="#graphic-templates" className="link text-light mx-lg-1 mx-xl-2">Graphic Templates</Nav.Link>
+              <Nav.Link href="#graphics" className="link text-light mx-lg-1 mx-xl-2">Graphics</Nav.Link>
+              <Nav.Link href="#3d" className="link text-light mx-lg-1 mx-xl-2">3D</Nav.Link>
+              <Nav.Link href="#presentation-templates" className="link text-light mx-lg-1 mx-xl-2">Presentation Templates</Nav.Link>
+              <Nav.Link href="#add-ons" className="link text-light mx-lg-1 mx-xl-2">Add-ons</Nav.Link>
+              <Nav.Link href="#more" className="link text-light mx-lg-1 mx-xl-2">More</Nav.Link>
+            </Nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
     </>
   );
 }

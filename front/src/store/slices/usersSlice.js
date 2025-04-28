@@ -13,6 +13,7 @@ const initialState = {
   userDetails: null,
   userProfile: null,
   purchasedProducts: [],
+  userFavorites: [],
   loading: false,
   error: null,
   success: null,
@@ -40,6 +41,17 @@ export const fetchUserDetails = createAsyncThunk(
   }
 );
 
+export const fetchUserFavorites = createAsyncThunk(
+  'users/fetchFavorites',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get(ENDPOINTS.FAVORITES);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch user favorites');
+    }
+  }
+);
 export const fetchUserProfile = createAsyncThunk(
   'users/fetchProfile',
   async (_, { rejectWithValue }) => {
@@ -111,6 +123,21 @@ const usersSlice = createSlice({
       .addCase(fetchUserProfile.pending, (state) => {
         state.loading = true;
         state.error = null;
+      })
+      // Handle fetchUserFavorites
+      .addCase(fetchUserFavorites.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserFavorites.fulfilled, (state, action) => {
+        state.loading = false;
+        // Save the favorites somewhere in the state
+        state.userFavorites = action.payload;
+        state.success = 'Favorites fetched successfully';
+      })
+      .addCase(fetchUserFavorites.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       })
       .addCase(fetchUserProfile.fulfilled, (state, action) => {
         state.loading = false;

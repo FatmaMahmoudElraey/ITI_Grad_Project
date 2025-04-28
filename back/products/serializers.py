@@ -42,7 +42,7 @@ class ProductFlagSerializer(serializers.ModelSerializer):
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImage
-        fields = ['id', 'image', 'alt_text']
+        fields = ['id', 'image']
 
 class ProductSerializer(serializers.ModelSerializer):
     seller = UserPublicSerializer(read_only=True)

@@ -4,6 +4,8 @@ import SharedLayout from './sharedlayout/SharedLayout.jsx';
 import { Home } from "./pages/Home.jsx";
 import AboutUs from "./pages/AboutUs.jsx";
 import ContactUs from "./pages/ContactUs.jsx";
+import RegisterPage from "./pages/RegisterPage.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
 
 // Import Seller Pages
 import Dashboard from "./pages/seller/Dashboard.jsx";
@@ -17,6 +19,8 @@ import Inbox from "./pages/seller/Inbox.jsx";
 import Orders from "./pages/seller/Orders.jsx";
 import StoreSettings from "./pages/seller/StoreSettings.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
+import Chat from "./pages/Chat.jsx";
+import ChatPage from "./pages/Users.jsx";
 
 
 
@@ -41,6 +45,10 @@ function App() {
           <Route path="seller/reviews" element={<Reviews />} />
           <Route path="seller/inbox" element={<Inbox />} />
           <Route path="profile" element={<UserProfile />} />
+          <Route path="register" element={<RegisterPage />} />
+          <Route path="login" element={<LoginPage />} />
+          <Route path="users" element={<ChatPage />} />
+          <Route path="chat" element={<Chat />} />
           <Route path="seller/store-settings" element={<StoreSettings />} />
         </Route>
       </Routes>

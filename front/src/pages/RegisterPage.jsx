@@ -10,7 +10,8 @@ export default function RegisterPage() {
     email: '',
     password: '',
     confirmPassword: '',
-    phone_number: ''
+    phone_number: '',
+    role: 'user'
   });
   const [formErrors, setFormErrors] = useState({});
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
@@ -247,6 +248,25 @@ export default function RegisterPage() {
                           />
                           {formErrors.phone_number && (
                             <div className="invalid-feedback">{formErrors.phone_number}</div>
+                          )}
+                        </div>
+
+                        <div className='form-outline mb-4'>
+                          <label className='form-label' htmlFor="role">
+                            Role
+                          </label>
+                          <select
+                            id="role"
+                            name="role"
+                            value={formData.role}
+                            onChange={handleChange}
+                            className={`form-select form-select-lg ${formErrors.role ? 'is-invalid' : ''}`}
+                          >
+                            <option value="user">User</option>
+                            <option value="seller">Seller</option>
+                          </select>
+                          {formErrors.role && (
+                            <div className="invalid-feedback">{formErrors.role}</div>
                           )}
                         </div>
 

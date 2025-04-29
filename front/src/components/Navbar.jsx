@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Navbar, Container, Nav, Form, Button, Modal, Badge } from 'react-bootstrap';
-import { FiSearch, FiShoppingCart } from 'react-icons/fi';
+import { Navbar, Container, Nav, Form, Button, Modal, Badge, Offcanvas } from 'react-bootstrap';
+import { FiSearch, FiShoppingCart, FiMenu, FiX, FiUser } from 'react-icons/fi';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import Logo from '../assets/images/navbar/logo.png';
@@ -9,8 +9,24 @@ import '../assets/css/navbar/style.css';
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [showOffcanvas, setShowOffcanvas] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
   const { items, totalQuantity } = useSelector((state) => state.cart);
+  
+  // Handle scroll effect for navbar
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -21,21 +37,33 @@ export default function Header() {
   // Links that we reuse (only one time defined)
   const navLinks = (
     <>
-      <Nav.Link href="/about" className="text-light py-2">About Us</Nav.Link>
-      <Nav.Link href="/contact" className="text-light py-2">Contact Us</Nav.Link>
-      <Nav.Link href="/login" className="text-light py-2">Sign in</Nav.Link>
-      <Nav.Link as={Link} to="/cart" className="text-light py-2 me-2 position-relative">
-        <FiShoppingCart size={20} />
-        {totalQuantity > 0 && (
-          <Badge 
-            pill 
-            bg="danger" 
-            className="position-absolute" 
-            style={{ top: '0', right: '-5px', fontSize: '0.6rem' }}
-          >
-            {totalQuantity}
-          </Badge>
-        )}
+      <Nav.Link as={Link} to="/about" className="nav-link-item">
+        <span>About Us</span>
+      </Nav.Link>
+      <Nav.Link as={Link} to="/contact" className="nav-link-item">
+        <span>Contact Us</span>
+      </Nav.Link>
+      <Nav.Link as={Link} to="/login" className="nav-link-item">
+        <div className="d-flex align-items-center">
+          <FiUser className="me-1" />
+          <span>Sign in</span>
+        </div>
+      </Nav.Link>
+      <Nav.Link as={Link} to="/cart" className="nav-link-item position-relative">
+        <div className="d-flex align-items-center">
+          <FiShoppingCart size={20} />
+          <span className="ms-1 d-none d-lg-inline">Cart</span>
+          {totalQuantity > 0 && (
+            <Badge 
+              pill 
+              bg="danger" 
+              className="position-absolute" 
+              style={{ top: '-5px', right: '-8px', fontSize: '0.6rem' }}
+            >
+              {totalQuantity}
+            </Badge>
+          )}
+        </div>
       </Nav.Link>
     </>
   );
@@ -43,74 +71,37 @@ export default function Header() {
   return (
     <>
       {/* Top Navbar */}
-      <Navbar expand="lg" bg="dark" data-bs-theme="dark" className="bg-dark text-light py-2 top-navbar">
+      <Navbar 
+        expand="lg" 
+        bg="dark" 
+        data-bs-theme="dark" 
+        className={`bg-dark text-light py-2 top-navbar ${isScrolled ? 'navbar-scrolled' : ''}`}
+        fixed="top"
+      >
         <Container fluid>
-          {/* Mobile Header - visible only on small screens */}
-          <div className="d-flex d-lg-none w-100 align-items-center">
-            {/* Logo on left */}
-            <Navbar.Brand href="/" className="text-light fw-bold d-flex align-items-center me-auto">
+          {/* Mobile Header */}
+          <div className="d-flex w-100 align-items-center justify-content-between">
+            {/* Logo */}
+            <Navbar.Brand as={Link} to="/" className="text-light fw-bold d-flex align-items-center">
               <img
                 alt="Logo"
                 src={Logo}
                 width="30"
                 height="24"
-                className="d-inline-block align-top"
-              />
-            </Navbar.Brand>
-
-            {/* Centered search and button */}
-            <div className="d-flex align-items-center mobile-center-group">
-              <div className="d-flex align-items-center">
-                <FiSearch 
-                  className="text-light me-3 mobile-search-icon" 
-                  size={20} 
-                  onClick={() => setShowMobileSearch(true)}
-                />
-                <Nav.Link as={Link} to="/cart" className="text-light me-3 position-relative">
-                  <FiShoppingCart size={20} />
-                  {totalQuantity > 0 && (
-                    <Badge 
-                      pill 
-                      bg="danger" 
-                      className="position-absolute" 
-                      style={{ top: '-5px', right: '-8px', fontSize: '0.6rem' }}
-                    >
-                      {totalQuantity}
-                    </Badge>
-                  )}
-                </Nav.Link>
-              </div>
-              <Button variant="primary" className="header-button mobile-button" size="sm">
-                Get unlimited downloads
-              </Button>
-            </div>
-
-            {/* Burger menu on right */}
-            <Navbar.Toggle aria-controls="mainNavbar" className="border-0 bg-transparent ms-2" />
-          </div>
-
-          {/* Desktop Layout - visible only on large screens */}
-          <div className="d-none d-lg-flex w-100 align-items-center">
-            <Navbar.Brand href="/" className="text-light fw-bold fs-4 d-flex align-items-center me-3">
-              <img
-                alt="Logo"
-                src={Logo}
-                width="40"
-                height="32"
                 className="d-inline-block align-top me-2"
               />
-              <span>WEBIFY</span>
+              <span className="brand-text">WEBIFY</span>
             </Navbar.Brand>
 
-            {/* Search Box */}
-            <Form onSubmit={handleSearch} className="search-wrapper flex-grow-1 mx-3">
+            {/* Desktop Search Box - visible only on large screens */}
+            <Form onSubmit={handleSearch} className="search-wrapper flex-grow-1 mx-4 d-none d-lg-block">
               <div className="d-flex align-items-center dropdown-search w-100">
                 <div className="search-container position-relative flex-grow-1">
-                  <FiSearch className="search-icon position-absolute top-50 translate-middle-y end-0 me-2" />
+                  <FiSearch className="search-icon position-absolute top-50 translate-middle-y start-0 ms-3" />
                   <Form.Control
                     type="search"
                     placeholder="Search for items..."
-                    className="search-box ps-3 pe-4"
+                    className="search-box ps-5 pe-3 rounded-pill"
                     aria-label="Search"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -119,23 +110,43 @@ export default function Header() {
               </div>
             </Form>
 
-            {/* Right-side Links */}
-            <Nav className="d-flex align-items-center">
+            {/* Desktop Navigation Links - visible only on large screens */}
+            <Nav className="ms-auto d-none d-lg-flex align-items-center">
               {navLinks}
-              <div className="d-flex align-items-center">
-                <Button variant="primary" className="header-button">
-                  Get unlimited downloads
-                </Button>
-              </div>
+              <Button variant="primary" className="header-button ms-2 rounded-pill">
+                Get unlimited downloads
+              </Button>
             </Nav>
-          </div>
 
-          {/* Mobile Collapsible Menu */}
-          <Navbar.Collapse id="mainNavbar" className="d-lg-none mt-2">
-            <Nav className="flex-column  d-lg-none">
-              {navLinks}
-            </Nav>
-          </Navbar.Collapse>
+            {/* Mobile Controls */}
+            <div className="d-flex d-lg-none align-items-center">
+              <FiSearch 
+                className="text-light mx-2 mobile-icon" 
+                size={22} 
+                onClick={() => setShowMobileSearch(true)}
+              />
+              <Nav.Link as={Link} to="/cart" className="text-light mx-2 position-relative p-0">
+                <FiShoppingCart size={22} />
+                {totalQuantity > 0 && (
+                  <Badge 
+                    pill 
+                    bg="danger" 
+                    className="position-absolute" 
+                    style={{ top: '-5px', right: '-8px', fontSize: '0.6rem' }}
+                  >
+                    {totalQuantity}
+                  </Badge>
+                )}
+              </Nav.Link>
+              <Button 
+                variant="link" 
+                className="text-light p-0 ms-2 border-0" 
+                onClick={() => setShowOffcanvas(true)}
+              >
+                <FiMenu size={24} />
+              </Button>
+            </div>
+          </div>
         </Container>
       </Navbar>
 
@@ -144,6 +155,8 @@ export default function Header() {
         show={showMobileSearch} 
         onHide={() => setShowMobileSearch(false)}
         className="mobile-search-modal"
+        centered
+        animation
       >
         <Modal.Header closeButton className="bg-dark text-light border-0">
           <Modal.Title>Search</Modal.Title>
@@ -155,7 +168,7 @@ export default function Header() {
               <Form.Control
                 type="search"
                 placeholder="Search for items..."
-                className="search-box ps-5"
+                className="search-box ps-5 rounded-pill"
                 aria-label="Search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -165,34 +178,94 @@ export default function Header() {
             <Button 
               variant="primary" 
               type="submit" 
-              className="w-100 mt-3 header-button"
+              className="w-100 mt-3 header-button rounded-pill"
             >
               Search
             </Button>
           </Form>
         </Modal.Body>
       </Modal>
+      
+      {/* Mobile Offcanvas Menu */}
+      <Offcanvas 
+        show={showOffcanvas} 
+        onHide={() => setShowOffcanvas(false)} 
+        placement="end"
+        className="bg-dark text-light"
+      >
+        <Offcanvas.Header className="border-bottom border-secondary">
+          <Offcanvas.Title className="d-flex align-items-center">
+            <img
+              alt="Logo"
+              src={Logo}
+              width="30"
+              height="24"
+              className="d-inline-block align-top me-2"
+            />
+            <span className="fw-bold">WEBIFY</span>
+          </Offcanvas.Title>
+          <Button 
+            variant="link" 
+            className="text-light p-0 border-0" 
+            onClick={() => setShowOffcanvas(false)}
+          >
+            <FiX size={24} />
+          </Button>
+        </Offcanvas.Header>
+        <Offcanvas.Body>
+          <Nav className="flex-column mb-4">
+            {navLinks}
+          </Nav>
+          <Button variant="primary" className="w-100 header-button rounded-pill mb-3">
+            Get unlimited downloads
+          </Button>
+          
+          <div className="mt-4 pt-3 border-top border-secondary">
+            <h6 className="text-light mb-3">Categories</h6>
+            <Nav className="flex-column">
+              <Nav.Link as={Link} to="/shop" className="mobile-category-link py-2">Shop</Nav.Link>
+              <Nav.Link as={Link} to="#video-templates" className="mobile-category-link py-2">Video Templates</Nav.Link>
+              <Nav.Link as={Link} to="#music" className="mobile-category-link py-2">Music</Nav.Link>
+              <Nav.Link as={Link} to="#sound-effects" className="mobile-category-link py-2">Sound Effects</Nav.Link>
+              <Nav.Link as={Link} to="#graphic-templates" className="mobile-category-link py-2">Graphic Templates</Nav.Link>
+              <Nav.Link as={Link} to="#graphics" className="mobile-category-link py-2">Graphics</Nav.Link>
+              <Nav.Link as={Link} to="#3d" className="mobile-category-link py-2">3D</Nav.Link>
+              <Nav.Link as={Link} to="#presentation-templates" className="mobile-category-link py-2">Presentation Templates</Nav.Link>
+              <Nav.Link as={Link} to="#add-ons" className="mobile-category-link py-2">Add-ons</Nav.Link>
+              <Nav.Link as={Link} to="#more" className="mobile-category-link py-2">More</Nav.Link>
+            </Nav>
+          </div>
+        </Offcanvas.Body>
+      </Offcanvas>
 
-      {/* Bottom Navbar */}
-      <Navbar expand="lg" bg="dark" data-bs-theme="dark" className="second-navbar py-1">
+      {/* Bottom Navbar - Categories - Only visible on desktop */}
+      <Navbar 
+        expand="lg" 
+        bg="dark" 
+        data-bs-theme="dark" 
+        className={`second-navbar py-1 d-none d-lg-block ${isScrolled ? 'second-navbar-scrolled' : ''}`}
+        style={{ marginTop: '56px' }}
+      >
         <Container fluid>
-          <Navbar.Toggle aria-controls="secondNavbar" className="border-0 bg-transparent ms-auto" />
           <Navbar.Collapse id="secondNavbar">
-            <Nav className="me-auto flex-wrap">
-              <Nav.Link href="/shop" className="link text-light mx-lg-1 mx-xl-2">Shop</Nav.Link>
-              <Nav.Link href="#video-templates" className="link text-light mx-lg-1 mx-xl-2">Video Templates</Nav.Link>
-              <Nav.Link href="#music" className="link text-light mx-lg-1 mx-xl-2">Music</Nav.Link>
-              <Nav.Link href="#sound-effects" className="link text-light mx-lg-1 mx-xl-2">Sound Effects</Nav.Link>
-              <Nav.Link href="#graphic-templates" className="link text-light mx-lg-1 mx-xl-2">Graphic Templates</Nav.Link>
-              <Nav.Link href="#graphics" className="link text-light mx-lg-1 mx-xl-2">Graphics</Nav.Link>
-              <Nav.Link href="#3d" className="link text-light mx-lg-1 mx-xl-2">3D</Nav.Link>
-              <Nav.Link href="#presentation-templates" className="link text-light mx-lg-1 mx-xl-2">Presentation Templates</Nav.Link>
-              <Nav.Link href="#add-ons" className="link text-light mx-lg-1 mx-xl-2">Add-ons</Nav.Link>
-              <Nav.Link href="#more" className="link text-light mx-lg-1 mx-xl-2">More</Nav.Link>
+            <Nav className="mx-auto flex-wrap justify-content-center">
+              <Nav.Link as={Link} to="/shop" className="category-link mx-2">Shop</Nav.Link>
+              <Nav.Link as={Link} to="#video-templates" className="category-link mx-2">Video Templates</Nav.Link>
+              <Nav.Link as={Link} to="#music" className="category-link mx-2">Music</Nav.Link>
+              <Nav.Link as={Link} to="#sound-effects" className="category-link mx-2">Sound Effects</Nav.Link>
+              <Nav.Link as={Link} to="#graphic-templates" className="category-link mx-2">Graphic Templates</Nav.Link>
+              <Nav.Link as={Link} to="#graphics" className="category-link mx-2">Graphics</Nav.Link>
+              <Nav.Link as={Link} to="#3d" className="category-link mx-2">3D</Nav.Link>
+              <Nav.Link as={Link} to="#presentation-templates" className="category-link mx-2">Presentation Templates</Nav.Link>
+              <Nav.Link as={Link} to="#add-ons" className="category-link mx-2">Add-ons</Nav.Link>
+              <Nav.Link as={Link} to="#more" className="category-link mx-2">More</Nav.Link>
             </Nav>
           </Navbar.Collapse>
         </Container>
       </Navbar>
+      
+      {/* Spacer for fixed navbar on mobile */}
+      <div className="navbar-spacer d-lg-none" style={{ height: '56px' }}></div>
     </>
   );
 }

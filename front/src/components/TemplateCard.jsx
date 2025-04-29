@@ -4,18 +4,22 @@ import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { FiStar, FiHeart } from 'react-icons/fi';
 import '../styles/TemplateCard.css';
+// Import addToCart action if available
+// import { addToCart } from '../store/slices/cartSlice';
 
-const TemplateCard = ({ 
-  id, 
-  title, 
-  description, 
-  price, 
-  sale_price, 
-  preview_image, 
-  reviews = [], 
-  tags = [],
-  category 
-}) => {
+const TemplateCard = (product) => {
+  // Extract properties from product with defaults
+  const {
+    id,
+    title,
+    description,
+    price,
+    sale_price,
+    reviews = [],
+    images = [],
+    category_name,
+    tags_names = []
+  } = product;
   const [isFavorite, setIsFavorite] = useState(false);
   const dispatch = useDispatch();
 
@@ -26,14 +30,19 @@ const TemplateCard = ({
   };
 
   const handleAddToCart = () => {
-    dispatch(addToCart({
-      id: Date.now(),
-      template_id: id,
-      quantity: 1,
-      price: sale_price || price,
-      title,
-      image: preview_image
-    }));
+    // Check if addToCart action is imported
+    if (typeof addToCart !== 'undefined') {
+      dispatch(addToCart({
+        id: Date.now(),
+        template_id: id,
+        quantity: 1,
+        price: sale_price || price,
+        title,
+        image: images && images.length > 0 ? images[0].image : null,
+      }));
+    } else {
+      
+    }
   };
 
   const averageRating = reviews.length > 0 
@@ -56,7 +65,7 @@ const TemplateCard = ({
       <div className="position-relative">
         <Card.Img 
           variant="top" 
-          src={preview_image || '/placeholder-image.jpg'}
+          src={images && images.length > 0 ? images[0].image : '/placeholder-image.jpg'}
           style={{ height: '200px', objectFit: 'cover' }}
           onError={(e) => {
             if (!e.target.getAttribute('data-error-handled')) {
@@ -65,12 +74,14 @@ const TemplateCard = ({
             }
           }}
         />
-        <Badge 
-          bg="primary" 
-          className="position-absolute top-0 start-0 m-2"
-        >
-          {category}
-        </Badge>
+        {category_name && (
+          <Badge 
+            bg="primary" 
+            className="position-absolute top-0 start-0 m-2"
+          >
+            {category_name}
+          </Badge>
+        )}
 
         {sale_price && sale_price < price && (
           <Badge 
@@ -112,14 +123,14 @@ const TemplateCard = ({
         </Card.Text>
 
         <Stack direction="horizontal" gap={1} className="mb-3 flex-wrap">
-          {tags.map((tag) => (
+          {tags_names && tags_names.map((tag, index) => (
             <Badge 
-              key={`${id}-${tag.name}`} 
+              key={`${id}-${index}`} 
               bg="light" 
               text="dark" 
               className="me-1 mb-1"
             >
-              {tag.name}
+              {tag}
             </Badge>
           ))}
         </Stack>
@@ -143,7 +154,7 @@ const TemplateCard = ({
               )}
             </div>
 
-            <Link to={`/template/${id}`} className="text-decoration-none">
+            <Link to={`/product-details/${id}`} className="text-decoration-none">
               <Button
                 variant="outline-primary"
                 size="sm"

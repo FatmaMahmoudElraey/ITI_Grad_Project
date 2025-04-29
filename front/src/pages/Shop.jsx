@@ -57,8 +57,6 @@ export default function Shop() {
     calculateStats();
   }, [products, categories]);
 
-  // console.log("category"+category)
-  console.log(products)
   const filteredTemplates = products?.filter(product => {
     const matchesSearch = !searchTerm || 
       product.title?.toLowerCase().includes(searchTerm.toLowerCase());

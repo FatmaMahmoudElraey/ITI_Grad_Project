@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar as fasStar, faStarHalfAlt as fasStarHalfAlt, faShoppingCart, faEye, faHeart, faShield, faDownload } from '@fortawesome/free-solid-svg-icons';
 import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
+import TemplateCard from '../components/TemplateCard';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProductById, fetchProducts } from '../store/slices/productsSlice';
@@ -25,19 +26,7 @@ const ProductDetailsPage = () => {
     }
   }, [id, dispatch, products.length]);
 
-  // Debug: Log the current product data
-  useEffect(() => {
-    if (currentProduct) {
-      console.log('Current Product Data:', currentProduct);
-      console.log('Category Data:', currentProduct.category);
-      
-      // Debug reviews data
-      if (currentProduct.reviews && currentProduct.reviews.length > 0) {
-        console.log('Reviews Data:', currentProduct.reviews);
-        console.log('First Review:', currentProduct.reviews[0]);
-      }
-    }
-  }, [currentProduct]);
+
 
   // Find similar products when products or currentProduct changes
   useEffect(() => {
@@ -301,33 +290,7 @@ const ProductDetailsPage = () => {
           <Row>
             {similarItems.map((product) => (
               <Col md={4} key={product.id} className="mb-4">
-                <Card className="h-100 card-hover">
-                  <Card.Img
-                    variant="top"
-                    src={product.preview_image || "/placeholder-image.jpg"}
-                    alt={product.title}
-                    style={{ height: '200px', objectFit: 'cover' }}
-                    onError={(e) => {
-                      e.target.src = "/placeholder-image.jpg";
-                    }}
-                  />
-                  <Card.Body>
-                    <Card.Title as="h5" className="mb-2">
-                      <Link to={`/product-details/${product.id}`} className="text-decoration-none text-dark">
-                        {product.title}
-                      </Link>
-                    </Card.Title>
-                    <Card.Text className="text-muted small mb-2">
-                      by <Link to={`/seller/${product.seller?.id || 0}`} className="text-decoration-none">{product.seller?.name || "Unknown Seller"}</Link>
-                    </Card.Text>
-                    <div className="d-flex justify-content-between align-items-center mt-3">
-                      <span className="fw-bold">${product.price}</span>
-                      <Button style={{ backgroundColor: "#6610f2" }} size="sm">
-                        Add to Cart
-                      </Button>
-                    </div>
-                  </Card.Body>
-                </Card>
+                <TemplateCard {...product} />
               </Col>
             ))}
           </Row>

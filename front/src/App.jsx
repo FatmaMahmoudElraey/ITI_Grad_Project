@@ -21,38 +21,46 @@ import StoreSettings from "./pages/seller/StoreSettings.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
 import Chat from "./pages/Chat.jsx";
 import ChatPage from "./pages/Users.jsx";
+import Shop from "./pages/Shop.jsx";
+import ProductDetailsPage from "./pages/ProductDetails.jsx";
 
+// Import NotificationProvider
+import { NotificationProvider } from "./contexts/NotificationContext.jsx";
 
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<SharedLayout />}>
-          <Route index element={<Home />} />
-          <Route path="home" element={<Home />} />
-          <Route path="about"  element={<AboutUs />} />
-          <Route path="contact"  element={<ContactUs />} />
+    <NotificationProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<SharedLayout />}>
+            <Route index element={<Home />} />
+            <Route path="home" element={<Home />} />
+            <Route path="about"  element={<AboutUs />} />
+            <Route path="contact"  element={<ContactUs />} />
 
-          {/* Seller Pages */}
-          <Route path="seller/dashboard" element={<Dashboard />} />
-          <Route path="/seller/products" element={<Products />} />
-          <Route path="/seller/products/add" element={<AddProduct />} />
-          <Route path="/seller/products/edit/:id" element={<EditProduct />} />
-          <Route path="seller/sales-report" element={<SalesReport />} />
-          <Route path="seller/payouts" element={<Payouts />} />
-          <Route path="seller/orders" element={<Orders />} />
-          <Route path="seller/reviews" element={<Reviews />} />
-          <Route path="seller/inbox" element={<Inbox />} />
-          <Route path="profile" element={<UserProfile />} />
-          <Route path="register" element={<RegisterPage />} />
-          <Route path="login" element={<LoginPage />} />
-          <Route path="users" element={<ChatPage />} />
-          <Route path="chat" element={<Chat />} />
-          <Route path="seller/store-settings" element={<StoreSettings />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+            {/* Seller Pages */}
+            <Route path="seller/dashboard" element={<Dashboard />} />
+            <Route path="/seller/products" element={<Products />} />
+            <Route path="/seller/products/add" element={<AddProduct />} />
+            <Route path="/seller/products/edit/:id" element={<EditProduct />} />
+            <Route path="seller/sales-report" element={<SalesReport />} />
+            <Route path="seller/payouts" element={<Payouts />} />
+            <Route path="seller/orders" element={<Orders />} />
+            <Route path="seller/reviews" element={<Reviews />} />
+            <Route path="seller/inbox" element={<Inbox />} />
+            <Route path="profile" element={<UserProfile />} />
+            <Route path="register" element={<RegisterPage />} />
+            <Route path="login" element={<LoginPage />} />
+            <Route path="users" element={<ChatPage />} />
+            <Route path="chat" element={<Chat />} />
+            <Route path="seller/store-settings" element={<StoreSettings />} />
+            <Route path="shop" element={<Shop />} />
+            <Route path="product-details/:id" element={<ProductDetailsPage />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </NotificationProvider>
   );
 }
 

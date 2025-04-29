@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
-import { Navbar, Container, Nav, Form, Button, Modal } from 'react-bootstrap';
-import { FiSearch } from 'react-icons/fi';
+import React, { useState, useEffect } from 'react';
+import { Navbar, Container, Nav, Form, Button, Modal, Badge } from 'react-bootstrap';
+import { FiSearch, FiShoppingCart } from 'react-icons/fi';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import Logo from '../assets/images/navbar/logo.png';
 import '../assets/css/navbar/style.css';
 
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const navigate = useNavigate();
+  const { items, totalQuantity } = useSelector((state) => state.cart);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -20,6 +24,19 @@ export default function Header() {
       <Nav.Link href="/about" className="text-light py-2">About Us</Nav.Link>
       <Nav.Link href="/contact" className="text-light py-2">Contact Us</Nav.Link>
       <Nav.Link href="/login" className="text-light py-2">Sign in</Nav.Link>
+      <Nav.Link as={Link} to="/cart" className="text-light py-2 me-2 position-relative">
+        <FiShoppingCart size={20} />
+        {totalQuantity > 0 && (
+          <Badge 
+            pill 
+            bg="danger" 
+            className="position-absolute" 
+            style={{ top: '0', right: '-5px', fontSize: '0.6rem' }}
+          >
+            {totalQuantity}
+          </Badge>
+        )}
+      </Nav.Link>
     </>
   );
 
@@ -43,11 +60,26 @@ export default function Header() {
 
             {/* Centered search and button */}
             <div className="d-flex align-items-center mobile-center-group">
-              <FiSearch 
-                className="text-light me-3 mobile-search-icon" 
-                size={20} 
-                onClick={() => setShowMobileSearch(true)}
-              />
+              <div className="d-flex align-items-center">
+                <FiSearch 
+                  className="text-light me-3 mobile-search-icon" 
+                  size={20} 
+                  onClick={() => setShowMobileSearch(true)}
+                />
+                <Nav.Link as={Link} to="/cart" className="text-light me-3 position-relative">
+                  <FiShoppingCart size={20} />
+                  {totalQuantity > 0 && (
+                    <Badge 
+                      pill 
+                      bg="danger" 
+                      className="position-absolute" 
+                      style={{ top: '-5px', right: '-8px', fontSize: '0.6rem' }}
+                    >
+                      {totalQuantity}
+                    </Badge>
+                  )}
+                </Nav.Link>
+              </div>
               <Button variant="primary" className="header-button mobile-button" size="sm">
                 Get unlimited downloads
               </Button>
@@ -90,9 +122,11 @@ export default function Header() {
             {/* Right-side Links */}
             <Nav className="d-flex align-items-center">
               {navLinks}
-              <Button variant="primary" className="header-button ms-3">
-                Get unlimited downloads
-              </Button>
+              <div className="d-flex align-items-center">
+                <Button variant="primary" className="header-button">
+                  Get unlimited downloads
+                </Button>
+              </div>
             </Nav>
           </div>
 

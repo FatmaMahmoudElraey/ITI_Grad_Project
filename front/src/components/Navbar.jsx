@@ -19,7 +19,7 @@ export default function Header() {
     <>
       <Nav.Link href="/about" className="text-light py-2">About Us</Nav.Link>
       <Nav.Link href="/contact" className="text-light py-2">Contact Us</Nav.Link>
-      <Nav.Link href="#" className="text-light py-2">Sign in</Nav.Link>
+      <Nav.Link href="/login" className="text-light py-2">Sign in</Nav.Link>
     </>
   );
 
@@ -145,7 +145,7 @@ export default function Header() {
           <Navbar.Toggle aria-controls="secondNavbar" className="border-0 bg-transparent ms-auto" />
           <Navbar.Collapse id="secondNavbar">
             <Nav className="me-auto flex-wrap">
-              <Nav.Link href="#stock-video" className="link text-light mx-lg-1 mx-xl-2">Stock Video</Nav.Link>
+              <Nav.Link href="/shop" className="link text-light mx-lg-1 mx-xl-2">Shop</Nav.Link>
               <Nav.Link href="#video-templates" className="link text-light mx-lg-1 mx-xl-2">Video Templates</Nav.Link>
               <Nav.Link href="#music" className="link text-light mx-lg-1 mx-xl-2">Music</Nav.Link>
               <Nav.Link href="#sound-effects" className="link text-light mx-lg-1 mx-xl-2">Sound Effects</Nav.Link>

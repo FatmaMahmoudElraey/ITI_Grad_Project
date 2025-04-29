@@ -3,11 +3,9 @@ import { Container, Row, Col, Form, Button, Card, Accordion, Dropdown } from 're
 import { motion } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
-import { fetchProducts, fetchCategories } from '../store/slices/productsSlice';
+import { fetchProducts, fetchCategories, fetchTags } from '../store/slices/productsSlice';
 import { FiSearch, FiGrid, FiList, FiFilter } from 'react-icons/fi';
 import TemplateCard from '../components/TemplateCard';
-import '../styles/Shop.css';
-// import '../assets/css/shop.css'
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -17,7 +15,7 @@ const fadeIn = {
 
 export default function Shop() {
   const dispatch = useDispatch();
-  const { items: products, categories, loading, error } = useSelector(state => state.products);
+  const { items: products, categories, tags, loading, error } = useSelector(state => state.products);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -34,6 +32,7 @@ export default function Shop() {
   useEffect(() => {
     dispatch(fetchProducts());
     dispatch(fetchCategories());
+    dispatch(fetchTags());
   }, [dispatch]);
 
   useEffect(() => {
@@ -59,11 +58,13 @@ export default function Shop() {
   }, [products, categories]);
 
   // console.log("category"+category)
+  console.log(products)
   const filteredTemplates = products?.filter(product => {
     const matchesSearch = !searchTerm || 
       product.title?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || 
-      product.category === selectedCategory;
+      product.category_name
+      === selectedCategory;
     const matchesPrice = (!priceRange.min || product.price >= Number(priceRange.min)) && 
                         (!priceRange.max || product.price <= Number(priceRange.max));
     
@@ -209,7 +210,7 @@ export default function Shop() {
                         variant="outline-primary"
                         size="sm"
                         className="rounded-pill"
-                        onClick={() => handleCategoryChange(category.id)}
+                        onClick={() => handleCategoryChange(category.name)}
                         style={{ borderColor: '#660ff1', color: '#660ff1' }}
                       >
                         {category.name}
@@ -391,7 +392,11 @@ export default function Shop() {
               <Row xs={1} md={2} lg={3} className="g-4">
                 {sortedAndFilteredTemplates.map(template => (
                   <Col key={template.id} className="mb-4">
-                    <TemplateCard {...template} />
+                    <TemplateCard 
+                      {...template}
+                      reviews={template.reviews || []}
+                      tags={template.tags || []}
+                    />
                   </Col>
                 ))}
               </Row>

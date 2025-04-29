@@ -9,6 +9,11 @@
 .badge {
   font-size: 0.8rem;
   padding: 0.5rem 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.badge:hover {
+  transform: translateY(-1px);
 }
 
 .btn-primary:hover {
@@ -35,4 +40,28 @@
 
 .favorite-btn:focus {
   box-shadow: none !important;
+}
+
+.text-warning {
+  color: #ffc107 !important;
+}
+
+.text-warning svg {
+  margin-right: 2px;
+}
+
+.rating-stars {
+  display: inline-flex;
+  align-items: center;
+}
+
+.review-count {
+  margin-left: 4px;
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.tags-wrapper {
+  min-height: 24px;
+  margin-bottom: 0.5rem;
 }

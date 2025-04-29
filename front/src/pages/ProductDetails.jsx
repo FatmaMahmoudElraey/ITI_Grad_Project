@@ -1,5 +1,5 @@
-import { Container, Row, Col, Button, Badge, Tabs, Tab, Card, Carousel, Form } from 'react-bootstrap';
-import { Link, useParams } from 'react-router-dom';
+import { Container, Row, Col, Button, Badge, Tabs, Tab, Card, Carousel, Form, Toast, ToastContainer } from 'react-bootstrap';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar as fasStar, faStarHalfAlt as fasStarHalfAlt, faShoppingCart, faEye, faHeart, faShield, faDownload } from '@fortawesome/free-solid-svg-icons';
 import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
@@ -7,12 +7,16 @@ import TemplateCard from '../components/TemplateCard';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProductById, fetchProducts } from '../store/slices/productsSlice';
+import { addToCart } from '../store/slices/cartSlice';
 
 const ProductDetailsPage = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { currentProduct, items: products, categories, loading, error } = useSelector(state => state.products);
   const [similarItems, setSimilarItems] = useState([]);
+  const [quantity, setQuantity] = useState(1);
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     // Fetch the specific product by ID
@@ -69,9 +73,40 @@ const ProductDetailsPage = () => {
 
   // Calculate average rating
   const averageRating = calculateAverageRating(selectedProduct.reviews);
+  
+  // Handle add to cart
+  const handleAddToCart = () => {
+    dispatch(addToCart({
+      id: selectedProduct.id,
+      template_id: selectedProduct.id,
+      quantity: quantity,
+      price: selectedProduct.sale_price || selectedProduct.price,
+      title: selectedProduct.title,
+      image: selectedProduct.images && selectedProduct.images.length > 0 ? selectedProduct.images[0].image : null,
+      category_name: selectedProduct.category_name
+    }));
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 2000);
+  };
 
   return (
     <Container className="py-5">
+      <ToastContainer position="top-end" className="p-3" style={{ zIndex: 1 }}>
+        <Toast show={showToast} onClose={() => setShowToast(false)} bg="success" delay={2000} autohide>
+          <Toast.Header closeButton>
+            <FontAwesomeIcon icon={faShoppingCart} className="me-2" />
+            <strong className="me-auto">Added to Cart</strong>
+          </Toast.Header>
+          <Toast.Body className="text-white">
+            {selectedProduct.title} has been added to your cart.
+            <div className="mt-2">
+              <Button size="sm" variant="light" onClick={() => navigate('/cart')}>
+                View Cart
+              </Button>
+            </div>
+          </Toast.Body>
+        </Toast>
+      </ToastContainer>
       <Row>
         <Col lg={8}>
           <div className="product-image-container mb-4">
@@ -236,9 +271,37 @@ const ProductDetailsPage = () => {
                 </div>
 
                 <div className="mb-4">
+                  <div className="d-flex align-items-center mb-3">
+                    <span className="me-3">Quantity:</span>
+                    <div className="d-flex align-items-center">
+                      <Button 
+                        variant="outline-secondary" 
+                        size="sm"
+                        onClick={() => setQuantity(prev => prev > 1 ? prev - 1 : 1)}
+                      >
+                        -
+                      </Button>
+                      <Form.Control
+                        type="number"
+                        min="1"
+                        value={quantity}
+                        onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                        className="mx-2 text-center"
+                        style={{ width: '60px' }}
+                      />
+                      <Button 
+                        variant="outline-secondary" 
+                        size="sm"
+                        onClick={() => setQuantity(prev => prev + 1)}
+                      >
+                        +
+                      </Button>
+                    </div>
+                  </div>
                   <Button
                     style={{ backgroundColor: "#6610f2" }}
                     className="w-100 py-2 mb-2"
+                    onClick={handleAddToCart}
                   >
                     <FontAwesomeIcon icon={faShoppingCart} className="me-2" />
                     Add to Cart

@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { Card, Badge, Button, Stack } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Card, Badge, Button, Stack, Toast, ToastContainer } from 'react-bootstrap';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { FiStar, FiHeart } from 'react-icons/fi';
+import { FiStar, FiHeart, FiShoppingCart } from 'react-icons/fi';
 import '../styles/TemplateCard.css';
-// Import addToCart action if available
-// import { addToCart } from '../store/slices/cartSlice';
+import { addToCart } from '../store/slices/cartSlice';
 
 const TemplateCard = (product) => {
   // Extract properties from product with defaults
@@ -21,7 +20,9 @@ const TemplateCard = (product) => {
     tags_names = []
   } = product;
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showToast, setShowToast] = useState(false);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleFavoriteClick = (e) => {
     e.preventDefault();
@@ -30,19 +31,17 @@ const TemplateCard = (product) => {
   };
 
   const handleAddToCart = () => {
-    // Check if addToCart action is imported
-    if (typeof addToCart !== 'undefined') {
-      dispatch(addToCart({
-        id: Date.now(),
-        template_id: id,
-        quantity: 1,
-        price: sale_price || price,
-        title,
-        image: images && images.length > 0 ? images[0].image : null,
-      }));
-    } else {
-      
-    }
+    dispatch(addToCart({
+      id: id,
+      template_id: id,
+      quantity: 1,
+      price: sale_price || price,
+      title,
+      image: images && images.length > 0 ? images[0].image : null,
+      category_name
+    }));
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 2000);
   };
 
   const averageRating = reviews.length > 0 
@@ -61,7 +60,24 @@ const TemplateCard = (product) => {
   };
 
   return (
-    <Card className="h-100 border-0 shadow-sm hover-shadow transition">
+    <>
+      <ToastContainer position="top-end" className="p-3" style={{ zIndex: 1 }}>
+        <Toast show={showToast} onClose={() => setShowToast(false)} bg="success" delay={2000} autohide>
+          <Toast.Header closeButton>
+            <FiShoppingCart className="me-2" />
+            <strong className="me-auto">Added to Cart</strong>
+          </Toast.Header>
+          <Toast.Body className="text-white">
+            {title} has been added to your cart.
+            <div className="mt-2">
+              <Button size="sm" variant="light" onClick={() => navigate('/cart')}>
+                View Cart
+              </Button>
+            </div>
+          </Toast.Body>
+        </Toast>
+      </ToastContainer>
+      <Card className="h-100 border-0 shadow-sm hover-shadow transition">
       <div className="position-relative">
         <Card.Img 
           variant="top" 
@@ -176,6 +192,7 @@ const TemplateCard = (product) => {
         </div>
       </Card.Body>
     </Card>
+    </>
   );
 };
 

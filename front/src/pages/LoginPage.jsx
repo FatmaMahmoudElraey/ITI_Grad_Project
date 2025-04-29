@@ -12,21 +12,27 @@ export default function LoginPage() {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading, error, isAuthenticated } = useSelector(
+  const { loading, error, isAuthenticated, user } = useSelector(
     (state) => state.auth
   );
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/");
+    if (isAuthenticated && user) {
+      if (user.role === "seller") {
+        navigate("/seller/dashboard");
+      } else if (user.role === "user") {
+        navigate("/home");
+      } else {
+        navigate("/admin-dashboard");
+      }
     }
 
     // Clear any previous auth errors when component mounts
     return () => {
       dispatch(clearError());
     };
-  }, [isAuthenticated, navigate, dispatch]);
+  }, [isAuthenticated, navigate, dispatch, user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -70,7 +76,7 @@ export default function LoginPage() {
           email: formData.email,
           password: formData.password,
         })).unwrap();
-        
+        localStorage.setItem("email", formData.email);
         // Success will redirect via useEffect
       } catch (err) {
         console.error("Login failed:", err);

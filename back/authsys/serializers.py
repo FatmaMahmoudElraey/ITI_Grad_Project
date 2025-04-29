@@ -14,7 +14,7 @@ class JWTSerializer(TokenObtainPairSerializer):
 class AuthUserCreateSerializer(UserCreateSerializer):
     class Meta(UserCreateSerializer.Meta):
         model  = User
-        fields = ['id','email','name','password']
+        fields = ['id','email','name','password', 'role']
 
 class AuthCurrentUserSerializer(CurrentUserSerializer):
     class Meta(CurrentUserSerializer.Meta):

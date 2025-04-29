@@ -14,6 +14,7 @@ const initialState = {
   userProfile: null,
   purchasedProducts: [],
   userFavorites: [],
+  usersList: [], // Added for storing all users
   loading: false,
   error: null,
   success: null,
@@ -27,6 +28,18 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+export const fetchUsers = createAsyncThunk(
+  'users/fetchUsers',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get(ENDPOINTS.CUSTOMERS);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch users');
+    }
+  }
+);
 
 // Async thunks for user operations
 export const fetchUserDetails = createAsyncThunk(
@@ -52,6 +65,7 @@ export const fetchUserFavorites = createAsyncThunk(
     }
   }
 );
+
 export const fetchUserProfile = createAsyncThunk(
   'users/fetchProfile',
   async (_, { rejectWithValue }) => {
@@ -160,6 +174,21 @@ const usersSlice = createSlice({
         state.error = action.payload;
       })
 
+      // Handle fetchUsers
+      .addCase(fetchUsers.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUsers.fulfilled, (state, action) => {
+        state.loading = false;
+        state.usersList = action.payload;
+        state.success = 'Users fetched successfully';
+      })
+      .addCase(fetchUsers.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
       // Handle fetchUserDetails
       .addCase(fetchUserDetails.pending, (state) => {
         state.loading = true;

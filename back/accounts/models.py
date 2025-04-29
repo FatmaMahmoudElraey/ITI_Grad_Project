@@ -4,7 +4,7 @@ from orders.models import Order
 from products.models import Product
 
 class UserAccountManager(BaseUserManager):
-    def create_user(self, email, first_name, last_name, password=None, name=None):
+    def create_user(self, email, first_name, last_name, password=None, name=None, role='user', **extra_fields):
         if not email:
             raise ValueError('Email address must be provided')
         email = self.normalize_email(email)
@@ -12,13 +12,21 @@ class UserAccountManager(BaseUserManager):
         if name is None:
             name = f"{first_name} {last_name}"
 
-        user = self.model(email=email, first_name=first_name, last_name=last_name, name=name, is_active=False)
+        user = self.model(
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            name=name,
+            role=role,
+            is_active=False,
+            **extra_fields
+        )
         user.set_password(password)
         user.save(using=self._db)
         return user
 
     def create_superuser(self, email, first_name, last_name, password):
-        user = self.create_user(email, first_name, last_name, password)
+        user = self.create_user(email, first_name, last_name, password, role='admin')
         user.is_staff = True
         user.is_superuser = True
         user.is_active = True
@@ -85,3 +93,28 @@ class UserProfile(models.Model):
         return self.user.email
     
 
+class ChatMessage(models.Model):
+    user = models.ForeignKey(UserAccount, on_delete=models.SET_NULL, null=True, related_name="user")
+    sender = models.ForeignKey(UserAccount, on_delete=models.SET_NULL, null=True, related_name="sender")
+    reciever = models.ForeignKey(UserAccount, on_delete=models.SET_NULL, null=True, related_name="reciever")
+
+    message = models.CharField(max_length=10000000000)
+
+    is_read = models.BooleanField(default=False)
+    date = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['date']
+        verbose_name_plural = "Message"
+
+    def __str__(self):
+        return f"{self.sender} - {self.reciever}"
+
+    @property
+    def sender_profile(self):
+        sender_profile = UserProfile.objects.get(user=self.sender)
+        return sender_profile
+    @property
+    def reciever_profile(self):
+        reciever_profile = UserProfile.objects.get(user=self.reciever)
+        return reciever_profile

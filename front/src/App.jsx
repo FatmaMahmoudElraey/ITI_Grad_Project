@@ -26,13 +26,9 @@ import ChatPage from "./pages/Users.jsx";
 import Shop from "./pages/Shop.jsx";
 import ProductDetailsPage from "./pages/ProductDetails.jsx";
 
-// Import NotificationProvider
-import { NotificationProvider } from "./contexts/NotificationContext.jsx";
-
 
 function App() {
   return (
-    <NotificationProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<SharedLayout />}>
@@ -64,7 +60,6 @@ function App() {
           </Route>
         </Routes>
       </BrowserRouter>
-    </NotificationProvider>
   );
 }
 

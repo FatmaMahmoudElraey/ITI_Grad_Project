@@ -1,6 +1,7 @@
 import { Container, Row, Col, Button, Badge, Tabs, Tab, Card, Carousel, Form, Toast, ToastContainer } from 'react-bootstrap';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { BASE_URL } from '../api/constants';
 import { faStar as fasStar, faStarHalfAlt as fasStarHalfAlt, faShoppingCart, faEye, faHeart, faShield, faDownload } from '@fortawesome/free-solid-svg-icons';
 import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
 import TemplateCard from '../components/TemplateCard';
@@ -82,7 +83,7 @@ const ProductDetailsPage = () => {
       quantity: quantity,
       price: selectedProduct.sale_price || selectedProduct.price,
       title: selectedProduct.title,
-      image: selectedProduct.images && selectedProduct.images.length > 0 ? selectedProduct.images[0].image : null,
+      image: selectedProduct.images && selectedProduct.images.length > 0 ? (selectedProduct.images[0].image_url || selectedProduct.images[0].image || null) : null,
       category_name: selectedProduct.category_name
     }));
     setShowToast(true);
@@ -114,7 +115,7 @@ const ProductDetailsPage = () => {
               {(selectedProduct.images || []).map((image, index) => (
                 <Carousel.Item key={index}>
                   <img
-                    src={image.image}
+                    src={image.image_url || image.image || "/placeholder-image.jpg"}
                     alt={`${selectedProduct.title} - Image ${index + 1}`}
                     className="d-block w-100 rounded shadow-sm"
                     style={{ maxHeight: '500px', objectFit: 'cover' }}

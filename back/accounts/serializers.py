@@ -24,7 +24,7 @@ class UserSerializer(serializers.ModelSerializer):
 class CustomUserSerializer(UserSerializer):
     class Meta(UserSerializer.Meta):
         model = UserAccount
-        fields = ('id', 'email', 'name')
+        fields = ('id', 'email', 'name', 'date_joined')
 
 class FavoriteSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer(read_only=True)

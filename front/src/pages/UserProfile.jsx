@@ -84,8 +84,21 @@ export default function UserProfile() {
 
   const handleSaveProfile = async () => {
     try {
+      // Create a clean form data object with only the fields that changed
+      const cleanFormData = {
+        name: formData.name,
+        bio: formData.bio || "",
+        location: formData.location || "",
+        birth_date: formData.birth_date || ""
+      };
+
+      // Only include the picture if it's a new file
+      if (formData.picture instanceof File) {
+        cleanFormData.picture = formData.picture;
+      }
+
       const updatedProfile = await dispatch(
-        updateUserProfile(formData)
+        updateUserProfile(cleanFormData)
       ).unwrap();
 
       setFormData({
@@ -100,6 +113,7 @@ export default function UserProfile() {
       setShowEditModal(false);
     } catch (err) {
       console.error("Failed to update profile:", err);
+      alert(`Failed to update profile: ${err.message || 'Please check your form data'}`); 
     }
   };
 
@@ -110,6 +124,65 @@ export default function UserProfile() {
       navigate("/");
     } catch (err) {
       console.error("Failed to delete account:", err);
+    }
+  };
+
+  const handleDownload = async (productId) => {
+    try {
+      // Get the access token from session storage
+      const token = sessionStorage.getItem('accessToken');
+      if (!token) {
+        alert('You need to be logged in to download files');
+        return;
+      }
+
+      // Create a fetch request to the download endpoint
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"}/api/products/${productId}/download/`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.statusText}`);
+      }
+
+      // Get the filename from the Content-Disposition header if available
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = `product-${productId}.zip`; // Default filename
+      
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="(.+)"/i);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1];
+        }
+      }
+
+      // Convert the response to a blob
+      const blob = await response.blob();
+      
+      // Create a temporary URL for the blob
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create a temporary link element
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      
+      // Append the link to the document, click it, and remove it
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Release the blob URL
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      alert(`Failed to download file: ${error.message}`);
     }
   };
 
@@ -322,11 +395,9 @@ export default function UserProfile() {
                   <div>
                     <small className="text-muted">Member Since</small>
                     <p className="mb-0">
-                      {userProfile?.user?.date_joined
-                        ? new Date(
-                            userProfile?.user?.date_joined
-                          ).toLocaleDateString()
-                        : "Unknown"}
+                    {userProfile?.user?.date_joined
+                    ? new Date(userProfile?.user?.date_joined).getFullYear()
+                    : "2023"}
                     </p>
                   </div>
                 </div>
@@ -454,6 +525,7 @@ export default function UserProfile() {
                                 style={{
                                   display: "flex",
                                   justifyContent: "space-between",
+                                  alignItems: "center",
                                   marginTop: "0.5rem",
                                   fontSize: "1rem",
                                 }}
@@ -466,6 +538,16 @@ export default function UserProfile() {
                                 </div>
                                 <div style={{ flex: 1, textAlign: "right" }}>
                                   ${item.product.price}
+                                </div>
+                                <div style={{ marginLeft: "1rem" }}>
+                                  <Button
+                                    variant="outline-primary"
+                                    size="sm"
+                                    onClick={() => handleDownload(item.product.id)}
+                                    className="d-flex align-items-center"
+                                  >
+                                    <FaDownload className="me-1" size={12} /> Download
+                                  </Button>
                                 </div>
                               </div>
                             </div>

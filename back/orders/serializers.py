@@ -56,13 +56,34 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)
+    total = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
 
     class Meta:
         model = Order
-        fields = ['id', 'user', 'created_at', 'payment_status', 'items']
-        read_only_fields = ['user']
+        fields = ['id', 'user', 'created_at', 'payment_status', 'items', 'total']
+        read_only_fields = ['user', 'created_at', 'total']
     
-    
+    def create(self, validated_data):
+        items_data = validated_data.pop('items')
+        order = Order.objects.create(**validated_data)
+        total_order_cost = 0
+        for item_data in items_data:
+            product = item_data['product'] # Get product instance from OrderItemSerializer
+            quantity = item_data['quantity']
+            price = product.price # Get price from the product instance
+            order_item = OrderItem.objects.create(
+                order=order, 
+                product=product,
+                quantity=quantity,
+                price=price # Store the price at the time of order
+            )
+            total_order_cost += (price * quantity)
+        
+        # Save the calculated total to the order
+        order.total = total_order_cost
+        order.save()
+        
+        return order
 
 
 # -------------------

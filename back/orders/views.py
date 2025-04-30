@@ -40,9 +40,25 @@ class OrderViewSet(ModelViewSet):
         return Order.objects.filter(user=self.request.user).prefetch_related('items')
 
     def perform_create(self, serializer):
-        cart = Cart.objects.get(user=self.request.user)
-        serializer.save(user=self.request.user, total=cart.total_cost())
-        cart.items.all().delete()  # Clear the cart after order creation
+        # Save the order, associated with the current user.
+        # The 'items' data from the request body will be handled by serializer.create()
+        order = serializer.save(user=self.request.user)
+
+        # Clear the user's cart *after* the order is successfully created.
+        try:
+            cart = Cart.objects.get(user=self.request.user)
+            # Optimization: Use clear() if available, otherwise delete() is fine.
+            # cart.items.clear() # Use this if you prefer, but delete() works.
+            cart.items.all().delete()
+        except Cart.DoesNotExist:
+            # Handle case where cart might not exist (though it should if items were added)
+            # Consider logging this occurrence for investigation.
+            print(f"Warning: Cart not found for user {self.request.user.id} after order creation.")
+            pass # Continue even if cart clearing fails
+
+        # No need to return the order explicitly here unless the view framework requires it
+        # The default ModelViewSet behavior handles the response generation.
+
 
 class OrderItemViewSet(ModelViewSet):
     serializer_class = OrderItemSerializer
@@ -57,7 +73,7 @@ class OrderItemViewSet(ModelViewSet):
         if not order:
             raise serializers.ValidationError("No active order found for the user.")
         serializer.save(order=order)
-    
+
 
 class SubscriptionPlanViewSet(ModelViewSet):
     queryset = SubscriptionPlan.objects.filter(is_active=True)

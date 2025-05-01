@@ -1,5 +1,5 @@
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework import serializers
 from .models import *
 from .serializers import (
@@ -58,6 +58,19 @@ class OrderViewSet(ModelViewSet):
 
         # No need to return the order explicitly here unless the view framework requires it
         # The default ModelViewSet behavior handles the response generation.
+
+
+class AdminOrderViewSet(ModelViewSet):
+    """
+    ViewSet for admin users to manage all orders in the system.
+    Only users with admin privileges can access this endpoint.
+    """
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get_queryset(self):
+        # Admins can see all orders
+        return Order.objects.all().prefetch_related('items', 'user')
 
 
 class OrderItemViewSet(ModelViewSet):

@@ -8,6 +8,7 @@ import RegisterPage from "./pages/RegisterPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import Cart from "./pages/Cart.jsx";
 import Checkout from "./pages/Checkout.jsx";
+import CategoryProducts from './pages/CategoryProducts';
 
 // Import Seller Pages
 import Dashboard from "./pages/seller/Dashboard.jsx";
@@ -57,6 +58,7 @@ function App() {
             <Route path="product-details/:id" element={<ProductDetailsPage />} />
             <Route path="cart" element={<Cart />} />
             <Route path="checkout" element={<Checkout />} />
+            <Route path="/category/:categoryName" element={<CategoryProducts />} />
           </Route>
         </Routes>
       </BrowserRouter>

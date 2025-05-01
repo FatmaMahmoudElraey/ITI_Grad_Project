@@ -334,4 +334,12 @@ const productsSlice = createSlice({
 });
 
 export const { clearError, clearSuccess, clearProductsState } = productsSlice.actions;
+
+// Add a new selector to get products by category
+export const selectProductsByCategory = (state, categoryName) => {
+  return state.products.items.filter(
+    product => product.category_name?.toLowerCase() === categoryName?.toLowerCase()
+  );
+};
+
 export default productsSlice.reducer;

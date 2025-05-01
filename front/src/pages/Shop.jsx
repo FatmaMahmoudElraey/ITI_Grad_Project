@@ -175,31 +175,6 @@ export default function Shop() {
                   Browse through our collection of high-quality, responsive templates
                   designed to elevate your online presence.
                 </p>
-                
-                {/* Advanced Search Bar */}
-                <div className="search-bar-wrapper bg-white p-2 rounded-pill shadow-lg">
-                  <Form className="d-flex align-items-center">
-                    <div className="input-group border-0">
-                      <span className="input-group-text bg-transparent border-0">
-                        <FiSearch size={20} />
-                      </span>
-                      <Form.Control
-                        type="text"
-                        placeholder="Search templates..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="border-0 shadow-none"
-                      />
-                      <Button 
-                        variant="primary"
-                        className="rounded-pill px-4"
-                        style={{ backgroundColor: '#660ff1', border: 'none' }}
-                      >
-                        Search
-                      </Button>
-                    </div>
-                  </Form>
-                </div>
 
                 {/* Popular Categories */}
                 <div className="mt-4">

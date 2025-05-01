@@ -354,3 +354,40 @@
     margin-left: auto;
   }
 }
+
+/* Add to your navbar/style.css */
+.nav-link-item .dropdown-menu {
+  background-color: #212529;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.nav-link-item .dropdown-item {
+  color: #fff;
+}
+
+.nav-link-item .dropdown-item:hover {
+  background-color: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+#nav-dropdown {
+  color: rgba(255,255,255,.75);
+}
+
+#nav-dropdown:hover {
+  color: rgba(255,255,255,1);
+}
+
+/* Custom styles for dropdown arrow */
+.custom-dropdown .dropdown-toggle::after {
+  margin-left: 0;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.custom-dropdown .dropdown-toggle {
+  padding-right: 15px;
+  position: relative;
+}

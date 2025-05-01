@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Navbar, Container, Nav, Form, Button, Modal, Badge, Offcanvas } from 'react-bootstrap';
-import { FiSearch, FiShoppingCart, FiMenu, FiX, FiUser } from 'react-icons/fi';
+import { Navbar, Container, Nav, Form, Button, Modal, Badge, Offcanvas, NavDropdown } from 'react-bootstrap';
+import { FiSearch, FiShoppingCart, FiMenu, FiX, FiUser, FiLogOut } from 'react-icons/fi';
 import { Link, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { logoutUser } from '../store/slices/authSlice';
 import Logo from '../assets/images/navbar/logo.png';
 import '../assets/css/navbar/style.css';
 
@@ -11,9 +12,11 @@ export default function Header() {
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [showOffcanvas, setShowOffcanvas] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { items, totalQuantity } = useSelector((state) => state.cart);
-  
+
   // Handle scroll effect for navbar
   useEffect(() => {
     const handleScroll = () => {
@@ -23,7 +26,7 @@ export default function Header() {
         setIsScrolled(false);
       }
     };
-    
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -32,6 +35,15 @@ export default function Header() {
     e.preventDefault();
     console.log('Searching for:', searchQuery);
     setShowMobileSearch(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logoutUser()).unwrap();
+      navigate('/login');
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
   };
 
   // Links that we reuse (only one time defined)
@@ -43,38 +55,65 @@ export default function Header() {
       <Nav.Link as={Link} to="/contact" className="nav-link-item">
         <span>Contact Us</span>
       </Nav.Link>
-      <Nav.Link as={Link} to="/login" className="nav-link-item">
-        <div className="d-flex align-items-center">
-          <FiUser className="me-1" />
-          <span>Sign in</span>
-        </div>
-      </Nav.Link>
-      <Nav.Link as={Link} to="/cart" className="nav-link-item position-relative">
-        <div className="d-flex align-items-center">
-          <FiShoppingCart size={20} />
-          <span className="ms-1 d-none d-lg-inline">Cart</span>
-          {totalQuantity > 0 && (
-            <Badge 
-              pill 
-              bg="danger" 
-              className="position-absolute" 
-              style={{ top: '-5px', right: '-8px', fontSize: '0.6rem' }}
-            >
-              {totalQuantity}
-            </Badge>
-          )}
-        </div>
-      </Nav.Link>
+
+      {isAuthenticated && user ? (
+        <>
+          <NavDropdown
+            title={
+              <div className="d-flex align-items-center">
+                <FiUser className="me-1" />
+                <span className="me-3">{user?.name || user?.email || 'User'}</span>
+              </div>
+            }
+            id="nav-dropdown"
+            className="nav-link-item custom-dropdown"
+          >
+            {user?.role && (user.role === 'admin' || user.role === 'seller') && (
+              <NavDropdown.Item as={Link} to={`/${user.role}/dashboard`}>
+                Dashboard
+              </NavDropdown.Item>
+            )}
+            <NavDropdown.Item onClick={handleLogout}>
+              <FiLogOut className="me-1" />
+              Sign Out
+            </NavDropdown.Item>
+          </NavDropdown>
+
+          <Nav.Link as={Link} to="/cart" className="nav-link-item position-relative">
+            <div className="d-flex align-items-center">
+              <FiShoppingCart size={20} />
+              <span className="ms-1 d-none d-lg-inline">Cart</span>
+              {totalQuantity > 0 && (
+                <Badge
+                  pill
+                  bg="danger"
+                  className="position-absolute"
+                  style={{ top: '-5px', right: '-8px', fontSize: '0.6rem' }}
+                >
+                  {totalQuantity}
+                </Badge>
+              )}
+            </div>
+          </Nav.Link>
+        </>
+      ) : (
+        <Nav.Link as={Link} to="/login" className="nav-link-item">
+          <div className="d-flex align-items-center">
+            <FiUser className="me-1" />
+            <span>Sign in</span>
+          </div>
+        </Nav.Link>
+      )}
     </>
   );
 
   return (
     <>
       {/* Top Navbar */}
-      <Navbar 
-        expand="lg" 
-        bg="dark" 
-        data-bs-theme="dark" 
+      <Navbar
+        expand="lg"
+        bg="dark"
+        data-bs-theme="dark"
         className={`bg-dark text-light py-2 top-navbar ${isScrolled ? 'navbar-scrolled' : ''}`}
         fixed="top"
       >
@@ -120,27 +159,29 @@ export default function Header() {
 
             {/* Mobile Controls */}
             <div className="d-flex d-lg-none align-items-center">
-              <FiSearch 
-                className="text-light mx-2 mobile-icon" 
-                size={22} 
+              <FiSearch
+                className="text-light mx-2 mobile-icon"
+                size={22}
                 onClick={() => setShowMobileSearch(true)}
               />
-              <Nav.Link as={Link} to="/cart" className="text-light mx-2 position-relative p-0">
-                <FiShoppingCart size={22} />
-                {totalQuantity > 0 && (
-                  <Badge 
-                    pill 
-                    bg="danger" 
-                    className="position-absolute" 
-                    style={{ top: '-5px', right: '-8px', fontSize: '0.6rem' }}
-                  >
-                    {totalQuantity}
-                  </Badge>
-                )}
-              </Nav.Link>
-              <Button 
-                variant="link" 
-                className="text-light p-0 ms-2 border-0" 
+              {isAuthenticated && (
+                <Nav.Link as={Link} to="/cart" className="text-light mx-2 position-relative p-0">
+                  <FiShoppingCart size={22} />
+                  {totalQuantity > 0 && (
+                    <Badge
+                      pill
+                      bg="danger"
+                      className="position-absolute"
+                      style={{ top: '-5px', right: '-8px', fontSize: '0.6rem' }}
+                    >
+                      {totalQuantity}
+                    </Badge>
+                  )}
+                </Nav.Link>
+              )}
+              <Button
+                variant="link"
+                className="text-light p-0 ms-2 border-0"
                 onClick={() => setShowOffcanvas(true)}
               >
                 <FiMenu size={24} />
@@ -151,8 +192,8 @@ export default function Header() {
       </Navbar>
 
       {/* Mobile Search Modal */}
-      <Modal 
-        show={showMobileSearch} 
+      <Modal
+        show={showMobileSearch}
         onHide={() => setShowMobileSearch(false)}
         className="mobile-search-modal"
         centered
@@ -175,9 +216,9 @@ export default function Header() {
                 autoFocus
               />
             </div>
-            <Button 
-              variant="primary" 
-              type="submit" 
+            <Button
+              variant="primary"
+              type="submit"
               className="w-100 mt-3 header-button rounded-pill"
             >
               Search
@@ -185,11 +226,11 @@ export default function Header() {
           </Form>
         </Modal.Body>
       </Modal>
-      
+
       {/* Mobile Offcanvas Menu */}
-      <Offcanvas 
-        show={showOffcanvas} 
-        onHide={() => setShowOffcanvas(false)} 
+      <Offcanvas
+        show={showOffcanvas}
+        onHide={() => setShowOffcanvas(false)}
         placement="end"
         className="bg-dark text-light"
       >
@@ -204,9 +245,9 @@ export default function Header() {
             />
             <span className="fw-bold">WEBIFY</span>
           </Offcanvas.Title>
-          <Button 
-            variant="link" 
-            className="text-light p-0 border-0" 
+          <Button
+            variant="link"
+            className="text-light p-0 border-0"
             onClick={() => setShowOffcanvas(false)}
           >
             <FiX size={24} />
@@ -219,7 +260,7 @@ export default function Header() {
           <Button variant="primary" className="w-100 header-button rounded-pill mb-3">
             Get unlimited downloads
           </Button>
-          
+
           <div className="mt-4 pt-3 border-top border-secondary">
             <h6 className="text-light mb-3">Categories</h6>
             <Nav className="flex-column">
@@ -239,10 +280,10 @@ export default function Header() {
       </Offcanvas>
 
       {/* Bottom Navbar - Categories - Only visible on desktop */}
-      <Navbar 
-        expand="lg" 
-        bg="dark" 
-        data-bs-theme="dark" 
+      <Navbar
+        expand="lg"
+        bg="dark"
+        data-bs-theme="dark"
         className={`second-navbar py-1 d-none d-lg-block ${isScrolled ? 'second-navbar-scrolled' : ''}`}
         style={{ marginTop: '56px' }}
       >
@@ -263,7 +304,7 @@ export default function Header() {
           </Navbar.Collapse>
         </Container>
       </Navbar>
-      
+
       {/* Spacer for fixed navbar on mobile */}
       <div className="navbar-spacer d-lg-none" style={{ height: '56px' }}></div>
     </>

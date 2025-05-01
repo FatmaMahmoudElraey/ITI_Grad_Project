@@ -26,6 +26,13 @@ import ChatPage from "./pages/Users.jsx";
 import Shop from "./pages/Shop.jsx";
 import ProductDetailsPage from "./pages/ProductDetails.jsx";
 
+// Import Admin Pages
+import AdminLayout from "./components/Admin/AdminLayout.jsx";
+import AdminProducts from "./pages/admin/Products.jsx";
+import AdminOrders from "./pages/admin/Orders.jsx";
+import AdminUsers from "./pages/admin/Users.jsx";
+import AdminCategories from "./pages/admin/Categories.jsx";
+
 
 function App() {
   return (
@@ -57,6 +64,15 @@ function App() {
             <Route path="product-details/:id" element={<ProductDetailsPage />} />
             <Route path="cart" element={<Cart />} />
             <Route path="checkout" element={<Checkout />} />
+          </Route>
+          
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminProducts />} />
+            <Route path="products" element={<AdminProducts />} />
+            <Route path="categories" element={<AdminCategories />} />
+            <Route path="orders" element={<AdminOrders />} />
+            <Route path="users" element={<AdminUsers />} />
           </Route>
         </Routes>
       </BrowserRouter>

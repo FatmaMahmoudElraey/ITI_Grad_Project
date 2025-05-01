@@ -155,14 +155,6 @@ const TemplateCard = (product) => {
             }
           }}
         />
-        {category_name && (
-          <Badge 
-            bg="primary" 
-            className="position-absolute top-0 start-0 m-2"
-          >
-            {category_name}
-          </Badge>
-        )}
 
         {sale_price && sale_price < price && (
           <Badge 
@@ -177,12 +169,25 @@ const TemplateCard = (product) => {
           variant="link"
           className={`favorite-btn ${isFavorite ? 'active' : ''}`}
           onClick={handleFavoriteClick}
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            width: '40px',
+            height: '40px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '50%',
+            zIndex: 2
+          }}
         >
           <FiHeart 
-            size={24} 
+            size={20} 
             fill={isFavorite ? '#dc3545' : 'none'}
-            stroke={isFavorite ? '#dc3545' : '#fff'}
-            style={{ filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.4))' }}
+            stroke={isFavorite ? '#dc3545' : '#000'}
           />
         </Button>
       </div>

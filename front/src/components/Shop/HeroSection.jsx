@@ -1,23 +1,24 @@
 import React from 'react';
 import { Container, Row, Col, Button, Card } from 'react-bootstrap';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6 }
-};
+const HeroSection = ({ categories, stats }) => {
+  const navigate = useNavigate();
 
-const HeroSection = ({ categories, stats, handleCategoryChange }) => {
+  const handleCategoryClick = (categoryName) => {
+    navigate(`/category/${categoryName.toLowerCase()}`);
+  };
+
   return (
     <div className="shop-hero position-relative overflow-hidden py-5">
       <Container>
         <Row className="align-items-center g-5">
           <Col lg={6}>
             <motion.div
-              initial="initial"
-              animate="animate"
-              variants={fadeIn}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
             >
               <h1 className="display-4 fw-bold mb-4" style={{ color: '#17254E' }}>
                 Discover Premium Templates
@@ -36,7 +37,7 @@ const HeroSection = ({ categories, stats, handleCategoryChange }) => {
                       variant="outline-primary"
                       size="sm"
                       className="rounded-pill"
-                      onClick={() => handleCategoryChange(category.name)}
+                      onClick={() => handleCategoryClick(category.name)}
                       style={{ borderColor: '#660ff1', color: '#660ff1' }}
                     >
                       {category.name}

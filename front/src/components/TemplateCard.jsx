@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { Card, Badge, Button, Stack, Toast, ToastContainer } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { FiStar, FiHeart, FiShoppingCart } from 'react-icons/fi';
+import { BASE_URL } from '../api/constants';
 import '../styles/TemplateCard.css';
 import { addToCart } from '../store/slices/cartSlice';
+import { addCartItem } from '../store/slices/cartApiSlice';
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
 
 const TemplateCard = (product) => {
   // Extract properties from product with defaults
@@ -19,10 +23,16 @@ const TemplateCard = (product) => {
     category_name,
     tags_names = []
   } = product;
+  
+  // Debug image structure
   const [isFavorite, setIsFavorite] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastVariant, setToastVariant] = useState('success');
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { items: cartItems } = useSelector((state) => state.cart);
 
   const handleFavoriteClick = (e) => {
     e.preventDefault();
@@ -31,17 +41,72 @@ const TemplateCard = (product) => {
   };
 
   const handleAddToCart = () => {
-    dispatch(addToCart({
+    // Check if the item already exists in the cart (using Redux state)
+    const itemExists = cartItems.some(item => item.id === id || item.template_id === id);
+
+    if (itemExists) {
+      // Show SweetAlert notification if item is already in cart
+      Swal.fire({
+        icon: 'info',
+        title: 'Already in Cart',
+        text: `${title} is already in your cart.`,
+        timer: 2000, // Auto close after 2 seconds
+        showConfirmButton: false
+      });
+      return; // Stop further execution
+    }
+
+    // Create cart item object for local state
+    const cartItem = {
       id: id,
       template_id: id,
       quantity: 1,
       price: sale_price || price,
       title,
-      image: images && images.length > 0 ? images[0].image : null,
+      image: images && images.length > 0 ? (images[0].image_url || images[0].image || null) : null,
       category_name
-    }));
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 2000);
+    };
+    
+    // Add to local cart state
+    dispatch(addToCart(cartItem));
+    
+    // If user is authenticated, also save to database
+    if (isAuthenticated) {
+      console.log('Adding item to database cart:', {
+        product_id: id,
+        quantity: 1
+      });
+      
+      // Create a database-compatible cart item
+      const dbCartItem = {
+        product_id: id,
+        quantity: 1
+      };
+      
+      // The improved addCartItem function will handle duplicates automatically
+      dispatch(addCartItem(dbCartItem))
+        .unwrap()
+        .then(response => {
+          console.log('Successfully added/updated cart item in database:', response);
+          setToastMessage(`${title} has been added to your cart.`);
+          setToastVariant('success');
+          setShowToast(true);
+          setTimeout(() => setShowToast(false), 2000);
+        })
+        .catch(error => {
+          console.error('Failed to save cart item to database:', error);
+          setToastMessage(`${title} added to local cart only. Database sync failed.`);
+          setToastVariant('warning');
+          setShowToast(true);
+          setTimeout(() => setShowToast(false), 2000);
+        });
+    } else {
+      // For non-authenticated users, just show a success message
+      setToastMessage(`${title} has been added to your cart.`);
+      setToastVariant('success');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+    }
   };
 
   const averageRating = reviews.length > 0 
@@ -62,13 +127,13 @@ const TemplateCard = (product) => {
   return (
     <>
       <ToastContainer position="top-end" className="p-3" style={{ zIndex: 1 }}>
-        <Toast show={showToast} onClose={() => setShowToast(false)} bg="success" delay={2000} autohide>
+        <Toast show={showToast} onClose={() => setShowToast(false)} bg={toastVariant} delay={2000} autohide>
           <Toast.Header closeButton>
             <FiShoppingCart className="me-2" />
             <strong className="me-auto">Added to Cart</strong>
           </Toast.Header>
           <Toast.Body className="text-white">
-            {title} has been added to your cart.
+            {toastMessage}
             <div className="mt-2">
               <Button size="sm" variant="light" onClick={() => navigate('/cart')}>
                 View Cart
@@ -81,7 +146,7 @@ const TemplateCard = (product) => {
       <div className="position-relative">
         <Card.Img 
           variant="top" 
-          src={images && images.length > 0 ? images[0].image : '/placeholder-image.jpg'}
+          src={images && images.length > 0 ? (images[0].image_url || images[0].image || `/placeholder-image.jpg`) : '/placeholder-image.jpg'}
           style={{ height: '200px', objectFit: 'cover' }}
           onError={(e) => {
             if (!e.target.getAttribute('data-error-handled')) {

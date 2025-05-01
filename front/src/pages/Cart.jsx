@@ -1,28 +1,66 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Form, Alert, Image } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faShoppingCart, faArrowLeft, faTag } from '@fortawesome/free-solid-svg-icons';
-import { removeFromCart, updateQuantity, clearCart } from '../store/slices/cartSlice';
+import { removeFromCart, clearCart } from '../store/slices/cartSlice';
+import { fetchCart, removeCartItem } from '../store/slices/cartApiSlice';
 
 const Cart = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { items, totalAmount } = useSelector((state) => state.cart);
+  const { isAuthenticated } = useSelector((state) => state.auth);
   const [couponCode, setCouponCode] = useState('');
   const [couponApplied, setCouponApplied] = useState(false);
   const [discount, setDiscount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Handle quantity change
-  const handleQuantityChange = (id, quantity) => {
-    if (quantity < 1) quantity = 1;
-    dispatch(updateQuantity({ id, quantity: parseInt(quantity) }));
-  };
+  // Fetch cart from database if user is authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      setLoading(true);
+      setError(null);
+      console.log('Attempting to fetch cart from database');
+      
+      dispatch(fetchCart())
+        .unwrap()
+        .then((cartData) => {
+          console.log('Successfully fetched cart from database:', cartData);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error('Error fetching cart:', err);
+          setError('Failed to fetch cart from database. Using local cart data.');
+          setLoading(false);
+        });
+    }
+  }, [dispatch, isAuthenticated]);
 
   // Handle remove item
   const handleRemoveItem = (id) => {
-    dispatch(removeFromCart(id));
+    if (isAuthenticated) {
+      // For authenticated users, remove from database first
+      console.log('Attempting to remove item from database cart:', id);
+      
+      dispatch(removeCartItem(id))
+        .unwrap()
+        .then(() => {
+          console.log('Successfully removed item from database cart');
+          // Then update local state
+          dispatch(removeFromCart(id));
+        })
+        .catch((err) => {
+          console.error('Error removing item from database:', err);
+          // Still remove from local state even if database operation fails
+          dispatch(removeFromCart(id));
+        });
+    } else {
+      // For non-authenticated users, just remove from local state
+      dispatch(removeFromCart(id));
+    }
   };
 
   // Apply coupon code (mock functionality)
@@ -43,14 +81,32 @@ const Cart = () => {
 
   // Handle checkout
   const handleCheckout = () => {
-    // Navigate to checkout page or process payment
-    alert('Proceeding to checkout...');
-    // navigate('/checkout');
+    // Navigate to checkout page
+    navigate('/checkout');
+  };
+
+  // Handle clear cart
+  const handleClearCart = () => {
+    if (window.confirm('Are you sure you want to clear your cart?')) {
+      dispatch(clearCart());
+    }
   };
 
   return (
     <Container className="py-5">
       <h1 className="mb-4 fw-bold" style={{ color: '#660ff1' }}>Shopping Cart</h1>
+      
+      {loading && (
+        <Alert variant="info">
+          Loading your cart...
+        </Alert>
+      )}
+      
+      {error && (
+        <Alert variant="warning" dismissible onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
       
       {items.length === 0 ? (
         <Card className="p-5 text-center shadow-sm">
@@ -99,31 +155,9 @@ const Cart = () => {
                       </p>
                     </Col>
                     <Col xs={6} md={3} className="d-flex align-items-center">
-                      <Form.Group className="d-flex align-items-center">
-                        <Button 
-                          variant="outline-secondary" 
-                          size="sm"
-                          onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                          disabled={item.quantity <= 1}
-                        >
-                          -
-                        </Button>
-                        <Form.Control
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) => handleQuantityChange(item.id, e.target.value)}
-                          className="mx-2 text-center"
-                          style={{ width: '60px' }}
-                        />
-                        <Button 
-                          variant="outline-secondary" 
-                          size="sm"
-                          onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                        >
-                          +
-                        </Button>
-                      </Form.Group>
+                      <div className="d-flex align-items-center">
+                        <span className="mx-3">Quantity: {item.quantity}</span>
+                      </div>
                     </Col>
                     <Col xs={6} md={2} className="d-flex align-items-center justify-content-end">
                       <div className="d-flex flex-column align-items-end">
@@ -149,11 +183,7 @@ const Cart = () => {
                   </Link>
                   <Button 
                     variant="outline-danger" 
-                    onClick={() => {
-                      if (window.confirm('Are you sure you want to clear your cart?')) {
-                        dispatch(clearCart());
-                      }
-                    }}
+                    onClick={handleClearCart}
                   >
                     Clear Cart
                   </Button>

@@ -6,6 +6,8 @@ import AboutUs from "./pages/AboutUs.jsx";
 import ContactUs from "./pages/ContactUs.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
+import Cart from "./pages/Cart.jsx";
+import Checkout from "./pages/Checkout.jsx";
 
 // Import Seller Pages
 import Dashboard from "./pages/seller/Dashboard.jsx";
@@ -23,9 +25,6 @@ import Chat from "./pages/Chat.jsx";
 import ChatPage from "./pages/Users.jsx";
 import Shop from "./pages/Shop.jsx";
 import ProductDetailsPage from "./pages/ProductDetails.jsx";
-
-// Import NotificationProvider
-// import { NotificationProvider } from "./contexts/NotificationContext.jsx";
 
 
 function App() {
@@ -56,6 +55,8 @@ function App() {
             <Route path="seller/store-settings" element={<StoreSettings />} />
             <Route path="shop" element={<Shop />} />
             <Route path="product-details/:id" element={<ProductDetailsPage />} />
+            <Route path="cart" element={<Cart />} />
+            <Route path="checkout" element={<Checkout />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -1,6 +1,12 @@
 from rest_framework import serializers
 from .models import *
 from products.models import Product
+from accounts.models import UserAccount
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserAccount
+        fields = ['id', 'email', 'name', 'first_name', 'last_name']
 
 class ProductLiteSerializer(serializers.ModelSerializer):
     class Meta:
@@ -55,33 +61,44 @@ class OrderItemSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 class OrderSerializer(serializers.ModelSerializer):
-    items = OrderItemSerializer(many=True)
-    total = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    items = OrderItemSerializer(many=True, read_only=True)
+    user = UserSerializer(read_only=True)
+    total = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
         fields = ['id', 'user', 'created_at', 'payment_status', 'items', 'total']
         read_only_fields = ['user', 'created_at', 'total']
     
+    def get_total(self, obj):
+        """Calculate the total cost of the order"""
+        # Use product price instead of order item price
+        # Each product can only be purchased once, so quantity is always 1
+        total = sum(item.product.price for item in obj.items.all())
+        return total
+    
     def create(self, validated_data):
-        items_data = validated_data.pop('items')
+        items_data = validated_data.pop('items', [])
         order = Order.objects.create(**validated_data)
-        total_order_cost = 0
+        
+        # Process each item, ensuring each product is only added once
+        processed_products = set()
         for item_data in items_data:
-            product = item_data['product'] # Get product instance from OrderItemSerializer
-            quantity = item_data['quantity']
-            price = product.price # Get price from the product instance
-            order_item = OrderItem.objects.create(
+            product = item_data['product']
+            
+            # Skip if we've already processed this product
+            if product.id in processed_products:
+                continue
+                
+            processed_products.add(product.id)
+            
+            # Always set quantity to 1
+            OrderItem.objects.create(
                 order=order, 
                 product=product,
-                quantity=quantity,
-                price=price # Store the price at the time of order
+                quantity=1,
+                price=product.price
             )
-            total_order_cost += (price * quantity)
-        
-        # Save the calculated total to the order
-        order.total = total_order_cost
-        order.save()
         
         return order
 

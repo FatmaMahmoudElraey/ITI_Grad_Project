@@ -6,6 +6,8 @@ import { useSearchParams } from 'react-router-dom';
 import { fetchProducts, fetchCategories, fetchTags } from '../store/slices/productsSlice';
 import { FiSearch, FiGrid, FiList, FiFilter } from 'react-icons/fi';
 import TemplateCard from '../components/TemplateCard';
+import FeaturedProducts from '../components/FeaturedProducts';
+import LatestProducts from '../components/LatestProducts';
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -271,8 +273,11 @@ export default function Shop() {
         </div>
       </div>
 
-      {/* Rest of your existing code */}
-      <Container className="py-5">
+      {/* Main Shop Content */}
+      <Container className="my-5">
+        {/* Add Featured and Latest Products Sections Here */}
+        <FeaturedProducts />
+        <LatestProducts />
 
         <Row>
           {/* Filters Sidebar */}

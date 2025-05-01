@@ -1,5 +1,5 @@
 from rest_framework.viewsets import ModelViewSet
-from rest_framework import serializers, status
+from rest_framework import serializers, status, permissions
 from .models import Category, Tag, Product, ProductReview, ProductFlag
 from .serializers import (
     CategorySerializer,
@@ -76,6 +76,19 @@ class ProductViewSet(ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
 
+    @action(detail=False, methods=['get'])
+    def featured(self, request):
+        featured_products = self.get_queryset().filter(is_featured=True)[:5] # Get top 5 featured
+        serializer = self.get_serializer(featured_products, many=True)
+        return Response(serializer.data)
+
+class LatestProductsViewSet(ModelViewSet):
+    serializer_class = ProductSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        return Product.objects.filter(is_approved=True).select_related('category', 'seller')\
+                .prefetch_related('tags', 'reviews', 'flags', 'images').order_by('-created_at')[:5]
 
 class ProductReviewViewSet(ModelViewSet):
     queryset = ProductReview.objects.all()
@@ -94,8 +107,3 @@ class ProductFlagViewSet(ModelViewSet):
         if ProductFlag.objects.filter(user=self.request.user, product=product).exists():
             raise serializers.ValidationError("You have already flagged this product.")
         serializer.save(user=self.request.user)
-
-
-
-
-    

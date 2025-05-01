@@ -19,6 +19,8 @@ export const ENDPOINTS = {
   CATEGORIES: `${BASE_URL}/api/categories/`,
   TAGS: `${BASE_URL}/api/tags/`,
   PRODUCTS: `${BASE_URL}/api/products/`,
+  LATEST_PRODUCTS: `${BASE_URL}/api/latest-products/`,
+  FEATURED_PRODUCTS: `${BASE_URL}/api/products/featured/`,
   PRODUCT_REVIEWS: `${BASE_URL}/api/product-reviews/`,
   PRODUCT_FLAGS: `${BASE_URL}/api/product-flags/`,
 

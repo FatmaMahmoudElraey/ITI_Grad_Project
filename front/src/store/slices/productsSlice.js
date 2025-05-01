@@ -30,6 +30,34 @@ export const fetchProductById = createAsyncThunk(
   }
 );
 
+export const fetchLatestProducts = createAsyncThunk(
+  'products/fetchLatest',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(ENDPOINTS.LATEST_PRODUCTS);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response ? error.response.data : 'Could not fetch latest products'
+      );
+    }
+  }
+);
+
+export const fetchFeaturedProducts = createAsyncThunk(
+  'products/fetchFeatured',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(ENDPOINTS.FEATURED_PRODUCTS);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response ? error.response.data : 'Could not fetch featured products'
+      );
+    }
+  }
+);
+
 export const fetchCategories = createAsyncThunk(
   'products/fetchCategories',
   async (_, { rejectWithValue }) => {
@@ -121,6 +149,8 @@ const productsSlice = createSlice({
   name: 'products',
   initialState: {
     items: [],
+    latestItems: [],
+    featuredItems: [],
     currentProduct: null,
     categories: [],
     tags: [],
@@ -171,6 +201,34 @@ const productsSlice = createSlice({
         state.error = action.payload || 'Failed to fetch product';
       })
       
+      // Fetch Latest Products
+      .addCase(fetchLatestProducts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchLatestProducts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.latestItems = action.payload;
+      })
+      .addCase(fetchLatestProducts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to fetch latest products';
+      })
+
+      // Fetch Featured Products
+      .addCase(fetchFeaturedProducts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchFeaturedProducts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.featuredItems = action.payload;
+      })
+      .addCase(fetchFeaturedProducts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to fetch featured products';
+      })
+
       // Fetch Categories
       .addCase(fetchCategories.pending, (state) => {
         state.loading = true;

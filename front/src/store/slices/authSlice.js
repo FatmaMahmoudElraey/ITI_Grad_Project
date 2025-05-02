@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import { ENDPOINTS } from "../../api/constants";
+import { ENDPOINTS, BASE_URL } from "../../api/constants";
 
 // Load user (if token exists)
 export const loadUser = createAsyncThunk(
@@ -117,20 +117,44 @@ export const activateAccount = createAsyncThunk(
   "auth/activateAccount",
   async (activationData, { rejectWithValue }) => {
     try {
-      // Assuming you have an activation endpoint
-      const response = await axios.post(`${ENDPOINTS.REGISTER}activate/`, {
+      // Use the correct activation endpoint
+      const response = await axios.post(`${BASE_URL}/api/auth/users/activation/`, {
         uid: activationData.uid,
         token: activationData.token,
       });
       return { success: true };
     } catch (error) {
       console.error("Activation error:", error.response?.data || error.message);
-      return rejectWithValue(error.response?.data || "Activation failed");
+      // Extract error message for better display
+      let errorMessage = "Activation failed";
+      if (error.response?.data) {
+        // Handle different error formats
+        if (typeof error.response.data === 'object') {
+          // If it's an object with error details
+          const errorData = error.response.data;
+          if (errorData.detail) {
+            errorMessage = errorData.detail;
+          } else if (errorData.non_field_errors) {
+            errorMessage = errorData.non_field_errors.join(', ');
+          } else {
+            // Try to extract any error message from the object
+            const firstErrorKey = Object.keys(errorData)[0];
+            if (firstErrorKey) {
+              const firstError = errorData[firstErrorKey];
+              errorMessage = Array.isArray(firstError) 
+                ? firstError.join(', ') 
+                : String(firstError);
+            }
+          }
+        } else if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        }
+      }
+      return rejectWithValue(errorMessage);
     }
   }
 );
 
-// Request password reset
 export const resetPassword = createAsyncThunk(
   "auth/resetPassword",
   async (email, { rejectWithValue }) => {
@@ -145,7 +169,6 @@ export const resetPassword = createAsyncThunk(
   }
 );
 
-// Confirm password reset
 export const resetPasswordConfirm = createAsyncThunk(
   "auth/resetPasswordConfirm",
   async (resetData, { rejectWithValue }) => {

@@ -9,6 +9,7 @@ import LoginPage from "./pages/LoginPage.jsx";
 import Cart from "./pages/Cart.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import CategoryProducts from './pages/CategoryProducts';
+import ActivateAccount from "./pages/ActivateAccount.jsx";
 
 // Import Seller Pages
 import Dashboard from "./pages/seller/Dashboard.jsx";
@@ -53,6 +54,7 @@ function App() {
             <Route path="profile" element={<UserProfile />} />
             <Route path="register" element={<RegisterPage />} />
             <Route path="login" element={<LoginPage />} />
+            <Route path="activate/:uid/:token" element={<ActivateAccount />} />
             <Route path="users" element={<ChatPage />} />
             <Route path="chat" element={<Chat />} />
             <Route path="shop" element={<Shop />} />

@@ -8,7 +8,7 @@
 {% trans "You're receiving this email because you need to finish activation process on" %} {{ site_name }}.
 
 {% trans "Please go to the following page to activate account:" %}
-{{ protocol }}://{{ domain }}/{{ url|safe }}
+http://localhost:5173/activate/{{ uid }}/{{ token }}
 
 {% trans "Thanks for using our site!" %}
 
@@ -20,7 +20,7 @@
 <p>{% trans "You're receiving this email because you need to finish activation process on" %} {{ site_name }}.</p>
 
 <p>{% trans "Please go to the following page to activate account:" %}</p>
-<p><a href="{{ protocol }}://{{ domain }}/{{ url|safe }}">{{ protocol }}://{{ domain }}/{{ url|safe }}</a></p>
+<p><a href="http://localhost:5173/activate/{{ uid }}/{{ token }}">http://localhost:5173/activate/{{ uid }}/{{ token }}</a></p>
 
 <p>{% trans "Thanks for using our site!" %}</p>
 

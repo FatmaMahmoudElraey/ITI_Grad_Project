@@ -19,9 +19,9 @@ urlpatterns = [
     # path('token/login/', csrf_exempt(TokenCreateView.as_view()), name='token_login'),
 
     # 5) Activation‑link redirect to SPA
-    # re_path(
-    #     r'^users/activate/(?P<uid>[\w-]+)/(?P<token>[\w-]+)/$',
-    #     redirect_to_frontend,
-    #     name='activation_redirect'
-    # ),
+    re_path(
+        r'^users/activate/(?P<uid>[\w-]+)/(?P<token>[\w-]+)/$',
+        redirect_to_frontend,
+        name='activation_redirect'
+    ),
 ]

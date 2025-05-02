@@ -10,16 +10,28 @@ import {
   FaBars,
   FaHome
 } from 'react-icons/fa';
+import { useDispatch } from 'react-redux';
+import { clearAuthState } from '../../store/slices/authSlice';
+import axios from 'axios';
 
 const Header = ({ toggleSidebar }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/admin/products?search=${encodeURIComponent(searchQuery)}`);
-    }
+  const handleLogout = () => {
+    // First clear all storage
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Remove authorization header
+    delete axios.defaults.headers.common["Authorization"];
+    
+    // Then dispatch logout action to update Redux state
+    dispatch(clearAuthState());
+    
+    // Finally redirect to login page
+    navigate('/login', { replace: true });
   };
 
   return (
@@ -37,24 +49,21 @@ const Header = ({ toggleSidebar }) => {
         
       </ul>
 
-      {/* Search form */}
-      <form className="form-inline ml-3" onSubmit={handleSearch}>
-        <div className="input-group input-group-sm">
-          <input 
-            className="form-control form-control-navbar" 
-            type="search" 
-            placeholder="Search products..." 
-            aria-label="Search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <div className="input-group-append">
-            <button className="btn btn-navbar" type="submit">
-              <FaSearch />
-            </button>
-          </div>
-        </div>
-      </form>
+      
+
+      {/* Right navbar links */}
+      <ul className="navbar-nav ml-auto">
+        <li className="nav-item">
+          <button 
+            className="btn btn-link nav-link" 
+            onClick={handleLogout}
+            title="Logout"
+          >
+            <FaSignOutAlt />
+            <span className="d-none d-sm-inline-block ml-1">Logout</span>
+          </button>
+        </li>
+      </ul>
     </nav>
   );
 };

@@ -180,16 +180,19 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    clearError: (state) => {
+    clearError(state) {
       state.error = null;
     },
-    clearSuccess: (state) => {
+    clearSuccess(state) {
       state.success = null;
     },
-    clearAuthState: (state) => {
+    clearAuthState(state) {
+      // Reset the entire state to initial values
+      state.user = null;
+      state.isAuthenticated = false;
       state.loading = false;
-      state.success = null;
       state.error = null;
+      state.success = null;
     },
   },
   extraReducers: (builder) => {

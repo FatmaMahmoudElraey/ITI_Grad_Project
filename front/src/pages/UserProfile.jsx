@@ -89,7 +89,7 @@ export default function UserProfile() {
         name: formData.name,
         bio: formData.bio || "",
         location: formData.location || "",
-        birth_date: formData.birth_date || ""
+        birth_date: formData.birth_date || "",
       };
 
       // Only include the picture if it's a new file
@@ -113,7 +113,11 @@ export default function UserProfile() {
       setShowEditModal(false);
     } catch (err) {
       console.error("Failed to update profile:", err);
-      alert(`Failed to update profile: ${err.message || 'Please check your form data'}`); 
+      alert(
+        `Failed to update profile: ${
+          err.message || "Please check your form data"
+        }`
+      );
     }
   };
 
@@ -130,20 +134,22 @@ export default function UserProfile() {
   const handleDownload = async (productId) => {
     try {
       // Get the access token from session storage
-      const token = sessionStorage.getItem('accessToken');
+      const token = sessionStorage.getItem("accessToken");
       if (!token) {
-        alert('You need to be logged in to download files');
+        alert("You need to be logged in to download files");
         return;
       }
 
       // Create a fetch request to the download endpoint
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"}/api/products/${productId}/download/`,
+        `${
+          import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"
+        }/api/products/${productId}/download/`,
         {
-          method: 'GET',
+          method: "GET",
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -152,9 +158,9 @@ export default function UserProfile() {
       }
 
       // Get the filename from the Content-Disposition header if available
-      const contentDisposition = response.headers.get('Content-Disposition');
+      const contentDisposition = response.headers.get("Content-Disposition");
       let filename = `product-${productId}.zip`; // Default filename
-      
+
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename="(.+)"/i);
         if (filenameMatch && filenameMatch[1]) {
@@ -164,24 +170,24 @@ export default function UserProfile() {
 
       // Convert the response to a blob
       const blob = await response.blob();
-      
+
       // Create a temporary URL for the blob
       const url = window.URL.createObjectURL(blob);
-      
+
       // Create a temporary link element
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
       link.download = filename;
-      
+
       // Append the link to the document, click it, and remove it
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       // Release the blob URL
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Error downloading file:', error);
+      console.error("Error downloading file:", error);
       alert(`Failed to download file: ${error.message}`);
     }
   };
@@ -395,9 +401,9 @@ export default function UserProfile() {
                   <div>
                     <small className="text-muted">Member Since</small>
                     <p className="mb-0">
-                    {userProfile?.user?.date_joined
-                    ? new Date(userProfile?.user?.date_joined).getFullYear()
-                    : "2023"}
+                      {userProfile?.user?.date_joined
+                        ? new Date(userProfile?.user?.date_joined).getFullYear()
+                        : "2023"}
                     </p>
                   </div>
                 </div>
@@ -498,57 +504,49 @@ export default function UserProfile() {
                           </h3>
 
                           {order.items?.map((item) => (
-                            <div key={item.id} style={{ marginBottom: "1rem" }}>
-                              {/* Titles Row */}
-                              <div
-                                style={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                  fontWeight: "bold",
-                                  fontSize: "0.95rem",
-                                  color: "#666",
-                                  borderBottom: "1px solid #ccc",
-                                  paddingBottom: "0.3rem",
-                                }}
-                              >
+                            <div key={item.id} className="mb-3">
+                              {/* Header Row */}
+                              <div className="d-flex justify-content-between text-muted border-bottom pb-2 small fw-semibold">
                                 <div style={{ flex: 2 }}>Product</div>
-                                <div style={{ flex: 1, textAlign: "center" }}>
+                                <div
+                                  className="text-center"
+                                  style={{ flex: 1 }}
+                                >
                                   Quantity
                                 </div>
-                                <div style={{ flex: 1, textAlign: "right" }}>
+                                <div className="text-end" style={{ flex: 1 }}>
                                   Price
                                 </div>
                               </div>
 
-                              {/* Data Row */}
-                              <div
-                                style={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                  alignItems: "center",
-                                  marginTop: "0.5rem",
-                                  fontSize: "1rem",
-                                }}
-                              >
+                              {/* Item Row */}
+                              <div className="d-flex justify-content-between align-items-center mt-2 fs-6">
                                 <div style={{ flex: 2 }}>
                                   {item.product?.title}
                                 </div>
-                                <div style={{ flex: 1, textAlign: "center" }}>
+                                <div
+                                  className="text-center"
+                                  style={{ flex: 1 }}
+                                >
                                   {item.quantity}
                                 </div>
-                                <div style={{ flex: 1, textAlign: "right" }}>
+                                <div className="text-end" style={{ flex: 1 }}>
                                   ${item.product.price}
                                 </div>
-                                <div style={{ marginLeft: "1rem" }}>
-                                  <Button
-                                    variant="outline-primary"
-                                    size="sm"
-                                    onClick={() => handleDownload(item.product.id)}
-                                    className="d-flex align-items-center"
-                                  >
-                                    <FaDownload className="me-1" size={12} /> Download
-                                  </Button>
-                                </div>
+                              </div>
+
+                              {/* Full-width Download Button */}
+                              <div className="mt-3">
+                                <Button
+                                  variant="outline-primary"
+                                  className="w-100 d-flex justify-content-center align-items-center"
+                                  onClick={() =>
+                                    handleDownload(item.product.id)
+                                  }
+                                >
+                                  <FaDownload className="me-2" size={14} />{" "}
+                                  Download
+                                </Button>
                               </div>
                             </div>
                           ))}

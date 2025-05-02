@@ -1,107 +1,125 @@
-import { Container, Row, Col, ListGroup } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Container, Row, Col, ListGroup, Navbar } from 'react-bootstrap';
+import { Link, useNavigate } from 'react-router-dom';
+import { FiFacebook, FiTwitter, FiInstagram, FiLinkedin } from 'react-icons/fi';
+import Logo from '../assets/images/navbar/logo.png';
 
 const Footer = () => {
+  const navigate = useNavigate();
+
   return (
     <footer className="bg-dark text-white py-5 mt-5">
       <Container>
         <Row>
           <Col md={4} className="mb-4 mb-md-0">
-            <h5 className="text-uppercase mb-4">WebsiteMarket</h5>
+            <Navbar.Brand as={Link} to="/" className="text-light fw-bold d-flex align-items-center mb-4">
+              <img
+                alt="Logo"
+                src={Logo}
+                width="30"
+                height="24"
+                className="d-inline-block align-top me-2"
+              />
+              <span className="brand-text">WEBIFY</span>
+            </Navbar.Brand>
             <p className="mb-4">
-              Your one-stop marketplace for high-quality website templates and themes.
-              Find the perfect design for your business needs.
+              Discover our premium collection of website templates. 
+              From e-commerce to portfolios, find the perfect template 
+              to showcase your brand.
             </p>
             <div className="d-flex gap-3 mb-4">
               <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-white fs-5">
-                <i className="bi bi-facebook" />
+                <FiFacebook />
               </a>
               <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white fs-5">
-                <i className="bi bi-twitter" />
+                <FiTwitter />
               </a>
               <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-white fs-5">
-                <i className="bi bi-instagram" />
+                <FiInstagram />
               </a>
               <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-white fs-5">
-                <i className="bi bi-linkedin" />
+                <FiLinkedin />
               </a>
             </div>
           </Col>
 
           <Col md={2} className="mb-4 mb-md-0">
-            <h5 className="text-uppercase mb-4">Links</h5>
+            <h5 className="text-uppercase mb-4">Quick Links</h5>
             <ListGroup variant="flush" className="footer-links">
               <ListGroup.Item className="bg-transparent border-0 p-0 mb-2">
                 <Link to="/" className="text-white text-decoration-none">Home</Link>
               </ListGroup.Item>
               <ListGroup.Item className="bg-transparent border-0 p-0 mb-2">
-                <Link to="/templates" className="text-white text-decoration-none">Templates</Link>
+                <Link to="/shop" className="text-white text-decoration-none">Shop</Link>
               </ListGroup.Item>
               <ListGroup.Item className="bg-transparent border-0 p-0 mb-2">
-                <Link to="/pricing" className="text-white text-decoration-none">Pricing</Link>
+                <Link to="/about" className="text-white text-decoration-none">About Us</Link>
               </ListGroup.Item>
               <ListGroup.Item className="bg-transparent border-0 p-0 mb-2">
-                <Link to="/about" className="text-white text-decoration-none">About</Link>
+                <Link to="/contact" className="text-white text-decoration-none">Contact Us</Link>
               </ListGroup.Item>
             </ListGroup>
           </Col>
 
           <Col md={2} className="mb-4 mb-md-0">
-            <h5 className="text-uppercase mb-4">Categories</h5>
+            <h5 className="text-uppercase mb-4">Support</h5>
             <ListGroup variant="flush" className="footer-links">
               <ListGroup.Item className="bg-transparent border-0 p-0 mb-2">
-                <Link to="/templates?category=e-commerce" className="text-white text-decoration-none">E-commerce</Link>
+                <Link to="/faq" className="text-white text-decoration-none">FAQ</Link>
               </ListGroup.Item>
               <ListGroup.Item className="bg-transparent border-0 p-0 mb-2">
-                <Link to="/templates?category=portfolio" className="text-white text-decoration-none">Portfolio</Link>
+                <Link to="/privacy-policy" className="text-white text-decoration-none">Privacy Policy</Link>
               </ListGroup.Item>
               <ListGroup.Item className="bg-transparent border-0 p-0 mb-2">
-                <Link to="/templates?category=business" className="text-white text-decoration-none">Business</Link>
+                <Link to="/terms" className="text-white text-decoration-none">Terms of Service</Link>
               </ListGroup.Item>
               <ListGroup.Item className="bg-transparent border-0 p-0 mb-2">
-                <Link to="/templates?category=blog" className="text-white text-decoration-none">Blog</Link>
+                <Link to="/help" className="text-white text-decoration-none">Help Center</Link>
               </ListGroup.Item>
             </ListGroup>
           </Col>
 
           <Col md={4}>
-            <h5 className="text-uppercase mb-4">Newsletter</h5>
+            <h5 className="text-uppercase mb-4">Stay Updated</h5>
             <p className="mb-3">
-              Subscribe to get updates on new templates and special offers.
+              Subscribe to receive updates about new templates and exclusive offers.
             </p>
             <div className="input-group mb-3">
               <input
                 type="email"
                 className="form-control"
-                placeholder="Your email"
-                aria-label="Your email"
+                placeholder="Enter your email"
+                aria-label="Enter your email"
               />
-              <button className="btn btn-primary" type="button">
+              <button 
+                className="btn" 
+                type="button"
+                style={{ backgroundColor: '#660ff1', color: 'white' }}
+              >
                 Subscribe
               </button>
             </div>
             <p className="small text-muted">
-              By subscribing, you agree to our Terms of Service and Privacy Policy.
+              We respect your privacy. Unsubscribe at any time.
             </p>
           </Col>
         </Row>
 
-        <hr className="my-4" />
+        <hr className="my-4" style={{ borderColor: 'rgba(255,255,255,0.1)' }} />
 
-        <Row>
-          <Col className="text-center text-md-start">
+        <Row className="align-items-center">
+          <Col md={6} className="text-center text-md-start">
             <p className="small text-muted mb-0">
-              &copy; {new Date().getFullYear()} WebsiteMarket. All rights reserved.
+              &copy; {new Date().getFullYear()} Template Market. All rights reserved.
             </p>
           </Col>
-          <Col className="text-center text-md-end">
-            <Link  className="text-muted me-3 small">
+          <Col md={6} className="text-center text-md-end mt-3 mt-md-0">
+            <Link to="/privacy-policy" className="text-muted me-3 small text-decoration-none">
               Privacy Policy
             </Link>
-            <Link  className="text-muted me-3 small">
+            <Link to="/terms" className="text-muted me-3 small text-decoration-none">
               Terms of Service
             </Link>
-            <Link  className="text-muted small">
+            <Link to="/contact" className="text-muted small text-decoration-none">
               Contact Us
             </Link>
           </Col>

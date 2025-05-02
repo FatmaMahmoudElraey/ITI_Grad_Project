@@ -68,8 +68,12 @@ export default function Header() {
             id="nav-dropdown"
             className="nav-link-item custom-dropdown"
           >
+            <NavDropdown.Item as={Link} to="/profile">
+              <FiUser className="me-1" />
+              Profile
+            </NavDropdown.Item>
             {user?.role && (user.role === 'admin' || user.role === 'seller') && (
-              <NavDropdown.Item as={Link} to={`/${user.role}/dashboard`}>
+              <NavDropdown.Item as={Link} to={`/${user.role}`}>
                 Dashboard
               </NavDropdown.Item>
             )}

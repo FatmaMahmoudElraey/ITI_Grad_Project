@@ -51,12 +51,7 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
                 </Link>
               </li>
             ))}
-            <li className="nav-item">
-              <Link to="/login" className="nav-link">
-                <i className="nav-icon"><FaSignOutAlt /></i>
-                <p>Logout</p>
-              </Link>
-            </li>
+            
           </ul>
         </nav>
         

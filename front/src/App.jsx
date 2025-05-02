@@ -34,9 +34,15 @@ import AdminOrders from "./pages/admin/Orders.jsx";
 import AdminUsers from "./pages/admin/Users.jsx";
 import AdminCategories from "./pages/admin/Categories.jsx";
 
+// Import Protected Routes
+import AdminRoute from "./components/ProtectedRoutes/AdminRoute.jsx";
+import SellerRoute from "./components/ProtectedRoutes/SellerRoute.jsx";
+import AuthLoader from "./components/AuthLoader.jsx";
+
 
 function App() {
   return (
+    <AuthLoader>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<SharedLayout />}>
@@ -44,23 +50,11 @@ function App() {
             <Route path="home" element={<Home />} />
             <Route path="about"  element={<AboutUs />} />
             <Route path="contact"  element={<ContactUs />} />
-
-            {/* Seller Pages */}
-            <Route path="seller/dashboard" element={<Dashboard />} />
-            <Route path="/seller/products" element={<Products />} />
-            <Route path="/seller/products/add" element={<AddProduct />} />
-            <Route path="/seller/products/edit/:id" element={<EditProduct />} />
-            <Route path="seller/sales-report" element={<SalesReport />} />
-            <Route path="seller/payouts" element={<Payouts />} />
-            <Route path="seller/orders" element={<Orders />} />
-            <Route path="seller/reviews" element={<Reviews />} />
-            <Route path="seller/inbox" element={<Inbox />} />
             <Route path="profile" element={<UserProfile />} />
             <Route path="register" element={<RegisterPage />} />
             <Route path="login" element={<LoginPage />} />
             <Route path="users" element={<ChatPage />} />
             <Route path="chat" element={<Chat />} />
-            <Route path="seller/store-settings" element={<StoreSettings />} />
             <Route path="shop" element={<Shop />} />
             <Route path="product-details/:id" element={<ProductDetailsPage />} />
             <Route path="cart" element={<Cart />} />
@@ -68,16 +62,35 @@ function App() {
             <Route path="/category/:categoryName" element={<CategoryProducts />} />
           </Route>
           
-          {/* Admin Routes */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminProducts />} />
-            <Route path="products" element={<AdminProducts />} />
-            <Route path="categories" element={<AdminCategories />} />
-            <Route path="orders" element={<AdminOrders />} />
-            <Route path="users" element={<AdminUsers />} />
+          {/* Seller Routes - Protected by SellerRoute */}
+          <Route element={<SellerRoute />}>
+            <Route path="/" element={<SharedLayout />}>
+              <Route path="seller/dashboard" element={<Dashboard />} />
+              <Route path="/seller/products" element={<Products />} />
+              <Route path="/seller/products/add" element={<AddProduct />} />
+              <Route path="/seller/products/edit/:id" element={<EditProduct />} />
+              <Route path="seller/sales-report" element={<SalesReport />} />
+              <Route path="seller/payouts" element={<Payouts />} />
+              <Route path="seller/orders" element={<Orders />} />
+              <Route path="seller/reviews" element={<Reviews />} />
+              <Route path="seller/inbox" element={<Inbox />} />
+              <Route path="seller/store-settings" element={<StoreSettings />} />
+            </Route>
+          </Route>
+          
+          {/* Admin Routes - Protected by AdminRoute */}
+          <Route element={<AdminRoute />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminProducts />} />
+              <Route path="products" element={<AdminProducts />} />
+              <Route path="categories" element={<AdminCategories />} />
+              <Route path="orders" element={<AdminOrders />} />
+              <Route path="users" element={<AdminUsers />} />
+            </Route>
           </Route>
         </Routes>
       </BrowserRouter>
+    </AuthLoader>
   );
 }
 

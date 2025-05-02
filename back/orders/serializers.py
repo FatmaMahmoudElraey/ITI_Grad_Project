@@ -61,7 +61,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 class OrderSerializer(serializers.ModelSerializer):
-    items = OrderItemSerializer(many=True, read_only=True)
+    items = OrderItemSerializer(many=True)
     user = UserSerializer(read_only=True)
     total = serializers.SerializerMethodField()
 

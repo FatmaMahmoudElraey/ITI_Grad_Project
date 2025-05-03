@@ -11,6 +11,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+# Add paymob integrations credentials
+PAYMOB_API_KEY     = os.getenv("PAYMOB_API_KEY")
+PAYMOB_HMAC_KEY    = os.getenv("PAYMOB_HMAC_KEY")
+PAYMOB_SECRET_KEY  = os.getenv("PAYMOB_SECRET_KEY")
+PAYMOB_PUBLIC_KEY  = os.getenv("PAYMOB_PUBLIC_KEY")
+PAYMOB_MERCHANT_ID = os.getenv("PAYMOB_MERCHANT_ID")
+PAYMOB_INTEGRATION_ID    = os.getenv("PAYMOB_INTEGRATION_ID")
+PAYMOB_IFRAME_ID         = os.getenv("PAYMOB_IFRAME_ID")
+PAYMOB_AUTH_URL          = "https://accept.paymobsolutions.com/api/auth/tokens"
+PAYMOB_ORDER_URL         = "https://accept.paymobsolutions.com/api/ecommerce/orders"
+PAYMOB_PAYMENT_KEY_URL   = "https://accept.paymobsolutions.com/api/acceptance/payment_keys"
+
+
 SECRET_KEY = 'django-insecure-)mx5num+p$9vtlb$+)n5022t7nx#&q57w7u1hqp6t&v4i6pr3y'
 
 # SECURITY WARNING: don't run with debug turned on in production!

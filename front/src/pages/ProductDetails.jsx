@@ -9,6 +9,9 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProductById, fetchProducts } from '../store/slices/productsSlice';
 import { addToCart } from '../store/slices/cartSlice';
+import 'sweetalert2/dist/sweetalert2.min.css';
+import Swal from 'sweetalert2';
+import { addCartItem } from '../store/slices/cartApiSlice';
 
 const ProductDetailsPage = () => {
   const { id } = useParams();
@@ -18,6 +21,11 @@ const ProductDetailsPage = () => {
   const [similarItems, setSimilarItems] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastVariant, setToastVariant] = useState('success');
+  const { items: cartItems } = useSelector((state) => state.cart);
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  
 
   useEffect(() => {
     // Fetch the specific product by ID
@@ -36,14 +44,14 @@ const ProductDetailsPage = () => {
   // Find similar products when products or currentProduct changes
   useEffect(() => {
     if (currentProduct && products && products.length > 0) {
-      // Find products in the same category or with similar tags
+      // Find products in the same category only
       const similar = products
         .filter(product => 
           product.id !== currentProduct.id && 
           (product.category?.id === currentProduct.category?.id ||
            product.tags?.some(tag => currentProduct.tags?.includes(tag)))
         )
-        .slice(0, 3); // Limit to 3 similar products
+        .slice(0, 4); // Limit to 4 similar products
 
       setSimilarItems(similar);
     }
@@ -67,7 +75,6 @@ const ProductDetailsPage = () => {
     price: 0,
     created_at: new Date().toISOString(),
     seller: { id: 0, name: "" },
-    sales: 0,
     reviews: [],
     rating: 0
   };
@@ -77,29 +84,88 @@ const ProductDetailsPage = () => {
   
   // Handle add to cart
   const handleAddToCart = () => {
-    dispatch(addToCart({
-      id: selectedProduct.id,
-      template_id: selectedProduct.id,
-      quantity: quantity,
-      price: selectedProduct.sale_price || selectedProduct.price,
-      title: selectedProduct.title,
-      image: selectedProduct.images && selectedProduct.images.length > 0 ? (selectedProduct.images[0].image_url || selectedProduct.images[0].image || null) : null,
-      category_name: selectedProduct.category_name
-    }));
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 2000);
-  };
+      // Destructure needed properties from selectedProduct
+      const { id, title, price, sale_price, images, category } = selectedProduct;
+      const category_name = category?.name || '';
+      
+      // Check if the item already exists in the cart (using Redux state)
+      const itemExists = cartItems.some(item => item.id === id || item.template_id === id);
+  
+      if (itemExists) {
+        // Show SweetAlert notification if item is already in cart
+        Swal.fire({
+          icon: 'info',
+          title: 'Already in Cart',
+          text: `${title} is already in your cart.`,
+          timer: 2000, // Auto close after 2 seconds
+          showConfirmButton: false
+        });
+        return; // Stop further execution
+      }
+  
+      // Create cart item object for local state
+      const cartItem = {
+        id: id,
+        template_id: id,
+        quantity: 1,
+        price: sale_price || price,
+        title,
+        image: images && images.length > 0 ? (images[0].image_url || images[0].image || null) : null,
+        category_name
+      };
+      
+      // Add to local cart state
+      dispatch(addToCart(cartItem));
+      
+      // If user is authenticated, also save to database
+      if (isAuthenticated) {
+        console.log('Adding item to database cart:', {
+          product_id: id,
+          quantity: 1
+        });
+        
+        // Create a database-compatible cart item
+        const dbCartItem = {
+          product_id: id,
+          quantity: 1
+        };
+        
+        // The improved addCartItem function will handle duplicates automatically
+        dispatch(addCartItem(dbCartItem))
+          .unwrap()
+          .then(response => {
+            console.log('Successfully added/updated cart item in database:', response);
+            setToastMessage(`${title} has been added to your cart.`);
+            setToastVariant('success');
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 2000);
+          })
+          .catch(error => {
+            console.error('Failed to save cart item to database:', error);
+            setToastMessage(`${title} added to local cart only. Database sync failed.`);
+            setToastVariant('warning');
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 2000);
+          });
+      } else {
+        // For non-authenticated users, just show a success message
+        setToastMessage(`${title} has been added to your cart.`);
+        setToastVariant('success');
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 2000);
+      }
+    };
 
   return (
     <Container className="py-5">
       <ToastContainer position="top-end" className="p-3" style={{ zIndex: 1 }}>
-        <Toast show={showToast} onClose={() => setShowToast(false)} bg="success" delay={2000} autohide>
+        <Toast show={showToast} onClose={() => setShowToast(false)} bg={toastVariant} delay={2000} autohide>
           <Toast.Header closeButton>
             <FontAwesomeIcon icon={faShoppingCart} className="me-2" />
-            <strong className="me-auto">Added to Cart</strong>
+            <strong className="me-auto">{toastVariant === 'success' ? 'Added to Cart' : 'Notification'}</strong>
           </Toast.Header>
           <Toast.Body className="text-white">
-            {selectedProduct.title} has been added to your cart.
+            {toastMessage}
             <div className="mt-2">
               <Button size="sm" variant="light" onClick={() => navigate('/cart')}>
                 View Cart
@@ -177,6 +243,8 @@ const ProductDetailsPage = () => {
                 <h4>Support</h4>
                 <p>
                   Our team is here to help you with any questions or issues you may have with this product.
+                  </p>
+                  <p>Please reach out to us via the contact form or email us at <a href="mailto:webify@gmail.com">webify@gmail.com</a>
                 </p>
               </div>
             </Tab>
@@ -265,40 +333,11 @@ const ProductDetailsPage = () => {
                       })}
                       <span className="ms-1">({selectedProduct.reviews?.length || 0})</span>
                     </div>
-                    <Badge bg="success" className="px-3 py-1">
-                      {(selectedProduct.sales || 0).toLocaleString()} Sales
-                    </Badge>
+                    
                   </div>
                 </div>
 
                 <div className="mb-4">
-                  <div className="d-flex align-items-center mb-3">
-                    <span className="me-3">Quantity:</span>
-                    <div className="d-flex align-items-center">
-                      <Button 
-                        variant="outline-secondary" 
-                        size="sm"
-                        onClick={() => setQuantity(prev => prev > 1 ? prev - 1 : 1)}
-                      >
-                        -
-                      </Button>
-                      <Form.Control
-                        type="number"
-                        min="1"
-                        value={quantity}
-                        onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                        className="mx-2 text-center"
-                        style={{ width: '60px' }}
-                      />
-                      <Button 
-                        variant="outline-secondary" 
-                        size="sm"
-                        onClick={() => setQuantity(prev => prev + 1)}
-                      >
-                        +
-                      </Button>
-                    </div>
-                  </div>
                   <Button
                     style={{ backgroundColor: "#6610f2" }}
                     className="w-100 py-2 mb-2"
@@ -338,10 +377,7 @@ const ProductDetailsPage = () => {
                     <span className="text-muted">Released:</span>
                     <span>{selectedProduct.created_at ? new Date(selectedProduct.created_at).toLocaleDateString() : 'Unknown'}</span>
                   </div>
-                  <div className="d-flex justify-content-between">
-                    <span className="text-muted">Approved:</span>
-                    <span>{selectedProduct.is_approved !== undefined ? (selectedProduct.is_approved ? "Yes" : "No") : "Unknown"}</span>
-                  </div>
+                  
                 </div>
               </Card.Body>
             </Card>

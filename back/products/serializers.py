@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Category, Tag, Product, ProductReview, ProductFlag, ProductImage
+from .models import Category, Tag, Product, ProductReview, ProductFlag
 
 User = get_user_model()
 
@@ -39,11 +39,6 @@ class ProductFlagSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'reason', 'created_at']
         read_only_fields = ['user', 'created_at']
 
-class ProductImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProductImage
-        fields = ['id', 'image']
-
 class ProductSerializer(serializers.ModelSerializer):
     seller = UserPublicSerializer(read_only=True)
     category_name = serializers.CharField(source='category.name', read_only=True)
@@ -52,13 +47,11 @@ class ProductSerializer(serializers.ModelSerializer):
     )
     reviews = ProductReviewSerializer(many=True, read_only=True)
     flags = ProductFlagSerializer(many=True, read_only=True)
-    images = ProductImageSerializer(many=True, read_only=True)
     class Meta:
         model = Product
         fields = [
             'id', 'seller', 'title', 'description', 'category_name', 'tags_names',
-            'file', 'preview_video', 'live_demo_url',
-            'price', 'is_in_subscription', 'is_approved',
-            'created_at', 'reviews', 'flags', 'images'
+            'file', 'preview_video', 'photo', 'live_demo_url',
+            'price', 'is_in_subscription', 'is_approved', 'is_featured',
+            'created_at', 'reviews', 'flags'
         ]
-

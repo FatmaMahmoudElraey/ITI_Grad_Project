@@ -34,14 +34,46 @@ class ProductViewSet(ModelViewSet):
     ordering_fields = ['price', 'created_at']
 
     def get_queryset(self):
-        return Product.objects.filter(is_approved=True).select_related('category', 'seller').prefetch_related('tags', 'reviews', 'flags', 'images')
+        user = self.request.user
+        # Admin users can see all products, others only see approved products
+        if user.is_authenticated and (user.is_superuser or user.role == 'admin'):
+            return Product.objects.all().select_related('category', 'seller').prefetch_related('tags', 'reviews', 'flags')
+        return Product.objects.filter(is_approved=True).select_related('category', 'seller').prefetch_related('tags', 'reviews', 'flags')
 
     def perform_create(self, serializer):
         user = self.request.user
         if user.role != 'seller' and not user.is_superuser:
             raise PermissionDenied("Only sellers or admins can create products.")
-        serializer.save(seller=user)
         
+        # Save the product with the photo from the request
+        photo = self.request.data.get('photo')
+        serializer.save(seller=user, photo=photo)
+        
+    def perform_update(self, serializer):
+        # Update the photo if provided in the request
+        photo = self.request.data.get('photo')
+        if photo:
+            serializer.save(photo=photo)
+        else:
+            serializer.save()
+            
+        return serializer.instance
+        
+    def perform_destroy(self, instance):
+        # Custom deletion logic to handle product deletion
+        try:
+            # First, handle related OrderItems
+            from orders.models import OrderItem
+            # Set product to null for all related OrderItems
+            OrderItem.objects.filter(product=instance).update(product=None)
+            
+            # Now delete the product instance
+            instance.delete()
+        except Exception as e:
+            # Log the error for debugging
+            print(f"Error deleting product: {e}")
+            raise serializers.ValidationError(f"Unable to delete product: {e}")
+            
     @action(detail=True, methods=['get'])
     def download(self, request, pk=None):
         product = self.get_object()
@@ -81,6 +113,60 @@ class ProductViewSet(ModelViewSet):
         featured_products = self.get_queryset().filter(is_featured=True)[:5] # Get top 5 featured
         serializer = self.get_serializer(featured_products, many=True)
         return Response(serializer.data)
+        
+    @action(detail=True, methods=['patch'])
+    def toggle_featured(self, request, pk=None):
+        product = self.get_object()
+        user = request.user
+        
+        # Only admin users can toggle featured status
+        if not user.is_authenticated or (not user.is_superuser and user.role != 'admin'):
+            raise PermissionDenied("Only admin users can change featured status.")
+            
+        # Toggle the featured status
+        product.is_featured = not product.is_featured
+        product.save()
+        
+        serializer = self.get_serializer(product)
+        return Response(serializer.data)
+        
+    @action(detail=True, methods=['patch'])
+    def toggle_approved(self, request, pk=None):
+        product = self.get_object()
+        user = request.user
+        
+        # Only admin users can toggle approval status
+        if not user.is_authenticated or (not user.is_superuser and user.role != 'admin'):
+            raise PermissionDenied("Only admin users can change approval status.")
+            
+        # Toggle the approval status
+        product.is_approved = not product.is_approved
+        product.save()
+        
+        serializer = self.get_serializer(product)
+        return Response(serializer.data)
+        
+    @action(detail=True, methods=['post'])
+    def update_photo(self, request, pk=None):
+        product = self.get_object()
+        user = request.user
+        
+        # Check if the user is the seller or an admin
+        if not user.is_authenticated or (user != product.seller and not user.is_superuser and user.role != 'admin'):
+            raise PermissionDenied("Only the product seller or admin users can update the photo.")
+        
+        # Get the photo from the request
+        photo = request.FILES.get('photo')
+        if not photo:
+            return Response({"detail": "No photo provided."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Update the product photo
+        product.photo = photo
+        product.save()
+        
+        # Return the serialized product
+        serializer = self.get_serializer(product)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class LatestProductsViewSet(ModelViewSet):
     serializer_class = ProductSerializer
@@ -88,7 +174,7 @@ class LatestProductsViewSet(ModelViewSet):
 
     def get_queryset(self):
         return Product.objects.filter(is_approved=True).select_related('category', 'seller')\
-                .prefetch_related('tags', 'reviews', 'flags', 'images').order_by('-created_at')[:5]
+                .prefetch_related('tags', 'reviews', 'flags').order_by('-created_at')[:5]
 
 class ProductReviewViewSet(ModelViewSet):
     queryset = ProductReview.objects.all()

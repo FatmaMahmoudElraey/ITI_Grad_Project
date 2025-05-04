@@ -19,6 +19,7 @@ const Products = () => {
     category: '',
     file: null,
     preview_video: null,
+    photo: null,
     live_demo_url: '',
     is_in_subscription: true,
     is_approved: true,
@@ -124,15 +125,16 @@ const Products = () => {
   // Handle product approval toggle
   const handleApprovalToggle = async (product) => {
     try {
-      const updatedProduct = { ...product, is_approved: !product.is_approved };
-      await axios.patch(`http://localhost:8000/api/products/${product.id}/`, {
-        is_approved: updatedProduct.is_approved
-      }, {
-        headers: getAuthHeader()
-      });
+      const response = await axios.patch(
+        `http://localhost:8000/api/products/${product.id}/toggle_approved/`, 
+        {},
+        {
+          headers: getAuthHeader()
+        }
+      );
       
       const updatedProducts = products.map(p => 
-        p.id === product.id ? { ...p, is_approved: updatedProduct.is_approved } : p
+        p.id === product.id ? { ...p, is_approved: response.data.is_approved } : p
       );
       setProducts(updatedProducts);
     } catch (error) {
@@ -144,20 +146,11 @@ const Products = () => {
   // Handle featured toggle
   const handleFeaturedToggle = async (product) => {
     try {
-      const updatedProduct = { ...product, is_featured: !product.is_featured };
-      
-      // Create a FormData object to send the updated data
-      const formData = new FormData();
-      formData.append('is_featured', updatedProduct.is_featured);
-      
       const response = await axios.patch(
-        `http://localhost:8000/api/products/${product.id}/`, 
-        formData,
+        `http://localhost:8000/api/products/${product.id}/toggle_featured/`, 
+        {},
         {
-          headers: {
-            ...getAuthHeader(),
-            'Content-Type': 'multipart/form-data'
-          }
+          headers: getAuthHeader()
         }
       );
       
@@ -210,7 +203,9 @@ const Products = () => {
       setCurrentProduct({
         ...currentProduct,
         [name]: files[0],
-        imageChanged: true
+        fileChanged: name === 'file',
+        previewVideoChanged: name === 'preview_video',
+        photoChanged: name === 'photo'
       });
     } else if (type === 'checkbox') {
       setCurrentProduct({
@@ -230,6 +225,40 @@ const Products = () => {
         ...formErrors,
         [name]: null
       });
+    }
+  };
+
+  // Remove an existing image from the product
+  const handleRemoveExistingImage = async (imageId) => {
+    try {
+      await axios.delete(
+        `http://localhost:8000/api/products/${currentProduct.id}/remove_image/`,
+        {
+          params: { image_id: imageId },
+          headers: getAuthHeader()
+        }
+      );
+      
+      // Update the current product by removing the deleted image
+      setCurrentProduct({
+        ...currentProduct,
+        images: currentProduct.images.filter(img => img.id !== imageId)
+      });
+      
+      // Also update the product in the products list
+      const updatedProducts = products.map(p => {
+        if (p.id === currentProduct.id) {
+          return {
+            ...p,
+            images: p.images.filter(img => img.id !== imageId)
+          };
+        }
+        return p;
+      });
+      setProducts(updatedProducts);
+    } catch (error) {
+      console.error('Error removing image:', error);
+      alert('Failed to remove image. Please try again.');
     }
   };
 
@@ -291,6 +320,10 @@ const Products = () => {
         formData.append('preview_video', newProduct.preview_video);
       }
       
+      if (newProduct.photo) {
+        formData.append('photo', newProduct.photo);
+      }
+      
       formData.append('live_demo_url', newProduct.live_demo_url || '');
       formData.append('is_in_subscription', newProduct.is_in_subscription);
       formData.append('is_approved', newProduct.is_approved);
@@ -328,6 +361,7 @@ const Products = () => {
         category: '',
         file: null,
         preview_video: null,
+        photo: null,
         live_demo_url: '',
         is_in_subscription: true,
         is_approved: true,
@@ -378,6 +412,11 @@ const Products = () => {
       // Only append preview video if it was changed
       if (currentProduct.previewVideoChanged && currentProduct.preview_video) {
         formData.append('preview_video', currentProduct.preview_video);
+      }
+      
+      // Add photo if it was changed
+      if (currentProduct.photoChanged && currentProduct.photo) {
+        formData.append('photo', currentProduct.photo);
       }
       
       formData.append('live_demo_url', currentProduct.live_demo_url || '');
@@ -749,6 +788,24 @@ const Products = () => {
                   </div>
                   
                   <div className="form-group">
+                    <label htmlFor="photo">Product Photo</label>
+                    <div className="input-group">
+                      <div className="custom-file">
+                        <input 
+                          type="file" 
+                          className="custom-file-input"
+                          id="photo"
+                          name="photo"
+                          onChange={handleNewProductChange}
+                        />
+                        <label className="custom-file-label" htmlFor="photo">
+                          {newProduct.photo ? newProduct.photo.name : 'Choose photo'}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="form-group">
                     <label htmlFor="preview_video">Preview Video (Optional)</label>
                     <div className="input-group">
                       <div className="custom-file">
@@ -1052,6 +1109,34 @@ const Products = () => {
                       />
                       <label className="custom-control-label" htmlFor="edit-is_featured">Featured</label>
                     </div>
+                  </div>
+                  
+                  <div className="form-group">
+                    <label htmlFor="edit-photo">Product Photo</label>
+                    {currentProduct.photo_url && (
+                      <div className="mb-2">
+                        <a href={currentProduct.photo_url} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-info">
+                          View Current Photo
+                        </a>
+                      </div>
+                    )}
+                    <div className="input-group">
+                      <div className="custom-file">
+                        <input 
+                          type="file" 
+                          className="custom-file-input"
+                          id="edit-photo"
+                          name="photo"
+                          onChange={handleEditProductChange}
+                        />
+                        <label className="custom-file-label" htmlFor="edit-photo">
+                          {currentProduct.photo ? currentProduct.photo.name : 'Choose new photo'}
+                        </label>
+                      </div>
+                    </div>
+                    <small className="form-text text-muted">
+                      Leave empty to keep the current photo
+                    </small>
                   </div>
                 </div>
                 <div className="modal-footer">

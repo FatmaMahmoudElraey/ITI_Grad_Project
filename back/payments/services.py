@@ -5,6 +5,8 @@ import hashlib
 import logging
 import requests
 import uuid
+import json
+from datetime import datetime
 from django.conf import settings
 from .models import Payment
 
@@ -82,67 +84,61 @@ def handle_webhook(request) -> dict:
 
 def get_paymob_auth_token() -> str:
     """Get authentication token from Paymob API"""
+    payload = {"api_key": settings.PAYMOB_API_KEY}
+    log_payment_step("AUTH", payload)
+
     response = requests.post(
         settings.PAYMOB_AUTH_URL,
-        json={"api_key": settings.PAYMOB_API_KEY}
+        json=payload
     )
     response.raise_for_status()
-    return response.json()["token"]
+
+    result = response.json()
+    log_payment_step("AUTH", {"success": True, "token_length": len(result["token"])}, is_response=True)
+    return result["token"]
 
 def register_order(order_id: str, amount_cents: int, auth_token: str) -> int:
-
-    #BUG: EVERY ORDER HAS THE SAME merchant_order_id
-    #FIXME Create a unique merchant_order_id using UUID4
+    # Your existing code for merchant_order_id and payload
     unique_moid = f"{order_id}-{uuid.uuid4().hex}"
-
-    # Construct payload with items array
     payload = {
-        "auth_token":       auth_token,
-        "delivery_needed":  False,
-        "amount_cents":     amount_cents,
-        "currency":         "EGP",
+        "auth_token": auth_token,
+        "delivery_needed": False,
+        "amount_cents": amount_cents,
+        "currency": "EGP",
         "merchant_order_id": unique_moid,
         "items": [
             {
-                "name":        f"Order #{order_id}",
+                "name": f"Order #{order_id}",
                 "amount_cents": amount_cents,
                 "description": "Order payment",
-                "quantity":    1
+                "quantity": 1
             }
         ]
     }
-    logger.info(f"Registering Paymob order: {payload}")
 
-    #Send request and handle duplicates gracefully
+    log_payment_step("REGISTER_ORDER", payload)
+
+    # Your existing HTTP request code
     response = requests.post(settings.PAYMOB_ORDER_URL, json=payload)
     try:
         response.raise_for_status()
+        data = response.json()
+        log_payment_step("REGISTER_ORDER", data, is_response=True)
+        return data["id"]
     except requests.exceptions.HTTPError:
-        error_json = response.json()
-        #FIXME: Specific handling for duplicate merchant_order_id
-        if response.status_code == 422 and error_json.get("message") == "duplicate":
-            logger.warning(f"Duplicate merchant_order_id '{unique_moid}' detected.")
-            # NOTE: Look up existing Paymob order or rethrow
-            raise
-        # Log and rethrow for all other errors
-        logger.error(f"Paymob API error {response.status_code}: {response.text}")
+        error_data = {"status_code": response.status_code, "response_text": response.text}
+        log_payment_step("REGISTER_ORDER_ERROR", error_data, is_response=True)
         raise
 
-    data = response.json()
-    paymob_id = data.get("id")
-    logger.info(f"Paymob order registered successfully, ID: {paymob_id}")
-    return paymob_id
-
 def get_payment_key(order_id: str, amount_cents: int, auth_token: str, billing_data: dict) -> str:
-    """Generate a payment key for the order with dynamic billing data"""
-    # Ensure all required billing fields have values
+    # Log raw billing data before processing
+    log_payment_step("BILLING_DATA_ORIGINAL", billing_data)
+
+    # Your existing code for ensuring required fields
     required_fields = ["first_name", "last_name", "email", "phone_number"]
     for field in required_fields:
         if not billing_data.get(field):
             billing_data[field] = "NA" if field != "email" else "customer@example.com"
-
-    # Convert integration_id to integer
-    integration_id = int(settings.PAYMOB_INTEGRATION_ID)
 
     # Build the payload
     payload = {
@@ -152,11 +148,12 @@ def get_payment_key(order_id: str, amount_cents: int, auth_token: str, billing_d
         "order_id": order_id,
         "billing_data": billing_data,
         "currency": "EGP",
-        "integration_id": integration_id
+        "integration_id": int(settings.PAYMOB_INTEGRATION_ID)
     }
 
-    logger.info(f"Payment key request payload: {payload}")
+    log_payment_step("PAYMENT_KEY", payload)
 
+    # Your existing request code
     response = requests.post(
         settings.PAYMOB_PAYMENT_KEY_URL,
         json=payload
@@ -164,28 +161,65 @@ def get_payment_key(order_id: str, amount_cents: int, auth_token: str, billing_d
 
     try:
         response.raise_for_status()
+        result = response.json()
+        log_payment_step("PAYMENT_KEY", {"success": True, "token": result["token"][:20] + "..."}, is_response=True)
+        return result["token"]
     except requests.exceptions.HTTPError:
-        logger.error(f"PayMob API error: {response.text}")
+        error_data = {"status_code": response.status_code, "response_text": response.text}
+        log_payment_step("PAYMENT_KEY_ERROR", error_data, is_response=True)
         raise
 
-    return response.json()["token"]
-
 def build_billing_data(order):
-    """Extract billing data from an Order instance with fallback values."""
+    """Extract billing data from an Order instance with foolproof fallbacks."""
     user = order.user
 
-    return {
-        "email": user.email if user else "customer@example.com",
-        "first_name": user.first_name if user else "Customer",
-        "last_name": user.last_name if user else "Name",
-        "phone_number": getattr(order, "phone", "+201000000000"),
-        "apartment": "NA",
-        "floor": "NA",
-        "street": getattr(order, "shipping_address", "NA"),
-        "building": "NA",
-        "shipping_method": "NA",
-        "postal_code": "NA",
-        "city": "NA",
-        "country": "EG",  # Set a default country code
-        "state": "NA"
+    # Enhanced debugging log
+    print("\n---- BUILDING BILLING DATA ----")
+    print(f"Order ID: {order.id}")
+
+    # Create billing data with guaranteed non-null values
+    billing_data = {
+        # User information
+        "email": (user.email if user and getattr(user, 'email', None) else "customer@example.com"),
+        "first_name": (user.first_name if user and getattr(user, 'first_name', None) else "Customer"),
+        "last_name": (user.last_name if user and getattr(user, 'last_name', None) else "Name"),
+
+        # Order information with fallbacks
+        "phone_number": str(getattr(order, "phone", "+201000000000") or "+201000000000"),
+        "apartment": str(getattr(order, "apartment", "NA") or "NA"),
+        "floor": str(getattr(order, "floor", "NA") or "NA"),
+        "street": str(getattr(order, "shipping_address", "NA") or "NA"),
+        "building": str(getattr(order, "building", "NA") or "NA"),
+        "shipping_method": str(getattr(order, "shipping_method", "NA") or "NA"),
+        "postal_code": str(getattr(order, "postal_code", "NA") or "NA"),
+        "city": str(getattr(order, "city", "NA") or "NA"),
+        "country": str(getattr(order, "country", "EG") or "EG"),
+        "state": str(getattr(order, "state", "NA") or "NA")
     }
+
+    # Log all billing data fields to help with debugging
+    for key, value in billing_data.items():
+        print(f"  {key}: {value!r}")
+
+    return billing_data
+
+def log_payment_step(step_name, data, is_response=False):
+    """Log payment process steps with detailed formatting"""
+    prefix = "RESPONSE from" if is_response else "REQUEST to"
+
+    # Remove sensitive data before logging
+    if isinstance(data, dict):
+        data = data.copy()
+        if 'auth_token' in data:
+            data['auth_token'] = '***REDACTED***'
+        if 'api_key' in data:
+            data['api_key'] = '***REDACTED***'
+
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+    print(f"\n[{timestamp}] 💳 PAYMENT STEP {step_name}: {prefix} PayMob API")
+    print("-" * 80)
+    try:
+        print(json.dumps(data, indent=2, ensure_ascii=False))
+    except:
+        print(str(data))
+    print("-" * 80)

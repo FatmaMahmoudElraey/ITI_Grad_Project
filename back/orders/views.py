@@ -40,9 +40,22 @@ class OrderViewSet(ModelViewSet):
         return Order.objects.filter(user=self.request.user).prefetch_related('items')
 
     def perform_create(self, serializer):
-        # Save the order, associated with the current user.
-        # The 'items' data from the request body will be handled by serializer.create()
+        # Log what data is coming in
+        print("\n---- ORDER CREATE DATA ----")
+        print(f"User: {self.request.user}")
+        print(f"Data received: {self.request.data}")
+
+        # Save with user association
         order = serializer.save(user=self.request.user)
+
+        # Log what was actually saved
+        print(f"Order created: {order.id}")
+        print(f"Shipping address: {order.shipping_address}")
+        print(f"Phone: {order.phone}")
+        print(f"City: {order.city}")
+        print(f"State: {order.state}")
+        print(f"Postal Code: {order.postal_code}")
+        print(f"Country: {order.country}")
 
         # Clear the user's cart *after* the order is successfully created.
         try:

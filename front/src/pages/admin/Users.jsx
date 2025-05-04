@@ -70,7 +70,7 @@ const Users = () => {
   const handleActiveToggle = async (user) => {
     try {
       const updatedUser = { ...user, is_active: !user.is_active };
-      await axios.patch(`http://localhost:8000/api/auth/users/${user.id}/`, {
+      await axios.patch(`http://localhost:8000/api/auth/customers/${user.id}/`, {
         is_active: updatedUser.is_active
       });
       
@@ -140,10 +140,30 @@ const Users = () => {
     }
     
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/register/', newUser);
+      // Format the user data to match what the backend expects
+      const formattedUser = {
+        email: newUser.email,
+        name: `${newUser.first_name} ${newUser.last_name}`,
+        first_name: newUser.first_name,
+        last_name: newUser.last_name,
+        password: newUser.password,
+        role: newUser.role,
+        re_password: newUser.password // Djoser often requires password confirmation
+      };
       
-      // Add the new user to the list
-      setUsers([...users, response.data]);
+      console.log('Sending user data:', formattedUser);
+      await axios.post('http://localhost:8000/api/auth/users/', formattedUser);
+      
+      // Fetch the updated user list instead of trying to add the response data
+      const response = await axios.get('http://localhost:8000/api/auth/users/');
+      
+      // Add date_joined if it's missing
+      const usersWithDateJoined = response.data.map(user => ({
+        ...user,
+        date_joined: user.date_joined || new Date().toISOString()
+      }));
+      
+      setUsers(usersWithDateJoined);
       
       // Reset form and close modal
       setNewUser({
@@ -159,9 +179,37 @@ const Users = () => {
     } catch (error) {
       console.error('Error adding user:', error);
       
-      // Handle validation errors from the server
-      if (error.response && error.response.data) {
-        setFormErrors(error.response.data);
+      // Log detailed error information
+      if (error.response) {
+        console.error('Error response data:', error.response.data);
+        console.error('Error response status:', error.response.status);
+        console.error('Error response headers:', error.response.headers);
+        
+        // Format error messages for display
+        const serverErrors = {};
+        
+        // Handle different error formats from the server
+        if (error.response.data) {
+          Object.keys(error.response.data).forEach(key => {
+            // Handle array of errors or single string error
+            if (Array.isArray(error.response.data[key])) {
+              serverErrors[key] = error.response.data[key][0];
+            } else {
+              serverErrors[key] = error.response.data[key];
+            }
+          });
+          
+          // Special handling for email errors which are common
+          if (error.response.data.email) {
+            if (Array.isArray(error.response.data.email) && error.response.data.email[0].includes('already exists')) {
+              serverErrors.email = 'This email is already in use. Please try another one.';
+            }
+          }
+          
+          setFormErrors(serverErrors);
+        } else {
+          alert('Failed to add user. Please try again.');
+        }
       } else {
         alert('Failed to add user. Please try again.');
       }
@@ -188,7 +236,7 @@ const Users = () => {
         delete userData.password;
       }
       
-      await axios.put(`http://localhost:8000/api/auth/users/${currentUser.id}/`, userData);
+      await axios.put(`http://localhost:8000/api/auth/customers/${currentUser.id}/`, userData);
       
       // Update the user in the list
       const updatedUsers = users.map(user => 

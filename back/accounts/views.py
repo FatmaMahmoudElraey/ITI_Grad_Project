@@ -100,3 +100,11 @@ class UserListView(generics.ListAPIView):
         all_users = User.objects.filter(is_active=True).filter(is_staff=False)
         users = all_users.exclude(id=user.id)
         return users
+
+class UsersDetailsView(generics.RetrieveUpdateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_object(self):
+        user_id = self.kwargs['pk']
+        return User.objects.get(id=user_id)

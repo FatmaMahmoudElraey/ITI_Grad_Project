@@ -7,6 +7,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock, faCreditCard, faMoneyBill, faCheckCircle, faArrowLeft, faExclamationTriangle, faSignInAlt } from '@fortawesome/free-solid-svg-icons';
 import { clearCart } from '../store/slices/cartSlice';
 import { createOrder } from '../store/slices/cartApiSlice';
+import { createPaymentSession, confirmPayment } from '../services/paymentService';
+import PaymentIframe from '../components/PaymentIframe';
 
 const Checkout = () => {
   const dispatch = useDispatch();
@@ -14,7 +16,7 @@ const Checkout = () => {
   const location = useLocation();
   const { items, totalAmount } = useSelector((state) => state.cart);
   const { user, isAuthenticated } = useSelector((state) => state.auth);
-  
+
   // Local state
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -39,6 +41,9 @@ const Checkout = () => {
     expiryDate: '',
     cvv: '',
   });
+  const [paymentData, setPaymentData] = useState(null);
+  const [showPaymentIframe, setShowPaymentIframe] = useState(false);
+  const [processingPayment, setProcessingPayment] = useState(false);
 
   // Handle input change
   const handleChange = (e) => {
@@ -53,7 +58,7 @@ const Checkout = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const form = e.currentTarget;
-    
+
     if (form.checkValidity() === false) {
       e.stopPropagation();
       setValidated(true);
@@ -84,7 +89,7 @@ const Checkout = () => {
         console.error('Error parsing saved form data:', error);
       }
     }
-    
+
     // Check if we just returned from login
     const params = new URLSearchParams(location.search);
     if (params.get('from') === 'login' && isAuthenticated) {
@@ -111,83 +116,71 @@ const Checkout = () => {
   const processOrder = () => {
     setLoading(true);
     setError(null);
-    
-    // Generate a display order number for non-authenticated users
-    const displayOrderNumber = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
-    
-    // Calculate order totals
-    const subtotal = totalAmount;
-    const shipping = 10.00;
-    const tax = subtotal * 0.14; // 14% VAT
-    const total = subtotal + shipping + tax;
-    
-    // Create shipping address string
-    const shippingAddress = `${formData.address}, ${formData.city}, ${formData.state}, ${formData.zipCode}, ${formData.country}`;
-    
-    if (isAuthenticated) {
-      // For authenticated users, save order to database
-      console.log('Creating order in database for authenticated user');
-      
-      // First, check if we have items in the cart
-      if (!items || items.length === 0) {
-        console.error('Cannot create order: No items in cart');
-        setError('Your cart is empty. Please add items before checking out.');
-        setLoading(false);
-        return;
-      }
-      
-      // The backend will automatically use the user's cart items to create the order
-      dispatch(createOrder({
-        payment_status: 'P' // Pending status
-      }))
-        .unwrap()
-        .then(orderResponse => {
-          console.log('Order created successfully:', orderResponse);
-          // Set the order number from the response
-          setOrderNumber(orderResponse.id);
-          
-          // Clear cart after successful order
+
+    if (!isAuthenticated) {
+      // Save form data and redirect to login
+      localStorage.setItem('checkoutFormData', JSON.stringify(formData));
+      navigate('/login?redirect=checkout');
+      return;
+    }
+
+    // For authenticated users, create order in database
+    if (!items || items.length === 0) {
+      setError('Your cart is empty. Please add items before checking out.');
+      setLoading(false);
+      return;
+    }
+
+    // The backend will automatically use the user's cart items
+    dispatch(createOrder({
+      payment_status: 'P',
+      address: formData.address,
+      city: formData.city,
+      state: formData.state,
+      zipCode: formData.zipCode,
+      phone: formData.phone,
+      country: formData.country,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email
+    }))
+      .unwrap()
+      .then(orderResponse => {
+        console.log('Order created successfully:', orderResponse);
+        setOrderNumber(orderResponse.id);
+
+        // Only proceed to payment if credit card method is selected
+        if (formData.paymentMethod === 'credit-card') {
+          // Calculate amount in cents (assuming total is in dollars)
+          const amountCents = Math.round(total * 100);
+
+          // Create payment session with PayMob
+          setProcessingPayment(true);
+          return createPaymentSession(orderResponse.id, amountCents);
+        } else {
+          // For cash on delivery, just complete the order
           dispatch(clearCart());
           setOrderPlaced(true);
           window.scrollTo(0, 0);
           setLoading(false);
-        })
-        .catch(err => {
-          console.error('Error creating order:', err);
-          setError(typeof err === 'string' ? err : 'An error occurred while processing your order. Please try again.');
-          setLoading(false);
-        });
-    } else {
-      // For non-authenticated users, just use local storage
-      console.log('Creating local order for non-authenticated user');
-      setOrderNumber(displayOrderNumber);
-      
-      // Create order object for local storage
-      const order = {
-        id: displayOrderNumber,
-        items: items,
-        shipping_address: shippingAddress,
-        payment_status: 'P', // Pending
-        subtotal: subtotal,
-        shipping: shipping,
-        tax: tax,
-        total: total,
-        created_at: new Date().toISOString()
-      };
-      
-      // Save to local storage
-      const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-      existingOrders.push(order);
-      localStorage.setItem('orders', JSON.stringify(existingOrders));
-      
-      // Clear cart
-      dispatch(clearCart());
-      
-      // Show success
-      setOrderPlaced(true);
-      window.scrollTo(0, 0);
-      setLoading(false);
-    }
+          return null;
+        }
+      })
+      .then(paymentSessionData => {
+        if (paymentSessionData) {
+          console.log('Payment session created:', paymentSessionData);
+          setPaymentData(paymentSessionData);
+          setShowPaymentIframe(true);
+          setProcessingPayment(false);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        setError(typeof err === 'string' ? err : 'An error occurred. Please try again.');
+        setLoading(false);
+        setProcessingPayment(false);
+      });
   };
 
   // Go back to previous step
@@ -205,6 +198,43 @@ const Checkout = () => {
     navigate('/');
   };
 
+  // Close the payment iframe
+  const closePaymentFrame = () => {
+    setShowPaymentIframe(false);
+    // Optional: Handle cancellation
+  };
+
+  // Handle payment callback
+  const handlePaymentCallback = (status, transactionId) => {
+    if (paymentData && paymentData.payment_id) {
+      confirmPayment(paymentData.payment_id, transactionId, status)
+        .then(() => {
+          // Clear cart after successful payment
+          dispatch(clearCart());
+          setOrderPlaced(true);
+          window.scrollTo(0, 0);
+        })
+        .catch(err => {
+          setError('Payment confirmation failed. Please contact support.');
+          console.error('Payment confirmation error:', err);
+        });
+    }
+  };
+
+  // Listen for PayMob redirect
+  useEffect(() => {
+    // Check for payment callback parameters
+    const params = new URLSearchParams(location.search);
+    const success = params.get('success');
+    const txnId = params.get('id');
+
+    if (success && txnId && paymentData?.payment_id) {
+      handlePaymentCallback(success === 'true' ? 'paid' : 'failed', txnId);
+      // Clean URL params
+      navigate('/checkout', { replace: true });
+    }
+  }, [location, paymentData, navigate]);
+
   // Calculate order summary
   const subtotal = totalAmount;
   const shipping = 10.00;
@@ -218,8 +248,8 @@ const Checkout = () => {
         <Alert variant="warning" className="mb-4">
           <FontAwesomeIcon icon={faSignInAlt} className="me-2" />
           <strong>You're not logged in.</strong> Please{' '}
-          <Button 
-            variant="link" 
+          <Button
+            variant="link"
             className="p-0 mx-1"
             onClick={() => {
               localStorage.setItem('checkoutFormData', JSON.stringify(formData));
@@ -242,8 +272,8 @@ const Checkout = () => {
         <Alert variant="warning">
           Your cart is empty. Please add items to your cart before checkout.
         </Alert>
-        <Button 
-          variant="primary" 
+        <Button
+          variant="primary"
           onClick={() => navigate('/shop')}
           style={{ backgroundColor: '#660ff1', border: 'none' }}
         >
@@ -260,10 +290,10 @@ const Checkout = () => {
         <Card className="shadow-sm border-0 mb-4">
           <Card.Body className="p-5 text-center">
             <div className="mb-4">
-              <FontAwesomeIcon 
-                icon={faCheckCircle} 
-                size="4x" 
-                className="text-success mb-3" 
+              <FontAwesomeIcon
+                icon={faCheckCircle}
+                size="4x"
+                className="text-success mb-3"
               />
               <h2 className="mb-3">Thank You for Your Order!</h2>
               <p className="lead mb-1">Your order has been placed successfully.</p>
@@ -272,7 +302,7 @@ const Checkout = () => {
                 A confirmation email has been sent to {formData.email}
               </Alert>
             </div>
-            
+
             <Row className="mt-5 justify-content-center">
               <Col md={8} lg={6}>
                 <Card className="mb-4">
@@ -300,16 +330,16 @@ const Checkout = () => {
                     </div>
                   </Card.Body>
                 </Card>
-                
+
                 <div className="d-flex justify-content-between">
-                  <Button 
-                    variant="outline-primary" 
+                  <Button
+                    variant="outline-primary"
                     onClick={() => navigate('/shop')}
                   >
                     Continue Shopping
                   </Button>
-                  <Button 
-                    variant="primary" 
+                  <Button
+                    variant="primary"
                     onClick={goToHome}
                     style={{ backgroundColor: '#660ff1', border: 'none' }}
                   >
@@ -337,7 +367,7 @@ const Checkout = () => {
       ) : (
         <>
           <h1 className="mb-4 fw-bold" style={{ color: '#660ff1' }}>Checkout</h1>
-          
+
           {/* Success message */}
           {apiSuccess && (
             <Alert variant="success" className="mb-4">
@@ -345,7 +375,7 @@ const Checkout = () => {
               {apiSuccess}
             </Alert>
           )}
-          
+
           {/* Error message */}
           {error && (
             <Alert variant="danger" className="mb-4">
@@ -353,10 +383,10 @@ const Checkout = () => {
               {error}
             </Alert>
           )}
-          
+
           {/* Authentication notice */}
           {renderAuthNotice()}
-          
+
           {/* Checkout Steps */}
           <div className="d-flex justify-content-center mb-4">
             <div className="position-relative checkout-steps">
@@ -374,7 +404,7 @@ const Checkout = () => {
               </div>
             </div>
           </div>
-          
+
           <Row>
             <Col lg={8}>
               <Card className="shadow-sm border-0 mb-4">
@@ -415,7 +445,7 @@ const Checkout = () => {
                             </Form.Group>
                           </Col>
                         </Row>
-                        
+
                         <Row>
                           <Col md={6}>
                             <Form.Group className="mb-3">
@@ -448,7 +478,7 @@ const Checkout = () => {
                             </Form.Group>
                           </Col>
                         </Row>
-                        
+
                         <Form.Group className="mb-3">
                           <Form.Label>Address</Form.Label>
                           <Form.Control
@@ -462,7 +492,7 @@ const Checkout = () => {
                             Please provide your address.
                           </Form.Control.Feedback>
                         </Form.Group>
-                        
+
                         <Row>
                           <Col md={6}>
                             <Form.Group className="mb-3">
@@ -495,7 +525,7 @@ const Checkout = () => {
                             </Form.Group>
                           </Col>
                         </Row>
-                        
+
                         <Row>
                           <Col md={6}>
                             <Form.Group className="mb-3">
@@ -532,17 +562,17 @@ const Checkout = () => {
                             </Form.Group>
                           </Col>
                         </Row>
-                        
+
                         <div className="d-flex justify-content-between mt-4">
-                          <Button 
-                            variant="outline-secondary" 
+                          <Button
+                            variant="outline-secondary"
                             onClick={goBack}
                           >
                             <FontAwesomeIcon icon={faArrowLeft} className="me-2" />
                             Back to Cart
                           </Button>
-                          <Button 
-                            type="submit" 
+                          <Button
+                            type="submit"
                             variant="primary"
                             style={{ backgroundColor: '#660ff1', border: 'none' }}
                           >
@@ -552,7 +582,7 @@ const Checkout = () => {
                       </Form>
                     </>
                   )}
-                  
+
                   {step === 2 && (
                     <>
                       <h4 className="mb-4">Payment Method</h4>
@@ -574,7 +604,7 @@ const Checkout = () => {
                               onChange={handleChange}
                               className="mb-3"
                             />
-                            
+
                             <Form.Check
                               type="radio"
                               id="cash-on-delivery"
@@ -591,93 +621,33 @@ const Checkout = () => {
                             />
                           </div>
                         </Form.Group>
-                        
+
                         {formData.paymentMethod === 'credit-card' && (
-                          <div className="credit-card-form p-3 border rounded mb-4">
-                            <Row>
-                              <Col md={12}>
-                                <Form.Group className="mb-3">
-                                  <Form.Label>Card Number</Form.Label>
-                                  <Form.Control
-                                    type="text"
-                                    name="cardNumber"
-                                    value={formData.cardNumber}
-                                    onChange={handleChange}
-                                    placeholder="1234 5678 9012 3456"
-                                    required={formData.paymentMethod === 'credit-card'}
-                                  />
-                                  <Form.Control.Feedback type="invalid">
-                                    Please provide your card number.
-                                  </Form.Control.Feedback>
-                                </Form.Group>
-                              </Col>
-                            </Row>
-                            
-                            <Row>
-                              <Col md={12}>
-                                <Form.Group className="mb-3">
-                                  <Form.Label>Name on Card</Form.Label>
-                                  <Form.Control
-                                    type="text"
-                                    name="cardName"
-                                    value={formData.cardName}
-                                    onChange={handleChange}
-                                    required={formData.paymentMethod === 'credit-card'}
-                                  />
-                                  <Form.Control.Feedback type="invalid">
-                                    Please provide the name on your card.
-                                  </Form.Control.Feedback>
-                                </Form.Group>
-                              </Col>
-                            </Row>
-                            
-                            <Row>
-                              <Col md={6}>
-                                <Form.Group className="mb-3">
-                                  <Form.Label>Expiry Date</Form.Label>
-                                  <Form.Control
-                                    type="text"
-                                    name="expiryDate"
-                                    value={formData.expiryDate}
-                                    onChange={handleChange}
-                                    placeholder="MM/YY"
-                                    required={formData.paymentMethod === 'credit-card'}
-                                  />
-                                  <Form.Control.Feedback type="invalid">
-                                    Please provide your card's expiry date.
-                                  </Form.Control.Feedback>
-                                </Form.Group>
-                              </Col>
-                              <Col md={6}>
-                                <Form.Group className="mb-3">
-                                  <Form.Label>CVV</Form.Label>
-                                  <Form.Control
-                                    type="text"
-                                    name="cvv"
-                                    value={formData.cvv}
-                                    onChange={handleChange}
-                                    placeholder="123"
-                                    required={formData.paymentMethod === 'credit-card'}
-                                  />
-                                  <Form.Control.Feedback type="invalid">
-                                    Please provide your card's CVV.
-                                  </Form.Control.Feedback>
-                                </Form.Group>
-                              </Col>
-                            </Row>
+                          <div className="credit-card-info p-3 border rounded mb-4">
+                            <div className="text-center">
+                              <img
+                                src="/path/to/secure-payment-icons.png"
+                                alt="Supported payment methods"
+                                className="mb-3"
+                                style={{ maxHeight: '40px' }}
+                              />
+                              <p className="mb-0">
+                                You'll be redirected to our secure payment gateway to complete your purchase.
+                              </p>
+                            </div>
                           </div>
                         )}
-                        
+
                         <div className="d-flex justify-content-between mt-4">
-                          <Button 
-                            variant="outline-secondary" 
+                          <Button
+                            variant="outline-secondary"
                             onClick={goBack}
                           >
                             <FontAwesomeIcon icon={faArrowLeft} className="me-2" />
                             Back to Shipping
                           </Button>
-                          <Button 
-                            type="submit" 
+                          <Button
+                            type="submit"
                             variant="primary"
                             style={{ backgroundColor: '#660ff1', border: 'none' }}
                           >
@@ -690,7 +660,7 @@ const Checkout = () => {
                 </Card.Body>
               </Card>
             </Col>
-            
+
             <Col lg={4}>
               <Card className="shadow-sm border-0 mb-4">
                 <Card.Header className="bg-white py-3">
@@ -708,24 +678,24 @@ const Checkout = () => {
                       </div>
                     ))}
                   </div>
-                  
+
                   <hr />
-                  
+
                   <div className="d-flex justify-content-between mb-2">
                     <span>Subtotal</span>
                     <span>${subtotal.toFixed(2)}</span>
                   </div>
-                  
+
                   <div className="d-flex justify-content-between mb-2">
                     <span>Shipping</span>
                     <span>${shipping.toFixed(2)}</span>
                   </div>
-                  
+
                   <div className="d-flex justify-content-between mb-3">
                     <span>Tax (14%)</span>
                     <span>${tax.toFixed(2)}</span>
                   </div>
-                  
+
                   <div className="d-flex justify-content-between pt-2 border-top">
                     <span className="fw-bold">Total</span>
                     <span className="fw-bold" style={{ color: '#660ff1' }}>
@@ -734,7 +704,7 @@ const Checkout = () => {
                   </div>
                 </Card.Body>
               </Card>
-              
+
               <Card className="shadow-sm border-0">
                 <Card.Body>
                   <div className="d-flex align-items-center mb-3">
@@ -749,6 +719,16 @@ const Checkout = () => {
             </Col>
           </Row>
         </>
+      )}
+
+      {/* PayMob Iframe Modal */}
+      {showPaymentIframe && paymentData && (
+        <PaymentIframe
+          iframeId={paymentData.iframe_id}
+          paymentKey={paymentData.payment_key}
+          onClose={closePaymentFrame}
+          isLoading={false}
+        />
       )}
     </Container>
   );

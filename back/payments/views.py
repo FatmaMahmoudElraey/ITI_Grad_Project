@@ -16,11 +16,21 @@ class PaymentSessionView(APIView):
         serializer = PaymentSessionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+         # Get the order
         order_id = serializer.validated_data['order_id']
-        amount   = serializer.validated_data['amount_cents']
+        amount = serializer.validated_data['amount_cents']
 
-        # Get the order first
         order = Order.objects.get(pk=order_id)
+
+        # Calculate the total by summing up the order items
+        # This replaces the direct access to order.total which doesn't exist
+        order_total = sum(item.price * item.quantity for item in order.items.all())
+        order_total_cents = int(float(order_total) * 100)
+
+        print(f"Processing payment for order {order_id}: Amount in cents {amount}, calculated total: {order_total_cents}")
+
+        # Use the calculated total or the provided amount
+        # amount = order_total_cents  # Uncomment this to enforce using calculated amount
 
         # 1. Get auth token
         auth_token = get_paymob_auth_token()

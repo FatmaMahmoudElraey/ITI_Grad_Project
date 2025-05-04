@@ -84,77 +84,98 @@ const ProductDetailsPage = () => {
   
   // Handle add to cart
   const handleAddToCart = () => {
-      // Destructure needed properties from selectedProduct
-      const { id, title, price, sale_price, images, category } = selectedProduct;
-      const category_name = category?.name || '';
+    // Check if user is authenticated first
+    if (!isAuthenticated) {
+      // Show SweetAlert notification with login button
+      Swal.fire({
+        icon: 'info',
+        title: 'Login Required',
+        text: 'Please login to add items to your cart.',
+        showCancelButton: true,
+        confirmButtonColor: '#6610f2',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Login Now',
+        cancelButtonText: 'Cancel'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Redirect to login page
+          navigate('/login');
+        }
+      });
+      return; // Stop further execution
+    }
+
+    // Destructure needed properties from selectedProduct
+    const { id, title, price, sale_price, images, category } = selectedProduct;
+    const category_name = category?.name || '';
+    
+    // Check if the item already exists in the cart (using Redux state)
+    const itemExists = cartItems.some(item => item.id === id || item.template_id === id);
+
+    if (itemExists) {
+      // Show SweetAlert notification if item is already in cart
+      Swal.fire({
+        icon: 'info',
+        title: 'Already in Cart',
+        text: `${title} is already in your cart.`,
+        timer: 2000, // Auto close after 2 seconds
+        showConfirmButton: false
+      });
+      return; // Stop further execution
+    }
+
+    // Create cart item object for local state
+    const cartItem = {
+      id: id,
+      template_id: id,
+      quantity: 1,
+      price: sale_price || price,
+      title,
+      image: images && images.length > 0 ? (images[0].image_url || images[0].image || null) : null,
+      category_name
+    };
+    
+    // Add to local cart state
+    dispatch(addToCart(cartItem));
+    
+    // If user is authenticated, also save to database
+    if (isAuthenticated) {
+      console.log('Adding item to database cart:', {
+        product_id: id,
+        quantity: 1
+      });
       
-      // Check if the item already exists in the cart (using Redux state)
-      const itemExists = cartItems.some(item => item.id === id || item.template_id === id);
-  
-      if (itemExists) {
-        // Show SweetAlert notification if item is already in cart
-        Swal.fire({
-          icon: 'info',
-          title: 'Already in Cart',
-          text: `${title} is already in your cart.`,
-          timer: 2000, // Auto close after 2 seconds
-          showConfirmButton: false
-        });
-        return; // Stop further execution
-      }
-  
-      // Create cart item object for local state
-      const cartItem = {
-        id: id,
-        template_id: id,
-        quantity: 1,
-        price: sale_price || price,
-        title,
-        image: images && images.length > 0 ? (images[0].image_url || images[0].image || null) : null,
-        category_name
+      // Create a database-compatible cart item
+      const dbCartItem = {
+        product_id: id,
+        quantity: 1
       };
       
-      // Add to local cart state
-      dispatch(addToCart(cartItem));
-      
-      // If user is authenticated, also save to database
-      if (isAuthenticated) {
-        console.log('Adding item to database cart:', {
-          product_id: id,
-          quantity: 1
+      // The improved addCartItem function will handle duplicates automatically
+      dispatch(addCartItem(dbCartItem))
+        .unwrap()
+        .then(response => {
+          console.log('Successfully added/updated cart item in database:', response);
+          setToastMessage(`${title} has been added to your cart.`);
+          setToastVariant('success');
+          setShowToast(true);
+          setTimeout(() => setShowToast(false), 2000);
+        })
+        .catch(error => {
+          console.error('Failed to save cart item to database:', error);
+          setToastMessage(`${title} added to local cart only. Database sync failed.`);
+          setToastVariant('warning');
+          setShowToast(true);
+          setTimeout(() => setShowToast(false), 2000);
         });
-        
-        // Create a database-compatible cart item
-        const dbCartItem = {
-          product_id: id,
-          quantity: 1
-        };
-        
-        // The improved addCartItem function will handle duplicates automatically
-        dispatch(addCartItem(dbCartItem))
-          .unwrap()
-          .then(response => {
-            console.log('Successfully added/updated cart item in database:', response);
-            setToastMessage(`${title} has been added to your cart.`);
-            setToastVariant('success');
-            setShowToast(true);
-            setTimeout(() => setShowToast(false), 2000);
-          })
-          .catch(error => {
-            console.error('Failed to save cart item to database:', error);
-            setToastMessage(`${title} added to local cart only. Database sync failed.`);
-            setToastVariant('warning');
-            setShowToast(true);
-            setTimeout(() => setShowToast(false), 2000);
-          });
-      } else {
-        // For non-authenticated users, just show a success message
-        setToastMessage(`${title} has been added to your cart.`);
-        setToastVariant('success');
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 2000);
-      }
-    };
+    } else {
+      // For non-authenticated users, just show a success message
+      setToastMessage(`${title} has been added to your cart.`);
+      setToastVariant('success');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+    }
+  };
 
   return (
     <Container className="py-5">
@@ -178,11 +199,11 @@ const ProductDetailsPage = () => {
         <Col lg={8}>
           <div className="product-image-container mb-4">
             <Carousel>
-              {(selectedProduct.images || []).map((image, index) => (
-                <Carousel.Item key={index}>
+              {selectedProduct.photo ? (
+                <Carousel.Item>
                   <img
-                    src={image.image_url || image.image || "/placeholder-image.jpg"}
-                    alt={`${selectedProduct.title} - Image ${index + 1}`}
+                    src={selectedProduct.photo}
+                    alt={selectedProduct.title}
                     className="d-block w-100 rounded shadow-sm"
                     style={{ maxHeight: '500px', objectFit: 'cover' }}
                     onError={(e) => {
@@ -190,8 +211,7 @@ const ProductDetailsPage = () => {
                     }}
                   />
                 </Carousel.Item>
-              ))}
-              {(!selectedProduct.images || selectedProduct.images.length === 0) && (
+              ) : (
                 <Carousel.Item>
                   <img
                     src="/placeholder-image.jpg"

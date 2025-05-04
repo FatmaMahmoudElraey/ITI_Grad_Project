@@ -19,7 +19,7 @@ const TemplateCard = (product) => {
     price,
     sale_price,
     reviews = [],
-    images = [],
+    photo,
     category_name,
     tags_names = []
   } = product;
@@ -41,6 +41,27 @@ const TemplateCard = (product) => {
   };
 
   const handleAddToCart = () => {
+    // Check if user is authenticated first
+    if (!isAuthenticated) {
+      // Show SweetAlert notification with login button
+      Swal.fire({
+        icon: 'info',
+        title: 'Login Required',
+        text: 'Please login to add items to your cart.',
+        showCancelButton: true,
+        confirmButtonColor: '#660ff1',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Login Now',
+        cancelButtonText: 'Cancel'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Redirect to login page
+          navigate('/login');
+        }
+      });
+      return; // Stop further execution
+    }
+
     // Check if the item already exists in the cart (using Redux state)
     const itemExists = cartItems.some(item => item.id === id || item.template_id === id);
 
@@ -63,7 +84,7 @@ const TemplateCard = (product) => {
       quantity: 1,
       price: sale_price || price,
       title,
-      image: images && images.length > 0 ? (images[0].image_url || images[0].image || null) : null,
+      image: photo || null,
       category_name
     };
     
@@ -146,7 +167,7 @@ const TemplateCard = (product) => {
       <div className="position-relative">
         <Card.Img 
           variant="top" 
-          src={images && images.length > 0 ? (images[0].image_url || images[0].image || `/placeholder-image.jpg`) : '/placeholder-image.jpg'}
+          src={photo || '/placeholder-image.jpg'}
           style={{ height: '200px', objectFit: 'cover' }}
           onError={(e) => {
             if (!e.target.getAttribute('data-error-handled')) {

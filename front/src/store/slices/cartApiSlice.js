@@ -16,7 +16,7 @@ export const fetchCart = createAsyncThunk(
       const response = await axios.get(`${BASE_URL}/api/cart/`, {
         headers: getAuthHeader()
       });
-      return response.data[0] || null; 
+      return response.data[0] || null;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Failed to fetch cart');
     }
@@ -40,7 +40,7 @@ export const saveCart = createAsyncThunk(
 export const addCartItem = createAsyncThunk(
   'cartApi/addCartItem',
   async (cartItem, { rejectWithValue }) => {
-    try {      
+    try {
       // First check if cart exists
       let userCart = null;
       try {
@@ -56,11 +56,11 @@ export const addCartItem = createAsyncThunk(
           const existingItem = userCart.items.find(
             item => item.product.id === cartItem.product_id
           );
-          
+
           if (existingItem) {
             // Item exists, update its quantity instead
             const updateResponse = await axios.patch(
-              `${BASE_URL}/api/cart-items/${existingItem.id}/`, 
+              `${BASE_URL}/api/cart-items/${existingItem.id}/`,
               { quantity: existingItem.quantity + cartItem.quantity },
               { headers: getAuthHeader() }
             );
@@ -70,7 +70,7 @@ export const addCartItem = createAsyncThunk(
       } catch (cartError) {
         console.log('Cart not found or other error fetching cart:', cartError);
       }
-      
+
       // Try to create a new cart item
       const response = await axios.post(`${BASE_URL}/api/cart-items/`, cartItem, {
         headers: getAuthHeader()
@@ -129,26 +129,28 @@ export const createOrder = createAsyncThunk(
   'cartApi/createOrder',
   async (orderData = {}, { rejectWithValue, getState }) => {
     try {
-      // Ensure we have a payment_status, default to 'P' if not provided
-      const paymentStatus = orderData?.payment_status || 'P';
-      
-      
+      // Extract the billing information from orderData
+      const {
+        address, city, state, zipCode, phone, country,
+        firstName, lastName, email, payment_status = 'P'
+      } = orderData;
+
       // First, fetch the cart to get the items
       let cartItems = [];
       let cartResponseData;
       let userCart = null;
-      
+
       try {
         const cartListResponse = await axios.get(`${BASE_URL}/api/cart/`, {
           headers: getAuthHeader()
         });
         cartResponseData = cartListResponse.data; // Store raw response data for logging
-        
+
 
         // Check if the response is an array and has at least one cart
         if (Array.isArray(cartResponseData) && cartResponseData.length > 0) {
           userCart = cartResponseData[0]; // Get the first cart object
-        
+
           if (userCart && userCart.items && userCart.items.length > 0) {
             cartItems = userCart.items.map(item => ({
               product_id: item.product.id,
@@ -161,10 +163,10 @@ export const createOrder = createAsyncThunk(
           return rejectWithValue('Could not find your cart. Please try adding an item again.');
         }
       } catch (cartError) {
-        
+
         // Fallback: Try to use items from the Redux store
         const { cart } = getState();
-        
+
         if (cart && cart.items && cart.items.length > 0) {
           cartItems = cart.items.map(item => ({
             product_id: item.id || item.template_id,
@@ -174,27 +176,37 @@ export const createOrder = createAsyncThunk(
           return rejectWithValue('Could not verify cart contents. Please try again.');
         }
       }
-      
+
       // Final check: If we still don't have any cart items, reject
       if (!cartItems.length) {
         return rejectWithValue('Your cart is empty. Please add items before checking out.');
       }
-      
-      
-      // Make the API request with items included
+
+
+      // Make the API request with items and shipping info included
       const response = await axios.post(
-        `${BASE_URL}/api/orders/`, 
-        { 
-          payment_status: paymentStatus,
-          items: cartItems
+        `${BASE_URL}/api/orders/`,
+        {
+          payment_status: payment_status,
+          items: cartItems,
+          // Add these fields for PayMob billing data:
+          shipping_address: address,
+          phone: phone,
+          city: city,
+          state: state,
+          postal_code: zipCode,
+          country: country,
+          first_name: firstName,
+          last_name: lastName,
+          email: email
         },
         { headers: getAuthHeader() }
       );
-      
+
       return response.data;
     } catch (error) {
-      
-      
+
+
       return rejectWithValue(error.response?.data || 'Failed to create order');
     }
   }

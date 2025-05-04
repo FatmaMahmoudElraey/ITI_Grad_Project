@@ -51,13 +51,13 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         product = validated_data['product']
-        validated_data['price'] = product.price  
+        validated_data['price'] = product.price
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
         if 'product' in validated_data:
             product = validated_data['product']
-            validated_data['price'] = product.price  
+            validated_data['price'] = product.price
         return super().update(instance, validated_data)
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -67,39 +67,42 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'user', 'created_at', 'payment_status', 'items', 'total']
-        read_only_fields = ['user', 'created_at', 'total']
-    
+        fields = ['id', 'user', 'created_at', 'payment_status', 'items', 'total',
+                 'shipping_address', 'phone', 'city', 'state', 'postal_code', 'country']
+        read_only_fields = ['id', 'user', 'created_at', 'total']
+
     def get_total(self, obj):
         """Calculate the total cost of the order"""
         # Use product price instead of order item price
         # Each product can only be purchased once, so quantity is always 1
         total = sum(item.product.price for item in obj.items.all())
         return total
-    
+
     def create(self, validated_data):
         items_data = validated_data.pop('items', [])
+
+        # Include all shipping and billing fields
         order = Order.objects.create(**validated_data)
-        
+
         # Process each item, ensuring each product is only added once
         processed_products = set()
         for item_data in items_data:
             product = item_data['product']
-            
+
             # Skip if we've already processed this product
             if product.id in processed_products:
                 continue
-                
+
             processed_products.add(product.id)
-            
+
             # Always set quantity to 1
             OrderItem.objects.create(
-                order=order, 
+                order=order,
                 product=product,
                 quantity=1,
                 price=product.price
             )
-        
+
         return order
 
 

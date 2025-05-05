@@ -34,11 +34,9 @@ class ProductViewSet(ModelViewSet):
     ordering_fields = ['price', 'created_at']
 
     def get_queryset(self):
-        user = self.request.user
-        # Admin users can see all products, others only see approved products
-        if user.is_authenticated and (user.is_superuser or user.role == 'admin'):
-            return Product.objects.all().select_related('category', 'seller').prefetch_related('tags', 'reviews', 'flags')
-        return Product.objects.filter(is_approved=True).select_related('category', 'seller').prefetch_related('tags', 'reviews', 'flags')
+        # Return all products regardless of approval status
+        # Frontend will handle filtering based on is_approved where needed
+        return Product.objects.all().select_related('category', 'seller').prefetch_related('tags', 'reviews', 'flags')
 
     def perform_create(self, serializer):
         user = self.request.user
@@ -173,7 +171,9 @@ class LatestProductsViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        return Product.objects.filter(is_approved=True).select_related('category', 'seller')\
+        # Return latest products without filtering by approval status
+        # Frontend will handle filtering based on is_approved where needed
+        return Product.objects.all().select_related('category', 'seller')\
                 .prefetch_related('tags', 'reviews', 'flags').order_by('-created_at')[:5]
 
 class ProductReviewViewSet(ModelViewSet):

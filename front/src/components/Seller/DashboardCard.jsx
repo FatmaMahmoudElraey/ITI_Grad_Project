@@ -1,19 +1,26 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { ArrowUp, ArrowDown } from 'react-feather';
+import { Loader } from 'react-feather';
 
 export default function DashboardCard({ 
   title, 
   value, 
   icon, 
   trend,
-  color = 'rgb(102, 15, 241)'
+  color = 'rgb(102, 15, 241)',
+  loading = false
 }) {
   const isPositive = trend?.value >= 0;
   
   return (
-    <div className="card dashboard-card">
+    <div className={`card dashboard-card ${loading ? 'loading' : ''}`}>
       <div className="card-header">
+        {loading && (
+          <div className="card-loading-overlay">
+            <Loader size={20} className="spinner" />
+          </div>
+        )}
         <div>
           <h4 className='card-title'>{title}</h4>
           <h2 className='card-value'>{value}</h2>
@@ -46,7 +53,9 @@ DashboardCard.propTypes = {
   icon: PropTypes.node,
   trend: PropTypes.shape({
     value: PropTypes.number,
+    direction: PropTypes.string,
     label: PropTypes.string
   }),
-  color: PropTypes.string
+  color: PropTypes.string,
+  loading: PropTypes.bool
 };

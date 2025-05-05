@@ -6,6 +6,7 @@ import {
   updateUserProfile,
   fetchUserFavorites,
 } from "../store/slices/usersSlice";
+import { createProductReview } from "../store/slices/productsSlice";
 import {
   Card,
   Button,
@@ -15,6 +16,7 @@ import {
   Row,
   Col,
   Badge,
+  Alert,
 } from "react-bootstrap";
 import {
   FaEdit,
@@ -23,8 +25,10 @@ import {
   FaUser,
   FaDownload,
   FaCalendarAlt,
-  FaStar,
+  FaStar as FaStarSolid,
+  FaRegStar,
   FaShoppingCart,
+  FaCommentAlt,
 } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -39,10 +43,18 @@ export default function UserProfile() {
     loading,
     error,
   } = useSelector((state) => state.users);
+  const { success: reviewSuccess, error: reviewError } = useSelector((state) => state.products);
   const [showEditModal, setShowEditModal] = useState(false);
   const [formData, setFormData] = useState({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [activeTab, setActiveTab] = useState("purchases");
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [currentProductToReview, setCurrentProductToReview] = useState(null);
+  const [reviewData, setReviewData] = useState({
+    rating: 5,
+    comment: "",
+  });
+  const [reviewAlert, setReviewAlert] = useState({ show: false, message: "", variant: "success" });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -128,6 +140,91 @@ export default function UserProfile() {
       navigate("/");
     } catch (err) {
       console.error("Failed to delete account:", err);
+    }
+  };
+
+  const handleReviewProduct = (product) => {
+    setCurrentProductToReview(product);
+    setReviewData({
+      rating: 5,
+      comment: "",
+    });
+    setShowReviewModal(true);
+  };
+
+  const handleSubmitReview = async () => {
+    try {
+      if (!currentProductToReview) return;
+      
+      console.log('Submitting review for product:', currentProductToReview);
+      
+      // Make sure we have a valid product ID
+      if (!currentProductToReview.id) {
+        throw new Error('Invalid product ID');
+      }
+      
+      // Get the access token from session storage
+      const token = sessionStorage.getItem("accessToken");
+      if (!token) {
+        throw new Error('You need to be logged in to submit a review');
+      }
+      
+      // Use URLSearchParams for a simple form submission
+      const params = new URLSearchParams();
+      params.append('product', currentProductToReview.id);
+      params.append('rating', reviewData.rating);
+      params.append('comment', reviewData.comment);
+      
+      console.log('Review data being sent:', {
+        product: currentProductToReview.id,
+        rating: reviewData.rating,
+        comment: reviewData.comment
+      });
+      
+      // Make a direct fetch request to the API
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"}/api/product-reviews/`,
+        {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': `Bearer ${token}`
+          },
+          body: params
+        }
+      );
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Review submission error:', errorText);
+        try {
+          const errorData = JSON.parse(errorText);
+          throw new Error(errorData.detail || 'Failed to submit review');
+        } catch (e) {
+          throw new Error('Failed to submit review: ' + errorText.substring(0, 100));
+        }
+      }
+      
+      const data = await response.json();
+      console.log('Review submitted successfully:', data);
+      
+      setShowReviewModal(false);
+      setReviewAlert({
+        show: true,
+        message: "Review submitted successfully!",
+        variant: "success",
+      });
+      
+      // Hide alert after 3 seconds
+      setTimeout(() => {
+        setReviewAlert({ show: false, message: "", variant: "success" });
+      }, 3000);
+    } catch (err) {
+      setReviewAlert({
+        show: true,
+        message: err.message || "Failed to submit review",
+        variant: "danger",
+      });
     }
   };
 
@@ -345,7 +442,7 @@ export default function UserProfile() {
                   {purchasedProducts.length} Items
                 </Badge>
                 <Badge bg="light" text="dark">
-                  <FaStar className="me-1" size={12} />
+                  <FaStarSolid className="me-1" size={12} />
                   Member since{" "}
                   {userProfile?.user?.date_joined
                     ? new Date(userProfile?.user?.date_joined).getFullYear()
@@ -465,7 +562,7 @@ export default function UserProfile() {
                     }`}
                     onClick={() => setActiveTab("favorites")}
                   >
-                    <FaStar className="me-2" /> Favorites
+                    <FaStarSolid className="me-2" /> Favorites
                   </Button>
                 </div>
               </Card.Header>
@@ -535,17 +632,25 @@ export default function UserProfile() {
                                 </div>
                               </div>
 
-                              {/* Full-width Download Button */}
-                              <div className="mt-3">
+                              {/* Action Buttons */}
+                              <div className="mt-3 d-flex gap-2">
                                 <Button
                                   variant="outline-primary"
-                                  className="w-100 d-flex justify-content-center align-items-center"
+                                  className="flex-grow-1 d-flex justify-content-center align-items-center"
                                   onClick={() =>
                                     handleDownload(item.product.id)
                                   }
                                 >
-                                  <FaDownload className="me-2" size={14} />{" "}
+                                  <FaDownload className="me-2" size={14} />
                                   Download
+                                </Button>
+                                <Button
+                                  variant="outline-success"
+                                  className="flex-grow-1 d-flex justify-content-center align-items-center"
+                                  onClick={() => handleReviewProduct(item.product)}
+                                >
+                                  <FaCommentAlt className="me-2" size={14} />
+                                  Review
                                 </Button>
                               </div>
                             </div>
@@ -624,7 +729,7 @@ export default function UserProfile() {
                                     variant="link"
                                     className="position-absolute top-0 start-0 m-2 text-danger p-0"
                                   >
-                                    <FaStar
+                                    <FaStarSolid
                                       size={18}
                                       className="text-warning"
                                     />
@@ -644,7 +749,7 @@ export default function UserProfile() {
                                       {Array(5)
                                         .fill(0)
                                         .map((_, i) => (
-                                          <FaStar
+                                          <FaStarSolid
                                             key={i}
                                             size={12}
                                             className={
@@ -887,6 +992,70 @@ export default function UserProfile() {
           </Button>
           <Button variant="danger" onClick={handleDeleteAccount}>
             Delete Account
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Review Modal */}
+      <Modal
+        show={showReviewModal}
+        onHide={() => setShowReviewModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            Review {currentProductToReview?.title || "Product"}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {reviewAlert.show && (
+            <Alert variant={reviewAlert.variant} className="mb-3">
+              {reviewAlert.message}
+            </Alert>
+          )}
+          
+          <Form>
+            <Form.Group className="mb-4">
+              <Form.Label>Your Rating</Form.Label>
+              <div className="d-flex gap-2 fs-3">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span 
+                    key={star} 
+                    onClick={() => setReviewData({...reviewData, rating: star})}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {star <= reviewData.rating ? (
+                      <FaStarSolid className="text-warning" />
+                    ) : (
+                      <FaRegStar className="text-warning" />
+                    )}
+                  </span>
+                ))}
+              </div>
+            </Form.Group>
+            
+            <Form.Group className="mb-3">
+              <Form.Label>Your Review</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={4}
+                value={reviewData.comment}
+                onChange={(e) => setReviewData({...reviewData, comment: e.target.value})}
+                placeholder="Share your experience with this product..."
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowReviewModal(false)}>
+            Cancel
+          </Button>
+          <Button 
+            variant="primary" 
+            onClick={handleSubmitReview}
+            disabled={!reviewData.comment.trim()}
+          >
+            Submit Review
           </Button>
         </Modal.Footer>
       </Modal>

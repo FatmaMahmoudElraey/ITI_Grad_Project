@@ -4,6 +4,7 @@ from django.urls import path, include, re_path
 # from djoser.views import TokenCreateView
 # from djoser.social import urls as social_urls
 from .views import redirect_to_frontend
+from .google_auth import GoogleLoginView
 
 urlpatterns = [
     # 1) Core Djoser (register, activation, reset, users/me, etc.)
@@ -24,4 +25,6 @@ urlpatterns = [
         redirect_to_frontend,
         name='activation_redirect'
     ),
+
+    path('login/google/', GoogleLoginView.as_view(), name='google_login'),
 ]

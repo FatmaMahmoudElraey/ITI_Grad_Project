@@ -5,6 +5,10 @@ import ordersReducer from './slices/ordersSlice';
 import usersReducer from './slices/usersSlice';
 import cartReducer from './slices/cartSlice';
 import cartApiReducer from './slices/cartApiSlice';
+import dashboardApiReducer from './slices/dashboardApiSlice';
+import sellerProductsReducer from './slices/sellerProductsSlice';
+import sellerOrdersReducer from './slices/sellerOrdersSlice';
+import productReviewsReducer from './slices/productReviewsSlice';
 
 const store = configureStore({
   reducer: {
@@ -14,6 +18,10 @@ const store = configureStore({
     orders: ordersReducer,
     cart: cartReducer,
     cartApi: cartApiReducer,
+    dashboardApi: dashboardApiReducer,
+    sellerProducts: sellerProductsReducer,
+    sellerOrders: sellerOrdersReducer,
+    productReviews: productReviewsReducer,
   },
 });
 

@@ -1,80 +1,41 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchSellerProductReviews } from '../../store/slices/productReviewsSlice';
+import { loadUser } from "../../store/slices/authSlice";
 import Sidebar from "../../components/Seller/Sidebar";
 import "../../assets/css/dashboard/dash.css";
-import dashboardData from "../../assets/data/dashboardData.json";
 
 export default function Reviews() {
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const { items: reviews, loading, error } = useSelector(state => state.productReviews);
+  const { user } = useSelector(state => state.auth);
 
+  // Load user data if not already loaded
   useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        setLoading(true);
-        // Simulate API call with timeout
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        // In a real app, you would fetch this from an API
-        // For now, we'll use mock data linked to popularProducts
-        const fetchedReviews = [
-          {
-            id: 1,
-            productId: 1, // Linking to Wireless Headphones
-            customer: "Alex Johnson",
-            rating: 4.5,
-            comment: "Excellent noise cancellation! Battery life is impressive.",
-            date: "2025-04-15"
-          },
-          {
-            id: 2,
-            productId: 2, // Linking to Organic Cotton T-Shirt
-            customer: "Sam Wilson",
-            rating: 3.0,
-            comment: "Comfortable but shrunk after washing.",
-            date: "2025-04-10"
-          },
-          {
-            id: 3,
-            productId: 3, // Linking to Smart Home Speaker
-            customer: "Taylor Smith",
-            rating: 5.0,
-            comment: "Perfect sound quality and easy setup!",
-            date: "2025-04-05"
-          },
-          {
-            id: 4,
-            productId: 4, // Linking to Non-Stick Cookware Set
-            customer: "Jordan Lee",
-            rating: 4.0,
-            comment: "Great quality pans, heats evenly.",
-            date: "2025-03-28"
-          },
-          {
-            id: 5,
-            productId: 5, // Linking to Bestselling Novel
-            customer: "Casey Brown",
-            rating: 2.5,
-            comment: "The story was okay but not worth the hype.",
-            date: "2025-03-20"
-          }
-        ];
+    if (!user) {
+      dispatch(loadUser());
+    }
+  }, [dispatch, user]);
 
-        setReviews(fetchedReviews);
-        setLoading(false);
-      } catch (err) {
-        setError("Failed to load reviews");
-        setLoading(false);
+  // Fetch reviews for seller's products
+  useEffect(() => {
+    if (user && user.id) {
+      console.log('Fetching reviews for seller:', user.id);
+      dispatch(fetchSellerProductReviews());
+    }
+  }, [dispatch, user]);
+
+  // Debug log reviews
+  useEffect(() => {
+    console.log('Current reviews in component:', reviews);
+    if (Array.isArray(reviews)) {
+      console.log('Reviews length:', reviews.length);
+      if (reviews.length > 0) {
+        console.log('First review sample:', reviews[0]);
       }
-    };
-
-    fetchReviews();
-  }, []);
-
-  const getProductById = (id) => {
-    return dashboardData.popularProducts.find(product => product.id === id);
-  };
+    }
+  }, [reviews]);
 
   const renderRatingStars = (rating) => {
     const stars = [];
@@ -138,39 +99,41 @@ export default function Reviews() {
         </div>
 
         <div className="card data-table-container">
-          {reviews.length === 0 ? (
+          {!Array.isArray(reviews) || reviews.length === 0 ? (
             <div className="empty-state">
               <p>No reviews available for your products yet.</p>
             </div>
           ) : (
             <div className="reviews-list">
               {reviews.map((review) => {
-                const product = getProductById(review.productId);
+                const product = review.productDetails;
                 return (
                   <div key={review.id} className="review-card">
                     <div className="review-header">
                       <h3 className="review-product">
-                        {product ? product.name : `Product #${review.productId}`}
+                        {product ? (product.name || product.title) : `Product #${review.product}`}
                       </h3>
-                      <span className="review-date">{review.date}</span>
+                      <span className="review-date">
+                        {review.created_at ? new Date(review.created_at).toLocaleDateString() : 'Unknown date'}
+                      </span>
                     </div>
                     <div className="review-customer">
-                      <strong>Customer:</strong> {review.customer}
+                      <strong>Customer:</strong> {review.user_name || 'Anonymous'}
                     </div>
                     <div className="review-rating">
                       {renderRatingStars(review.rating)}
-                      <span className="rating-value">{review.rating.toFixed(1)}/5</span>
+                      <span className="rating-value">{review.rating}/5</span>
                     </div>
                     <div className="review-comment">
-                      <p>{review.comment}</p>
+                      <p>{review.comment || review.content || 'No comment provided'}</p>
                     </div>
                     {product && (
                       <div className="review-product-info">
                         <span className="product-category">
-                          {dashboardData.categories.find(c => c.value === product.category)?.label || product.category}
+                          {product.category_name || product.category || 'Uncategorized'}
                         </span>
                         <span className="product-price">
-                          ${product.price.toFixed(2)}
+                          ${parseFloat(product.price).toFixed(2)}
                         </span>
                       </div>
                     )}

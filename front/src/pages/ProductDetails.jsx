@@ -46,11 +46,23 @@ const ProductDetailsPage = () => {
     if (currentProduct && products && products.length > 0) {
       // Find products in the same category only
       const similar = products
-        .filter(product => 
-          product.id !== currentProduct.id && 
-          (product.category?.id === currentProduct.category?.id ||
-           product.tags?.some(tag => currentProduct.tags?.includes(tag)))
-        )
+        .filter(product => {
+          // Don't include the current product
+          if (product.id === currentProduct.id) return false;
+          
+          // Check if product has the same category ID
+          if (currentProduct.category?.id && product.category?.id === currentProduct.category.id) {
+            return true;
+          }
+          
+          // Check if product has the same category name (as fallback)
+          if (currentProduct.category_name && product.category_name === currentProduct.category_name) {
+            return true;
+          }
+          
+          // If no category match, don't include
+          return false;
+        })
         .slice(0, 4); // Limit to 4 similar products
 
       setSimilarItems(similar);
@@ -286,11 +298,6 @@ const ProductDetailsPage = () => {
                     </div>
                     <small className="text-muted">{selectedProduct.reviews?.length || 0} reviews</small>
                   </div>
-                  <div className="ms-auto">
-                    <Button variant="outline-primary" size="sm">
-                      Write a Review
-                    </Button>
-                  </div>
                 </div>
 
                 {selectedProduct.reviews && selectedProduct.reviews.length > 0 ? (
@@ -407,9 +414,10 @@ const ProductDetailsPage = () => {
       {similarItems.length > 0 && (
         <section className="mt-5">
           <h3 className="mb-4">You Might Also Like</h3>
+          <p className="text-muted mb-4">More products in the {currentProduct.category_name || 'same'} category</p>
           <Row>
             {similarItems.map((product) => (
-              <Col md={4} key={product.id} className="mb-4">
+              <Col md={3} key={product.id} className="mb-4">
                 <TemplateCard {...product} />
               </Col>
             ))}

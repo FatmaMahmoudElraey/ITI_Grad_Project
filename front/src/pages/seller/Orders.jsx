@@ -1,53 +1,67 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { FiEye, FiFilter } from 'react-icons/fi';
+import { fetchSellerOrders, updateOrderStatus } from '../../store/slices/sellerOrdersSlice';
+import DataTable from '../../components/Seller/DataTable';
 import Sidebar from "../../components/Seller/Sidebar";
-import DataTable from "../../components/Seller/DataTable";
-import { FiEye, FiFilter } from "react-icons/fi";
+import { loadUser } from "../../store/slices/authSlice";
 import "../../assets/css/dashboard/dash.css";
-import dashboardData from "../../assets/data/dashboardData.json";
 
 export default function Orders() {
   const navigate = useNavigate();
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
   const [statusFilter, setStatusFilter] = useState("all");
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(null);
 
+  // Get data from Redux store
+  const { items: orders, loading, error } = useSelector(state => state.sellerOrders);
+  const { user } = useSelector(state => state.auth);
+
+  // Load user data if not already loaded
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        setLoading(true);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        setOrders(dashboardData.recentOrders.map(order => ({
-          ...order,
-          amount: parseFloat(order.amount.replace(/[^0-9.]/g, ''))
-        })));
-        setLoading(false);
-      } catch (err) {
-        setError("Failed to load orders");
-        setLoading(false);
+    if (!user) {
+      dispatch(loadUser());
+    }
+  }, [dispatch, user]);
+
+  // Load seller orders from backend
+  useEffect(() => {
+    if (user && user.id) {
+      console.log('Dispatching fetchSellerOrders for user:', user.id);
+      dispatch(fetchSellerOrders());
+    }
+  }, [dispatch, user]);
+  
+  // Debug log orders
+  useEffect(() => {
+    console.log('Current orders in component:', orders);
+    // Log the data type and structure
+    console.log('Orders type:', typeof orders);
+    console.log('Is orders an array?', Array.isArray(orders));
+    if (Array.isArray(orders)) {
+      console.log('Orders length:', orders.length);
+      if (orders.length > 0) {
+        console.log('First order sample:', JSON.stringify(orders[0], null, 2));
       }
-    };
+    }
+  }, [orders]);
 
-    fetchOrders();
-  }, []);
+  // Make sure orders is an array before filtering
+  const filteredOrders = Array.isArray(orders) 
+    ? orders.filter(order => 
+        statusFilter === "all" || 
+        (order.payment_status === statusFilter.charAt(0).toUpperCase())
+      )
+    : [];
+    
+  console.log('Filtered orders by status:', filteredOrders);
+  console.log('Filtered orders length:', filteredOrders.length);
 
-  const filteredOrders = orders.filter(order => 
-    statusFilter === "all" || order.status.toLowerCase() === statusFilter.toLowerCase()
-  );
-
-  const updateOrderStatus = async (orderId, newStatus) => {
+  const handleUpdateOrderStatus = async (orderId, newStatus) => {
     setIsUpdatingStatus(orderId);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      setOrders(orders.map(order => 
-        order.id === orderId ? { ...order, status: newStatus } : order
-      ));
+      await dispatch(updateOrderStatus({ orderId, status: newStatus })).unwrap();
     } catch (error) {
       console.error("Failed to update order status:", error);
     } finally {
@@ -113,62 +127,94 @@ export default function Orders() {
               disabled={loading}
             >
               <option value="all">All Statuses</option>
-              <option value="processing">Processing</option>
-              <option value="shipped">Shipped</option>
-              <option value="completed">Completed</option>
+              <option value="P">Processing</option>
+              <option value="S">Shipped</option>
+              <option value="C">Completed</option>
             </select>
           </div>
         </div>
 
         <div className="card data-table-container">
-          <DataTable
-            headers={[
-              { key: 'id', label: 'Order ID' },
-              { key: 'customer', label: 'Customer' },
-              { key: 'date', label: 'Date' },
-              { key: 'amount', label: 'Amount' },
-              { key: 'status', label: 'Status' },
-              { key: 'actions', label: 'Actions' }
-            ]}
-            data={filteredOrders.map(order => ({
-              ...order,
-              amount: new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD'
-              }).format(order.amount),
-              status: (
-                <span className={`status-badge ${
-                  order.status.toLowerCase() === 'completed' ? 'status-completed' :
-                  order.status.toLowerCase() === 'shipped' ? 'status-shipped' : 'status-processing'
-                }`}>
-                  {order.status}
-                </span>
-              ),
-              actions: (
-                <div className="actions-container">
-                  <select
-                    value={order.status}
-                    onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                    className="form-control status-select"
-                    disabled={isUpdatingStatus === order.id}
-                  >
-                    <option value="Processing">Processing</option>
-                    <option value="Shipped">Shipped</option>
-                    <option value="Completed">Completed</option>
-                  </select>
-                  <button
-                    onClick={() => navigate(`/seller/orders/${order.id}`)}
-                    className="button button-secondary button-sm"
-                  >
-                    <FiEye className="icon" /> View
-                  </button>
-                </div>
-              )
-            }))}
-            sortable
-            pagination
-            itemsPerPage={10}
-          />
+          {Array.isArray(filteredOrders) && filteredOrders.length > 0 ? (
+            <DataTable
+              headers={[
+                { key: 'id', label: 'Order ID', style: { width: '80px' } },
+                { key: 'customer', label: 'Customer', style: { width: '120px' } },
+                { key: 'items', label: 'Order Items', style: { width: '250px' } },
+                { key: 'date', label: 'Date', style: { width: '100px' } },
+                { key: 'total', label: 'Total Price', style: { width: '100px' } },
+                { key: 'status', label: 'Status', style: { width: '100px' } },
+                { key: 'actions', label: 'Actions', style: { width: '150px' } }
+              ]}
+              data={filteredOrders.map(order => ({
+                id: order.id,
+                customer: order.user ? `${order.user.first_name || ''} ${order.user.last_name || ''}` : 'Unknown',
+                items: (
+                  <div className="order-items-container">
+                    {order.items && Array.isArray(order.items) && order.items.length > 0 ? (
+                      <ul className="order-items-list" style={{ padding: 0, margin: 0, listStyle: 'none' }}>
+                        {order.items.map((item, idx) => (
+                          <li key={item.id || `item-${idx}`} style={{ marginBottom: '5px' }}>
+                            <strong>{item.product?.name || 'Product'}</strong> x {item.quantity || 1}
+                            <div style={{ fontSize: '0.85em', color: '#666' }}>
+                              {new Intl.NumberFormat('en-US', {
+                                style: 'currency',
+                                currency: 'USD'
+                              }).format(item.product?.price || 0)} each
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <span style={{ color: '#999' }}>No items found</span>
+                    )}
+                  </div>
+                ),
+                date: order.created_at ? new Date(order.created_at).toLocaleDateString() : 'Unknown',
+                total: new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: 'USD'
+                }).format(order.total || 0),
+                status: (
+                  <span className={`status-badge ${
+                    (order.payment_status === 'C') ? 'status-completed' :
+                    (order.payment_status === 'S') ? 'status-shipped' : 'status-processing'
+                  }`}>
+                    {order.payment_status === 'C' ? 'Completed' :
+                     order.payment_status === 'S' ? 'Shipped' : 'Processing'}
+                  </span>
+                ),
+                actions: (
+                  <div className="actions-container">
+                    <select
+                      value={order.payment_status || 'P'}
+                      onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
+                      className="form-control status-select"
+                      disabled={isUpdatingStatus === order.id}
+                    >
+                      <option value="P">Processing</option>
+                      <option value="S">Shipped</option>
+                      <option value="C">Completed</option>
+                    </select>
+                    <button
+                      onClick={() => navigate(`/seller/orders/${order.id}`)}
+                      className="button button-secondary button-sm"
+                    >
+                      <FiEye className="icon" /> View
+                    </button>
+                  </div>
+                )
+              }))}
+              sortable
+              pagination
+              itemsPerPage={10}
+            />
+          ) : (
+            <div className="empty-data-message">
+              <p>No orders found. {loading ? 'Loading...' : error ? 'Error loading orders.' : 'You have no orders yet.'}</p>
+              {console.log('No orders to display in UI')}
+            </div>
+          )}
         </div>
       </main>
     </div>

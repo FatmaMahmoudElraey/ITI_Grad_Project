@@ -7,7 +7,9 @@ export const fetchProducts = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(ENDPOINTS.PRODUCTS);
-      return response.data;
+      // Filter products to only include approved ones for public display
+      const approvedProducts = response.data.filter(product => product.is_approved === true);
+      return approvedProducts;
     } catch (error) {
       return rejectWithValue(
         error.response ? error.response.data : 'Could not fetch products'
@@ -35,7 +37,9 @@ export const fetchLatestProducts = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(ENDPOINTS.LATEST_PRODUCTS);
-      return response.data;
+      // Filter to only include approved products for public display
+      const approvedProducts = response.data.filter(product => product.is_approved === true);
+      return approvedProducts;
     } catch (error) {
       return rejectWithValue(
         error.response ? error.response.data : 'Could not fetch latest products'
@@ -49,7 +53,9 @@ export const fetchFeaturedProducts = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(ENDPOINTS.FEATURED_PRODUCTS);
-      return response.data;
+      // Filter to only include approved products for public display
+      const approvedProducts = response.data.filter(product => product.is_approved === true);
+      return approvedProducts;
     } catch (error) {
       return rejectWithValue(
         error.response ? error.response.data : 'Could not fetch featured products'
@@ -132,12 +138,31 @@ export const createProductReview = createAsyncThunk(
   'products/createReview',
   async ({ productId, reviewData }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(ENDPOINTS.PRODUCT_REVIEWS, {
+      // Ensure we have a valid product ID
+      if (!productId) {
+        return rejectWithValue('Product ID is required');
+      }
+
+      console.log('Creating review with product ID:', productId);
+      
+      // Create the review data object with the product ID
+      const reviewPayload = {
         product: productId,
         ...reviewData
-      });
+      };
+      
+      // Remove any duplicate product field if it exists in reviewData
+      if (reviewData.product) {
+        delete reviewPayload.product;
+        reviewPayload.product = productId;
+      }
+      
+      console.log('Review payload:', reviewPayload);
+      
+      const response = await axios.post(ENDPOINTS.PRODUCT_REVIEWS, reviewPayload);
       return response.data;
     } catch (error) {
+      console.error('Error creating review:', error.response?.data || error.message);
       return rejectWithValue(
         error.response ? error.response.data : 'Could not create review'
       );

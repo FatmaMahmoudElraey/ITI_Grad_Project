@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { loginUser, clearError } from "../store/slices/authSlice";
+import GoogleLoginButton from "../components/GoogleLoginButton";
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -69,26 +70,28 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (validateForm()) {
       try {
-        await dispatch(loginUser({
-          email: formData.email,
-          password: formData.password,
-        })).unwrap();
+        await dispatch(
+          loginUser({
+            email: formData.email,
+            password: formData.password,
+          })
+        ).unwrap();
         localStorage.setItem("email", formData.email);
         // Success will redirect via useEffect
       } catch (err) {
         console.error("Login failed:", err);
-        
+
         // Show more specific error messages
         if (err.detail) {
           // Handle Django REST framework's default error format
           setFormErrors({
             ...formErrors,
-            auth: err.detail
+            auth: err.detail,
           });
-        } else if (typeof err === 'object' && Object.keys(err).length > 0) {
+        } else if (typeof err === "object" && Object.keys(err).length > 0) {
           // Handle field-specific errors
           const newErrors = {};
           Object.entries(err).forEach(([key, value]) => {
@@ -99,7 +102,7 @@ export default function LoginPage() {
           // Generic error message
           setFormErrors({
             ...formErrors,
-            auth: "Invalid email or password"
+            auth: "Invalid email or password",
           });
         }
       }
@@ -212,6 +215,10 @@ export default function LoginPage() {
                             "Sign In"
                           )}
                         </button>
+                      </div>
+
+                      <div className="d-flex justify-content-center my-4">
+                        <GoogleLoginButton />
                       </div>
 
                       <p className="text-center text-muted mt-4">

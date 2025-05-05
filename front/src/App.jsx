@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import './App.css';
-import SharedLayout from './sharedlayout/SharedLayout.jsx';
+import "./App.css";
+import SharedLayout from "./sharedlayout/SharedLayout.jsx";
 import { Home } from "./pages/Home.jsx";
 import AboutUs from "./pages/AboutUs.jsx";
 import ContactUs from "./pages/ContactUs.jsx";
@@ -8,7 +8,7 @@ import RegisterPage from "./pages/RegisterPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import Cart from "./pages/Cart.jsx";
 import Checkout from "./pages/Checkout.jsx";
-import CategoryProducts from './pages/CategoryProducts';
+import CategoryProducts from "./pages/CategoryProducts";
 import ActivateAccount from "./pages/ActivateAccount.jsx";
 
 // Import Seller Pages
@@ -39,7 +39,7 @@ import AdminCategories from "./pages/admin/Categories.jsx";
 import AdminRoute from "./components/ProtectedRoutes/AdminRoute.jsx";
 import SellerRoute from "./components/ProtectedRoutes/SellerRoute.jsx";
 import AuthLoader from "./components/AuthLoader.jsx";
-
+import GoogleCallback from "./pages/GoogleCallback";
 
 function App() {
   return (
@@ -49,8 +49,8 @@ function App() {
           <Route path="/" element={<SharedLayout />}>
             <Route index element={<Home />} />
             <Route path="home" element={<Home />} />
-            <Route path="about"  element={<AboutUs />} />
-            <Route path="contact"  element={<ContactUs />} />
+            <Route path="about" element={<AboutUs />} />
+            <Route path="contact" element={<ContactUs />} />
             <Route path="profile" element={<UserProfile />} />
             <Route path="register" element={<RegisterPage />} />
             <Route path="login" element={<LoginPage />} />
@@ -58,19 +58,29 @@ function App() {
             <Route path="users" element={<ChatPage />} />
             <Route path="chat" element={<Chat />} />
             <Route path="shop" element={<Shop />} />
-            <Route path="product-details/:id" element={<ProductDetailsPage />} />
+            <Route
+              path="product-details/:id"
+              element={<ProductDetailsPage />}
+            />
             <Route path="cart" element={<Cart />} />
             <Route path="checkout" element={<Checkout />} />
-            <Route path="/category/:categoryName" element={<CategoryProducts />} />
+            <Route
+              path="/category/:categoryName"
+              element={<CategoryProducts />}
+            />
+            <Route path="/google-callback" element={<GoogleCallback />} />
           </Route>
-          
+
           {/* Seller Routes - Protected by SellerRoute */}
           <Route element={<SellerRoute />}>
             <Route path="/" element={<SharedLayout />}>
               <Route path="seller/dashboard" element={<Dashboard />} />
               <Route path="/seller/products" element={<Products />} />
               <Route path="/seller/products/add" element={<AddProduct />} />
-              <Route path="/seller/products/edit/:id" element={<EditProduct />} />
+              <Route
+                path="/seller/products/edit/:id"
+                element={<EditProduct />}
+              />
               <Route path="seller/sales-report" element={<SalesReport />} />
               <Route path="seller/payouts" element={<Payouts />} />
               <Route path="seller/orders" element={<Orders />} />
@@ -79,7 +89,7 @@ function App() {
               <Route path="seller/store-settings" element={<StoreSettings />} />
             </Route>
           </Route>
-          
+
           {/* Admin Routes - Protected by AdminRoute */}
           <Route element={<AdminRoute />}>
             <Route path="/admin" element={<AdminLayout />}>

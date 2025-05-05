@@ -1,63 +1,49 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import Sidebar from "../../components/Seller/Sidebar";
 import DataTable from "../../components/Seller/DataTable";
 import { FiPlus, FiEdit, FiTrash2, FiSearch } from "react-icons/fi";
-import initialData from "../../assets/data/dashboardData.json";
+import { fetchCategories } from "../../store/slices/productsSlice";
+import { fetchSellerProducts, deleteSellerProduct } from "../../store/slices/sellerProductsSlice";
+import { loadUser } from "../../store/slices/authSlice";
 import "../../assets/css/dashboard/dash.css";
 
 export default function Products() {
   const navigate = useNavigate();
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [isDeleting, setIsDeleting] = useState(null);
 
-  // Load products from localStorage or initial JSON
-  useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        setLoading(true);
-        
-        // Check if we have products in localStorage
-        const savedProducts = localStorage.getItem('sellerProducts');
-        
-        if (savedProducts) {
-          setProducts(JSON.parse(savedProducts));
-        } else {
-          // Use initial data if nothing in localStorage
-          setProducts(initialData.popularProducts || []);
-          localStorage.setItem('sellerProducts', JSON.stringify(initialData.popularProducts || []));
-        }
-        
-        setLoading(false);
-      } catch (err) {
-        setError(err.message || "Failed to load products");
-        setLoading(false);
-      }
-    };
+  // Get data from Redux store
+  const { items: sellerProducts, loading, error } = useSelector(state => state.sellerProducts);
+  const { categories } = useSelector(state => state.products);
+  const { isAuthenticated, user } = useSelector(state => state.auth);
 
-    loadProducts();
-  }, []);
-
-  // Save products to localStorage whenever they change
+  // Load user data if not already loaded
   useEffect(() => {
-    if (products.length > 0) {
-      localStorage.setItem('sellerProducts', JSON.stringify(products));
+    if (!user) {
+      dispatch(loadUser());
     }
-  }, [products]);
+  }, [dispatch, user]);
+
+  // Load seller products and categories from backend
+  useEffect(() => {
+    if (user && user.id) {
+      dispatch(fetchSellerProducts());
+      dispatch(fetchCategories());
+    }
+  }, [dispatch, user]);
+
+  // No need to filter products as fetchSellerProducts already returns only the seller's products
 
   const handleDelete = async (productId) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
-    
+
     try {
       setIsDeleting(productId);
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const updatedProducts = products.filter(product => product.id !== productId);
-      setProducts(updatedProducts);
+      await dispatch(deleteSellerProduct(productId)).unwrap();
     } catch (error) {
       console.error("Failed to delete product:", error);
     } finally {
@@ -65,25 +51,16 @@ export default function Products() {
     }
   };
 
-  // Function to add a new product
-  const handleAddProduct = (newProduct) => {
-    const productWithId = {
-      ...newProduct,
-      id: `prod-${Date.now()}`, // Generate unique ID
-      price: parseFloat(newProduct.price),
-      stock: parseInt(newProduct.stock)
-    };
+  const filteredProducts = sellerProducts ? sellerProducts.filter(product => {
+    // Handle cases where product name or title might be undefined
+    const productName = product.name || product.title || '';
+    const productDescription = product.description || '';
     
-    setProducts(prev => [...prev, productWithId]);
-    navigate('/seller/products');
-  };
-
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         product.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         productDescription.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
-  });
+  }) : [];
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-US', {
@@ -112,8 +89,8 @@ export default function Products() {
         <Sidebar />
         <main className="dashboard-main">
           <div className="card error-content">
-            <p>{error}</p>
-            <button 
+            <p>{typeof error === 'object' ? 'Failed to load products. Please try again.' : error}</p>
+            <button
               onClick={() => window.location.reload()}
               className="button button-primary"
             >
@@ -128,11 +105,11 @@ export default function Products() {
   return (
     <div className="dashboard-container">
       <Sidebar />
-      
+
       <main className="dashboard-main">
         <div className="page-header">
           <h1 className="dashboard-header">Products</h1>
-          <button 
+          <button
             onClick={() => navigate('/seller/products/add')}
             className="button button-primary"
           >
@@ -158,9 +135,9 @@ export default function Products() {
               className="form-control category-select"
             >
               <option value="all">All Categories</option>
-              {initialData.categories.map(category => (
-                <option key={category.value} value={category.value}>
-                  {category.label}
+              {categories.map(category => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
                 </option>
               ))}
             </select>
@@ -184,26 +161,21 @@ export default function Products() {
                 { key: 'name', label: 'Product' },
                 { key: 'category', label: 'Category' },
                 { key: 'price', label: 'Price' },
-                { key: 'stock', label: 'Stock' },
                 { key: 'status', label: 'Status' },
                 { key: 'actions', label: 'Actions' }
               ]}
               data={filteredProducts.map(product => {
-                const category = initialData.categories.find(c => c.value === product.category);
+                const category = categories.find(c => c.id === product.category);
                 return {
                   ...product,
-                  category: category?.label || product.category,
-                  price: formatCurrency(product.price),
-                  stock: (
-                    <span className={product.stock > 0 ? "text-success" : "text-danger"}>
-                      {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
-                    </span>
-                  ),
+                  name: product.name || product.title || 'Unnamed Product',
+                  category: category?.name || product.category_name || 'Uncategorized',
+                  price: formatCurrency(product.price || 0),
                   status: (
                     <span className={`status-badge ${
-                      product.stock > 0 ? 'status-active' : 'status-inactive'
+                      product.is_approved === true ? 'status-active' : 'status-inactive'
                     }`}>
-                      {product.stock > 0 ? 'Active' : 'Inactive'}
+                      {product.is_approved === true ? 'Approved' : <span style={{ color: 'red' }}>Not Approved</span>}
                     </span>
                   ),
                   actions: (

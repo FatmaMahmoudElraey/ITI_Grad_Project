@@ -16,12 +16,8 @@ import Dashboard from "./pages/seller/Dashboard.jsx";
 import Products from "./pages/seller/Products.jsx";
 import AddProduct from "./pages/seller/AddProduct.jsx";
 import EditProduct from "./pages/seller/EditProduct.jsx";
-import SalesReport from "./pages/seller/SalesReport.jsx";
-import Payouts from "./pages/seller/Payouts.jsx";
 import Reviews from "./pages/seller/Reviews.jsx";
-import Inbox from "./pages/seller/Inbox.jsx";
 import Orders from "./pages/seller/Orders.jsx";
-import StoreSettings from "./pages/seller/StoreSettings.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
 import Chat from "./pages/Chat.jsx";
 import ChatPage from "./pages/Users.jsx";
@@ -81,12 +77,8 @@ function App() {
                 path="/seller/products/edit/:id"
                 element={<EditProduct />}
               />
-              <Route path="seller/sales-report" element={<SalesReport />} />
-              <Route path="seller/payouts" element={<Payouts />} />
               <Route path="seller/orders" element={<Orders />} />
               <Route path="seller/reviews" element={<Reviews />} />
-              <Route path="seller/inbox" element={<Inbox />} />
-              <Route path="seller/store-settings" element={<StoreSettings />} />
             </Route>
           </Route>
 

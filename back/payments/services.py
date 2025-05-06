@@ -9,6 +9,9 @@ import json
 from datetime import datetime
 from django.conf import settings
 from .models import Payment
+from requests.exceptions import ConnectionError, Timeout, RequestException
+from rest_framework.exceptions import APIException
+from rest_framework import status
 
 logger = logging.getLogger(__name__)
 
@@ -82,20 +85,39 @@ def handle_webhook(request) -> dict:
 
     return {'success': True, 'message': 'Webhook processed'}
 
-def get_paymob_auth_token() -> str:
+def get_paymob_auth_token():
     """Get authentication token from Paymob API"""
-    payload = {"api_key": settings.PAYMOB_API_KEY}
-    log_payment_step("AUTH", payload)
-
-    response = requests.post(
-        settings.PAYMOB_AUTH_URL,
-        json=payload
-    )
-    response.raise_for_status()
-
-    result = response.json()
-    log_payment_step("AUTH", {"success": True, "token_length": len(result["token"])}, is_response=True)
-    return result["token"]
+    try:
+        response = requests.post(
+            "https://accept.paymobsolutions.com/api/auth/tokens",
+            json={"api_key": settings.PAYMOB_API_KEY}
+        )
+        response.raise_for_status()  # Raise exception for HTTP errors
+        return response.json()["token"]
+    except ConnectionError as e:
+        # Handle connection issues specifically
+        raise APIException(
+            detail="Payment service unavailable. Please check your internet connection and try again.",
+            code=status.HTTP_503_SERVICE_UNAVAILABLE
+        )
+    except Timeout:
+        # Handle timeout issues
+        raise APIException(
+            detail="Payment service timed out. Please try again later.",
+            code=status.HTTP_504_GATEWAY_TIMEOUT
+        )
+    except RequestException as e:
+        # Handle all other request issues
+        raise APIException(
+            detail="Error connecting to payment service. Please try again later.",
+            code=status.HTTP_502_BAD_GATEWAY
+        )
+    except Exception as e:
+        # Catch any other unexpected errors
+        raise APIException(
+            detail="Unexpected error processing payment. Please try again later.",
+            code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 def register_order(order_id: str, amount_cents: int, auth_token: str) -> int:
     # Your existing code for merchant_order_id and payload

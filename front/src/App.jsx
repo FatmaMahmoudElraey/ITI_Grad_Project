@@ -18,11 +18,13 @@ import AddProduct from "./pages/seller/AddProduct.jsx";
 import EditProduct from "./pages/seller/EditProduct.jsx";
 import Reviews from "./pages/seller/Reviews.jsx";
 import Orders from "./pages/seller/Orders.jsx";
+
 import UserProfile from "./pages/UserProfile.jsx";
-import Chat from "./pages/Chat.jsx";
-import ChatPage from "./pages/Users.jsx";
 import Shop from "./pages/Shop.jsx";
 import ProductDetailsPage from "./pages/ProductDetails.jsx";
+import SearchPage from "./pages/SearchPage.jsx";
+import BlogDetailsPage from "./pages/BlogDetailsPage.jsx";
+import BlogFAQPage from "./pages/BlogFAQPage.jsx";
 
 // Import Admin Pages
 import AdminLayout from "./components/Admin/AdminLayout.jsx";
@@ -52,8 +54,8 @@ function App() {
             <Route path="register" element={<RegisterPage />} />
             <Route path="login" element={<LoginPage />} />
             <Route path="activate/:uid/:token" element={<ActivateAccount />} />
-            <Route path="users" element={<ChatPage />} />
-            <Route path="chat" element={<Chat />} />
+            <Route path="blogs" element={<BlogFAQPage />} />
+            <Route path="blog/:id" element={<BlogDetailsPage />} />
             <Route path="shop" element={<Shop />} />
             <Route
               path="product-details/:id"
@@ -67,6 +69,7 @@ function App() {
             />
             <Route path="/google-callback" element={<GoogleCallback />} />
             <Route path="/payment-result" element={<PaymentResult />} />
+            <Route path="search" element={<SearchPage />} />
           </Route>
 
           {/* Seller Routes - Protected by SellerRoute */}

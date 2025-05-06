@@ -9,6 +9,7 @@ User = settings.AUTH_USER_MODEL
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(unique=True, blank=True)
+    image = models.ImageField(upload_to='categories/images/', null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:

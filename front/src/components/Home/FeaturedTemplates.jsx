@@ -4,7 +4,7 @@ import { FaEye, FaArrowRight, FaChevronLeft, FaChevronRight } from 'react-icons/
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchFeaturedProducts } from '../../store/slices/productsSlice';
 import { Link } from 'react-router-dom';
-import '../../styles/Home/FeaturedTemplates.css';
+import '../../styles/home/featuredTemplates.css';
 
 export default function FeaturedTemplates() {
   const [hoveredCard, setHoveredCard] = useState(null);

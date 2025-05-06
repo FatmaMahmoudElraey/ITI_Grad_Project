@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { FaArrowRight, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCategories } from '../../store/slices/productsSlice';
-import '../../styles/Home/CategoriesSection.css';
+import '../../styles/home/CategoriesSection.css';
 
 const CategoriesSection = () => {
   const dispatch = useDispatch();

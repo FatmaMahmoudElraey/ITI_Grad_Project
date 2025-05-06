@@ -10,6 +10,7 @@ import Cart from "./pages/Cart.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import CategoryProducts from "./pages/CategoryProducts";
 import ActivateAccount from "./pages/ActivateAccount.jsx";
+import Categories from "./pages/Categories";
 
 // Import Seller Pages
 import Dashboard from "./pages/seller/Dashboard.jsx";
@@ -65,6 +66,7 @@ function App() {
               element={<CategoryProducts />}
             />
             <Route path="/google-callback" element={<GoogleCallback />} />
+            <Route path="/all-categories" element={<Categories />} />
           </Route>
 
           {/* Seller Routes - Protected by SellerRoute */}

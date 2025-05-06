@@ -1,6 +1,7 @@
 import React from 'react'
 import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import { FaDownload, FaUsers, FaStar, FaArrowRight } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 //import hom.css from 
 import '../../styles/home/hero.css';
@@ -19,24 +20,28 @@ export default function Hero() {
               Perfect for businesses, portfolios, and e-commerce stores.
             </p>
             <div className="d-flex gap-3 flex-wrap">
-              <Button 
-                style={{ backgroundColor: '#660ff1', border: 'none' }} 
-                size="lg" 
-                className="fw-bold text-white"
-              >
-                Browse Templates
-              </Button>
-              <Button 
-                style={{ 
-                  backgroundColor: 'transparent', 
-                  border: '2px solid #660ff1',
-                  color: '#660ff1'
-                }}
-                size="lg" 
-                className="d-flex align-items-center gap-2"
-              >
-                Learn More <FaArrowRight />
-              </Button>
+              <Link to="/shop" className="text-decoration-none">
+                <Button 
+                  style={{ backgroundColor: '#660ff1', border: 'none' }} 
+                  size="lg" 
+                  className="fw-bold text-white"
+                >
+                  Browse Templates
+                </Button>
+              </Link>
+              <Link to="/about" className="text-decoration-none">
+                <Button 
+                  style={{ 
+                    backgroundColor: 'transparent', 
+                    border: '2px solid #660ff1',
+                    color: '#660ff1'
+                  }}
+                  size="lg" 
+                  className="d-flex align-items-center gap-2"
+                >
+                  Learn More <FaArrowRight />
+                </Button>
+              </Link>
             </div>
             <Row className="mt-5">
               {['500+ Templates', '24/7 Support', '100% Satisfaction'].map((item, index) => (

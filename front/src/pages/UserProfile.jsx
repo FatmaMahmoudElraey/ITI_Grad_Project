@@ -6,7 +6,6 @@ import {
   updateUserProfile,
   fetchUserFavorites,
 } from "../store/slices/usersSlice";
-import { createProductReview } from "../store/slices/productsSlice";
 import {
   Card,
   Button,
@@ -16,7 +15,6 @@ import {
   Row,
   Col,
   Badge,
-  Alert,
 } from "react-bootstrap";
 import {
   FaEdit,
@@ -25,10 +23,8 @@ import {
   FaUser,
   FaDownload,
   FaCalendarAlt,
-  FaStar as FaStarSolid,
-  FaRegStar,
+  FaStar,
   FaShoppingCart,
-  FaCommentAlt,
 } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -43,18 +39,10 @@ export default function UserProfile() {
     loading,
     error,
   } = useSelector((state) => state.users);
-  const { success: reviewSuccess, error: reviewError } = useSelector((state) => state.products);
   const [showEditModal, setShowEditModal] = useState(false);
   const [formData, setFormData] = useState({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [activeTab, setActiveTab] = useState("purchases");
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [currentProductToReview, setCurrentProductToReview] = useState(null);
-  const [reviewData, setReviewData] = useState({
-    rating: 5,
-    comment: "",
-  });
-  const [reviewAlert, setReviewAlert] = useState({ show: false, message: "", variant: "success" });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -140,91 +128,6 @@ export default function UserProfile() {
       navigate("/");
     } catch (err) {
       console.error("Failed to delete account:", err);
-    }
-  };
-
-  const handleReviewProduct = (product) => {
-    setCurrentProductToReview(product);
-    setReviewData({
-      rating: 5,
-      comment: "",
-    });
-    setShowReviewModal(true);
-  };
-
-  const handleSubmitReview = async () => {
-    try {
-      if (!currentProductToReview) return;
-      
-      console.log('Submitting review for product:', currentProductToReview);
-      
-      // Make sure we have a valid product ID
-      if (!currentProductToReview.id) {
-        throw new Error('Invalid product ID');
-      }
-      
-      // Get the access token from session storage
-      const token = sessionStorage.getItem("accessToken");
-      if (!token) {
-        throw new Error('You need to be logged in to submit a review');
-      }
-      
-      // Use URLSearchParams for a simple form submission
-      const params = new URLSearchParams();
-      params.append('product', currentProductToReview.id);
-      params.append('rating', reviewData.rating);
-      params.append('comment', reviewData.comment);
-      
-      console.log('Review data being sent:', {
-        product: currentProductToReview.id,
-        rating: reviewData.rating,
-        comment: reviewData.comment
-      });
-      
-      // Make a direct fetch request to the API
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"}/api/product-reviews/`,
-        {
-          method: "POST",
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': `Bearer ${token}`
-          },
-          body: params
-        }
-      );
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Review submission error:', errorText);
-        try {
-          const errorData = JSON.parse(errorText);
-          throw new Error(errorData.detail || 'Failed to submit review');
-        } catch (e) {
-          throw new Error('Failed to submit review: ' + errorText.substring(0, 100));
-        }
-      }
-      
-      const data = await response.json();
-      console.log('Review submitted successfully:', data);
-      
-      setShowReviewModal(false);
-      setReviewAlert({
-        show: true,
-        message: "Review submitted successfully!",
-        variant: "success",
-      });
-      
-      // Hide alert after 3 seconds
-      setTimeout(() => {
-        setReviewAlert({ show: false, message: "", variant: "success" });
-      }, 3000);
-    } catch (err) {
-      setReviewAlert({
-        show: true,
-        message: err.message || "Failed to submit review",
-        variant: "danger",
-      });
     }
   };
 
@@ -442,7 +345,7 @@ export default function UserProfile() {
                   {purchasedProducts.length} Items
                 </Badge>
                 <Badge bg="light" text="dark">
-                  <FaStarSolid className="me-1" size={12} />
+                  <FaStar className="me-1" size={12} />
                   Member since{" "}
                   {userProfile?.user?.date_joined
                     ? new Date(userProfile?.user?.date_joined).getFullYear()
@@ -555,15 +458,7 @@ export default function UserProfile() {
                   >
                     <FaShoppingCart className="me-2" /> Your Orders
                   </Button>
-                  <Button
-                    variant={activeTab === "favorites" ? "primary" : "light"}
-                    className={`rounded-0 rounded-top border-0 px-4 ${
-                      activeTab === "favorites" ? "" : "text-muted"
-                    }`}
-                    onClick={() => setActiveTab("favorites")}
-                  >
-                    <FaStarSolid className="me-2" /> Favorites
-                  </Button>
+
                 </div>
               </Card.Header>
 
@@ -591,14 +486,7 @@ export default function UserProfile() {
                             boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
                           }}
                         >
-                          <h3
-                            style={{
-                              marginBottom: "1rem",
-                              color: "rgb(102, 15, 241)",
-                            }}
-                          >
-                            Order {order.id}
-                          </h3>
+                          
 
                           {order.items?.map((item) => (
                             <div key={item.id} className="mb-3">
@@ -632,25 +520,17 @@ export default function UserProfile() {
                                 </div>
                               </div>
 
-                              {/* Action Buttons */}
-                              <div className="mt-3 d-flex gap-2">
+                              {/* Full-width Download Button */}
+                              <div className="mt-3">
                                 <Button
                                   variant="outline-primary"
-                                  className="flex-grow-1 d-flex justify-content-center align-items-center"
+                                  className="w-100 d-flex justify-content-center align-items-center"
                                   onClick={() =>
                                     handleDownload(item.product.id)
                                   }
                                 >
-                                  <FaDownload className="me-2" size={14} />
+                                  <FaDownload className="me-2" size={14} />{" "}
                                   Download
-                                </Button>
-                                <Button
-                                  variant="outline-success"
-                                  className="flex-grow-1 d-flex justify-content-center align-items-center"
-                                  onClick={() => handleReviewProduct(item.product)}
-                                >
-                                  <FaCommentAlt className="me-2" size={14} />
-                                  Review
                                 </Button>
                               </div>
                             </div>
@@ -676,139 +556,7 @@ export default function UserProfile() {
                   </>
                 )}
 
-                {activeTab === "favorites" && (
-                  <>
-                    <div className="d-flex justify-content-between align-items-center mb-4">
-                      <h5 className="mb-0">Your Favorite Items</h5>
-                    </div>
-
-                    {userFavorites.length > 0 ? (
-                      <div className="row row-cols-1 row-cols-md-3 g-4">
-                        {userFavorites.map((favorite) => {
-                          const product = favorite.product;
-                          const firstImage =
-                            product.images?.length > 0
-                              ? product.images[0].image
-                              : null; // <-- Get first product image
-
-                          return (
-                            <div key={product.id} className="col">
-                              <Card className="h-100 product-card">
-                                <div className="position-relative">
-                                  {firstImage ? (
-                                    <Card.Img
-                                      variant="top"
-                                      src={firstImage} // Show first image if available
-                                      style={{
-                                        height: "160px",
-                                        objectFit: "cover",
-                                      }}
-                                    />
-                                  ) : (
-                                    <div
-                                      style={{
-                                        height: "160px",
-                                        backgroundColor: "#f0f0f0",
-                                      }}
-                                      className="d-flex align-items-center justify-content-center"
-                                    >
-                                      <span className="text-muted small">
-                                        No Image
-                                      </span>
-                                    </div>
-                                  )}
-
-                                  <Badge
-                                    bg="primary"
-                                    className="position-absolute top-0 end-0 m-2"
-                                  >
-                                    {product.category?.name}
-                                  </Badge>
-
-                                  <Button
-                                    variant="link"
-                                    className="position-absolute top-0 start-0 m-2 text-danger p-0"
-                                  >
-                                    <FaStarSolid
-                                      size={18}
-                                      className="text-warning"
-                                    />
-                                  </Button>
-                                </div>
-
-                                <Card.Body>
-                                  <Card.Title className="fs-6">
-                                    {product.title}
-                                  </Card.Title>
-                                  <Card.Text className="text-muted small mb-1">
-                                    by {product.seller?.name}
-                                  </Card.Text>
-
-                                  <div className="d-flex align-items-center mb-2">
-                                    <div className="text-warning me-1">
-                                      {Array(5)
-                                        .fill(0)
-                                        .map((_, i) => (
-                                          <FaStarSolid
-                                            key={i}
-                                            size={12}
-                                            className={
-                                              i <
-                                              Math.floor(
-                                                product.average_rating || 0
-                                              )
-                                                ? "text-warning"
-                                                : "text-muted"
-                                            }
-                                          />
-                                        ))}
-                                    </div>
-                                    <span className="small text-muted ms-1">
-                                      {product.average_rating?.toFixed(1) || 0}
-                                    </span>
-                                  </div>
-
-                                  <div className="small text-muted">
-                                    <span>Price: ${product.price}</span>
-                                  </div>
-                                </Card.Body>
-
-                                <Card.Footer className="bg-white border-top-0">
-                                  <Button
-                                    variant="primary"
-                                    size="sm"
-                                    className="w-100"
-                                  >
-                                    <FaShoppingCart
-                                      className="me-1"
-                                      size={12}
-                                    />{" "}
-                                    Purchase Now
-                                  </Button>
-                                </Card.Footer>
-                              </Card>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="text-center py-5">
-                        <img
-                          src="https://i.imgur.com/Qtrsrk5.jpg"
-                          alt="No Favorites"
-                          style={{ width: "120px", opacity: 0.5 }}
-                          className="rounded-circle mb-3"
-                        />
-                        <h5 className="text-muted">No favorite items yet</h5>
-                        <p className="text-muted">
-                          Add items to your favorites to keep track of products
-                          you like
-                        </p>
-                        <Button variant="primary">Browse Products</Button>
-                      </div>
-                    )}
-                  </>
-                )}
+                
               </Card.Body>
             </Card>
           </Col>
@@ -992,70 +740,6 @@ export default function UserProfile() {
           </Button>
           <Button variant="danger" onClick={handleDeleteAccount}>
             Delete Account
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      {/* Review Modal */}
-      <Modal
-        show={showReviewModal}
-        onHide={() => setShowReviewModal(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>
-            Review {currentProductToReview?.title || "Product"}
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {reviewAlert.show && (
-            <Alert variant={reviewAlert.variant} className="mb-3">
-              {reviewAlert.message}
-            </Alert>
-          )}
-          
-          <Form>
-            <Form.Group className="mb-4">
-              <Form.Label>Your Rating</Form.Label>
-              <div className="d-flex gap-2 fs-3">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <span 
-                    key={star} 
-                    onClick={() => setReviewData({...reviewData, rating: star})}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    {star <= reviewData.rating ? (
-                      <FaStarSolid className="text-warning" />
-                    ) : (
-                      <FaRegStar className="text-warning" />
-                    )}
-                  </span>
-                ))}
-              </div>
-            </Form.Group>
-            
-            <Form.Group className="mb-3">
-              <Form.Label>Your Review</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={4}
-                value={reviewData.comment}
-                onChange={(e) => setReviewData({...reviewData, comment: e.target.value})}
-                placeholder="Share your experience with this product..."
-              />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowReviewModal(false)}>
-            Cancel
-          </Button>
-          <Button 
-            variant="primary" 
-            onClick={handleSubmitReview}
-            disabled={!reviewData.comment.trim()}
-          >
-            Submit Review
           </Button>
         </Modal.Footer>
       </Modal>

@@ -87,14 +87,12 @@ export default function Shop() {
   const sortedAndFilteredTemplates = getSortedTemplates(filteredTemplates);
 
   const handleCategoryChange = (categoryId) => {
-    // Prevent re-setting if already selected
     if (selectedCategory === categoryId) return;
     
     setSelectedCategory(categoryId);
     if (categoryId !== 'all') {
       setSearchParams({ category: categoryId });
     } else {
-      // Clear search params without triggering a re-render
       setSearchParams({}, { replace: true });
     }
   };

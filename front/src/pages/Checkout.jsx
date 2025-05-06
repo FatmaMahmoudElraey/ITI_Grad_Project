@@ -604,21 +604,6 @@ const Checkout = () => {
                               onChange={handleChange}
                               className="mb-3"
                             />
-
-                            <Form.Check
-                              type="radio"
-                              id="cash-on-delivery"
-                              name="paymentMethod"
-                              value="cash-on-delivery"
-                              label={
-                                <span>
-                                  <FontAwesomeIcon icon={faMoneyBill} className="me-2" />
-                                  Cash on Delivery
-                                </span>
-                              }
-                              checked={formData.paymentMethod === 'cash-on-delivery'}
-                              onChange={handleChange}
-                            />
                           </div>
                         </Form.Group>
 
@@ -626,7 +611,7 @@ const Checkout = () => {
                           <div className="credit-card-info p-3 border rounded mb-4">
                             <div className="text-center">
                               <img
-                                src="/path/to/secure-payment-icons.png"
+                                src="https://img.freepik.com/free-photo/3d-render-online-payment-transaction-security_107791-16637.jpg?ga=GA1.1.897827715.1735997478&semt=ais_hybrid&w=740"
                                 alt="Supported payment methods"
                                 className="mb-3"
                                 style={{ maxHeight: '40px' }}

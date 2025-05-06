@@ -44,14 +44,16 @@ class Order(models.Model):
     PENDING = 'P'
     COMPLETE = 'C'
     CANCELED = 'X'
+    FAILED = 'F'
     STATUS_CHOICES = [
         (PENDING, 'Pending'),
         (COMPLETE, 'Complete'),
-        (CANCELED, 'Canceled')
+        (CANCELED, 'Canceled'),
+        (FAILED, 'Failed'),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     created_at = models.DateTimeField(auto_now_add=True)
-    payment_status = models.CharField(max_length=1, choices=STATUS_CHOICES, default=COMPLETE)
+    payment_status = models.CharField(max_length=1, choices=STATUS_CHOICES, default=PENDING)
 
     # Add these fields
     shipping_address = models.TextField(blank=True, null=True)

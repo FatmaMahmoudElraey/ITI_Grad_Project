@@ -112,3 +112,20 @@ class SubscriptionViewSet(ModelViewSet):
 
     def get_queryset(self):
         return Subscription.objects.filter(user=self.request.user)
+
+
+class SellerOrderViewSet(ModelViewSet):
+    """
+    ViewSet for sellers to view orders containing their products.
+    """
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return Order.objects.none() # Should not happen due to IsAuthenticated
+        # Filter orders that contain at least one product sold by the current user.
+        # .distinct() is important to avoid duplicate orders if an order has multiple items from the same seller.
+        # .prefetch_related() helps to optimize database queries.
+        return Order.objects.filter(items__product__seller=user).distinct().prefetch_related('items', 'items__product', 'user')

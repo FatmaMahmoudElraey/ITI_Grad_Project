@@ -1,4 +1,4 @@
-import { Container, Row, Col, Button, Badge, Tabs, Tab, Card, Carousel, Form, Toast, ToastContainer } from 'react-bootstrap';
+import { Container, Row, Col, Button, Badge, Tabs, Tab, Card, Form, Toast, ToastContainer } from 'react-bootstrap';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { BASE_URL } from '../api/constants';
@@ -82,7 +82,7 @@ const ProductDetailsPage = () => {
     title: "Loading...",
     description: "Loading product details...",
     category: { id: 0, name: "" },
-    tags: [],
+    tags_names: [], 
     images: [],
     price: 0,
     created_at: new Date().toISOString(),
@@ -210,30 +210,24 @@ const ProductDetailsPage = () => {
       <Row>
         <Col lg={8}>
           <div className="product-image-container mb-4">
-            <Carousel>
-              {selectedProduct.photo ? (
-                <Carousel.Item>
-                  <img
-                    src={selectedProduct.photo}
-                    alt={selectedProduct.title}
-                    className="d-block w-100 rounded shadow-sm"
-                    style={{ maxHeight: '500px', objectFit: 'cover' }}
-                    onError={(e) => {
-                      e.target.src = "/placeholder-image.jpg";
-                    }}
-                  />
-                </Carousel.Item>
-              ) : (
-                <Carousel.Item>
-                  <img
-                    src="/placeholder-image.jpg"
-                    alt="No image available"
-                    className="d-block w-100 rounded shadow-sm"
-                    style={{ maxHeight: '500px', objectFit: 'cover' }}
-                  />
-                </Carousel.Item>
-              )}
-            </Carousel>
+            {selectedProduct.photo ? (
+              <img
+                src={selectedProduct.photo}
+                alt={selectedProduct.title}
+                className="d-block w-100 rounded shadow-sm"
+                style={{ maxHeight: '500px', objectFit: 'cover' }}
+                onError={(e) => {
+                  e.target.src = "/placeholder-image.jpg"; 
+                }}
+              />
+            ) : (
+              <img
+                src="/placeholder-image.jpg"
+                alt="No image available"
+                className="d-block w-100 rounded shadow-sm"
+                style={{ maxHeight: '500px', objectFit: 'cover' }}
+              />
+            )}
           </div>
 
           {selectedProduct.preview_video && (
@@ -263,7 +257,7 @@ const ProductDetailsPage = () => {
 
                 <h5 className="mt-4">Tags</h5>
                 <ul>
-                  {(selectedProduct.tags || []).map((tag, index) => (
+                  {(selectedProduct.tags_names || []).map((tag, index) => (
                     <li key={index}>{tag}</li>
                   ))}
                 </ul>

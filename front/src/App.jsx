@@ -40,6 +40,8 @@ import SellerRoute from "./components/ProtectedRoutes/SellerRoute.jsx";
 import AuthLoader from "./components/AuthLoader.jsx";
 import GoogleCallback from "./pages/GoogleCallback";
 import PaymentResult from "./pages/PaymentResult";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+import ResetPasswordConfirmPage from "./pages/ResetPasswordConfirmPage";
 
 function App() {
   return (
@@ -71,7 +73,15 @@ function App() {
             <Route path="/google-callback" element={<GoogleCallback />} />
             <Route path="/all-categories" element={<Categories />} />
             <Route path="/payment-result" element={<PaymentResult />} />
+
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route
+              path="/password/reset/confirm/:uid/:token"
+              element={<ResetPasswordConfirmPage />}
+            />
+
             <Route path="search" element={<SearchPage />} />
+
           </Route>
 
           {/* Seller Routes - Protected by SellerRoute */}

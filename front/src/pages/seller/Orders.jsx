@@ -143,8 +143,7 @@ export default function Orders() {
                 { key: 'items', label: 'Order Items', style: { width: '250px' } },
                 { key: 'date', label: 'Date', style: { width: '100px' } },
                 { key: 'total', label: 'Total Price', style: { width: '100px' } },
-                { key: 'status', label: 'Status', style: { width: '100px' } },
-                { key: 'actions', label: 'Actions', style: { width: '150px' } }
+                { key: 'status', label: 'Status', style: { width: '100px' } }
               ]}
               data={filteredOrders.map(order => ({
                 id: order.id,
@@ -183,26 +182,6 @@ export default function Orders() {
                     {order.payment_status === 'C' ? 'Completed' :
                      order.payment_status === 'S' ? 'Shipped' : 'Processing'}
                   </span>
-                ),
-                actions: (
-                  <div className="actions-container">
-                    <select
-                      value={order.payment_status || 'P'}
-                      onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
-                      className="form-control status-select"
-                      disabled={isUpdatingStatus === order.id}
-                    >
-                      <option value="P">Processing</option>
-                      <option value="S">Shipped</option>
-                      <option value="C">Completed</option>
-                    </select>
-                    <button
-                      onClick={() => navigate(`/seller/orders/${order.id}`)}
-                      className="button button-secondary button-sm"
-                    >
-                      <FiEye className="icon" /> View
-                    </button>
-                  </div>
                 )
               }))}
               sortable

@@ -24,7 +24,7 @@ export const fetchSellerOrders = createAsyncThunk(
       console.log('Fetching seller orders for seller ID:', sellerId);
       
       // Fetch all orders directly
-      const ordersResponse = await axios.get(ENDPOINTS.ORDERS, {
+      const ordersResponse = await axios.get(ENDPOINTS.SELLER_ORDERS, {
         headers: getAuthHeader()
       });
       

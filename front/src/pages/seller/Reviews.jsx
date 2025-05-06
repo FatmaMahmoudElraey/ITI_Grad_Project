@@ -21,21 +21,10 @@ export default function Reviews() {
   // Fetch reviews for seller's products
   useEffect(() => {
     if (user && user.id) {
-      console.log('Fetching reviews for seller:', user.id);
       dispatch(fetchSellerProductReviews());
     }
   }, [dispatch, user]);
 
-  // Debug log reviews
-  useEffect(() => {
-    console.log('Current reviews in component:', reviews);
-    if (Array.isArray(reviews)) {
-      console.log('Reviews length:', reviews.length);
-      if (reviews.length > 0) {
-        console.log('First review sample:', reviews[0]);
-      }
-    }
-  }, [reviews]);
 
   const renderRatingStars = (rating) => {
     const stars = [];
@@ -118,7 +107,7 @@ export default function Reviews() {
                       </span>
                     </div>
                     <div className="review-customer">
-                      <strong>Customer:</strong> {review.user_name || 'Anonymous'}
+                      <strong>Customer:</strong> {review.user || 'Anonymous'}
                     </div>
                     <div className="review-rating">
                       {renderRatingStars(review.rating)}

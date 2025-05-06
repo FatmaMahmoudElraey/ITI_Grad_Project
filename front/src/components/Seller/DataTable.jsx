@@ -83,14 +83,14 @@ export default function DataTable({
       
       {pagination && data.length > itemsPerPage && (
         <div className="pagination-controls">
-          <button 
+          <button className='btn btn-success me-3 fw-bold' 
             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
           >
             Previous
           </button>
           <span>Page {currentPage} of {Math.ceil(data.length / itemsPerPage)}</span>
-          <button 
+          <button className='btn btn-success ms-3 fw-bold'
             onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(data.length / itemsPerPage)))}
             disabled={currentPage === Math.ceil(data.length / itemsPerPage)}
           >

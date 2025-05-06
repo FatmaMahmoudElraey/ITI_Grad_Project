@@ -1,65 +1,90 @@
-:root {
-  --primary: #660ff1;
-  --primary-shadow: rgba(102, 15, 241, 0.2);
-  --transition: all 0.3s ease;
+.templates-scroll-container {
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-.featured-templates {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+.templates-scroll-container::-webkit-scrollbar {
+  display: none;
 }
 
-.template-image-card {
+.templates-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 1.5rem;
+  padding: 0.5rem 0;
+}
+
+.template-item {
+  flex: 0 0 350px;
+  max-width: 350px;
+}
+
+.scroll-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: white;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  z-index: 2;
   cursor: pointer;
-  overflow: hidden;
-  border-radius: 1rem;
-  box-shadow: 0 8px 20px var(--primary-shadow);
-  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
 }
 
-.template-image-card:hover {
-  transform: translateY(-10px);
+.scroll-button:hover {
+  background-color: #f8f9fa;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-.template-image {
-  height: 300px;
-  object-fit: cover;
-  transition: transform 0.5s ease;
+.scroll-button:active {
+  transform: translateY(-50%) scale(0.95);
 }
 
-.template-image-card:hover .template-image {
-  transform: scale(1.1);
+.scroll-left {
+  left: -20px;
 }
 
-/* Overlay styles */
-.overlay {
-  background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.8));
-  opacity: 0;
-  transition: var(--transition);
+.scroll-right {
+  right: -20px;
 }
 
-.template-image-card:hover .overlay {
-  opacity: 1;
+.scroll-button svg {
+  color: #660ff1;
+  font-size: 16px;
 }
 
-/* Override Bootstrap classes */
-.btn-primary, 
-.badge.bg-primary {
-  background-color: var(--primary) !important;
-  border-color: var(--primary);
-}
-
-.text-primary {
-  color: var(--primary) !important;
-}
-
-.title-underline {
-  width: 60px;
-  height: 3px;
-  background: var(--primary);
+.view-all-btn:hover {
+  background-color: #6600f1 !important;
+  border-color: #6600f1 !important;
+  color: white !important;
 }
 
 @media (max-width: 768px) {
-  .template-image {
-    height: 220px;
+  .scroll-button {
+    width: 32px;
+    height: 32px;
+  }
+
+  .scroll-left {
+    left: -16px;
+  }
+
+  .scroll-right {
+    right: -16px;
+  }
+
+  .template-item {
+    flex: 0 0 280px;
+    max-width: 280px;
   }
 }

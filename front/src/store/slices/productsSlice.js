@@ -170,6 +170,23 @@ export const createProductReview = createAsyncThunk(
   }
 );
 
+// New async thunk for searching products
+export const searchProducts = createAsyncThunk(
+  'products/search',
+  async (searchQuery, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${ENDPOINTS.PRODUCTS}?search=${encodeURIComponent(searchQuery)}`);
+      // Filter products to only include approved ones for public display
+      const approvedProducts = response.data.filter(product => product.is_approved === true);
+      return approvedProducts;
+    } catch (error) {
+      return rejectWithValue(
+        error.response ? error.response.data : 'Could not search products'
+      );
+    }
+  }
+);
+
 const productsSlice = createSlice({
   name: 'products',
   initialState: {
@@ -179,6 +196,10 @@ const productsSlice = createSlice({
     currentProduct: null,
     categories: [],
     tags: [],
+    // Add search state
+    searchResults: [],
+    searchLoading: false,
+    searchError: null,
     loading: false,
     error: null,
     success: null,
@@ -335,7 +356,22 @@ const productsSlice = createSlice({
         state.loading = false;
         state.error = action.payload || 'Failed to delete product';
       })
-      
+
+      // Search Products
+      .addCase(searchProducts.pending, (state) => {
+        state.searchLoading = true;
+        state.searchError = null;
+        state.searchResults = []; // Clear previous results
+      })
+      .addCase(searchProducts.fulfilled, (state, action) => {
+        state.searchLoading = false;
+        state.searchResults = action.payload;
+      })
+      .addCase(searchProducts.rejected, (state, action) => {
+        state.searchLoading = false;
+        state.searchError = action.payload || 'Failed to search products';
+      })
+
       // Create Product Review
       .addCase(createProductReview.pending, (state) => {
         state.loading = true;

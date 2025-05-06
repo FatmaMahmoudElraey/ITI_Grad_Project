@@ -13,7 +13,7 @@ class UserPublicSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ['id', 'name', 'slug']
+        fields = ['id', 'name', 'slug','image']
 
 
 class TagSerializer(serializers.ModelSerializer):

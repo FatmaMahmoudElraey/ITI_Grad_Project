@@ -43,12 +43,27 @@ export const fetchSellerProducts = createAsyncThunk(
         );
       });
       
-      console.log('Filtered seller products:', sellerProducts);
       return sellerProducts;
     } catch (error) {
-      console.error('Error fetching seller products:', error);
       return rejectWithValue(
         typeof error.response?.data === 'object' ? 'Could not fetch seller products' : error.response?.data || 'Could not fetch seller products'
+      );
+    }
+  }
+);
+
+// Fetch a single product by ID
+export const fetchProductById = createAsyncThunk(
+  'sellerProducts/fetchById',
+  async (productId, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${ENDPOINTS.PRODUCTS}${productId}/`, {
+        headers: getAuthHeader()
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || 'Could not fetch product details'
       );
     }
   }
@@ -104,9 +119,20 @@ export const deleteSellerProduct = createAsyncThunk(
       });
       return productId;
     } catch (error) {
-      return rejectWithValue(
-        error.response ? error.response.data : 'Could not delete product'
-      );
+      // Provide more detailed error message
+      let errorMessage = 'Could not delete product';
+      if (error.response) {
+        if (error.response.status === 403) {
+          errorMessage = 'You do not have permission to delete this product';
+        } else if (error.response.status === 404) {
+          errorMessage = 'Product not found or already deleted';
+        } else if (error.response.data) {
+          errorMessage = typeof error.response.data === 'string' 
+            ? error.response.data 
+            : 'Server error occurred while deleting product';
+        }
+      }
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -115,6 +141,7 @@ const sellerProductsSlice = createSlice({
   name: 'sellerProducts',
   initialState: {
     items: [],
+    currentProduct: null,
     loading: false,
     error: null,
     success: null,
@@ -131,6 +158,9 @@ const sellerProductsSlice = createSlice({
       state.success = null;
       state.error = null;
     },
+    clearCurrentProduct: (state) => {
+      state.currentProduct = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -146,6 +176,25 @@ const sellerProductsSlice = createSlice({
       .addCase(fetchSellerProducts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Failed to fetch seller products';
+      })
+      
+      // Fetch Product By ID
+      .addCase(fetchProductById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchProductById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentProduct = action.payload;
+        // Also update the item in the items array if it exists
+        const index = state.items.findIndex(item => item.id === action.payload.id);
+        if (index !== -1) {
+          state.items[index] = action.payload;
+        }
+      })
+      .addCase(fetchProductById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to fetch product details';
       })
       
       // Create Product
@@ -170,9 +219,14 @@ const sellerProductsSlice = createSlice({
       })
       .addCase(updateSellerProduct.fulfilled, (state, action) => {
         state.loading = false;
+        // Update in items array
         const index = state.items.findIndex(item => item.id === action.payload.id);
         if (index !== -1) {
           state.items[index] = action.payload;
+        }
+        // Update currentProduct if it matches
+        if (state.currentProduct && state.currentProduct.id === action.payload.id) {
+          state.currentProduct = action.payload;
         }
         state.success = 'Product updated successfully';
       })
@@ -189,6 +243,10 @@ const sellerProductsSlice = createSlice({
       .addCase(deleteSellerProduct.fulfilled, (state, action) => {
         state.loading = false;
         state.items = state.items.filter(item => item.id !== action.payload);
+        // Clear currentProduct if it was the deleted one
+        if (state.currentProduct && state.currentProduct.id === action.payload) {
+          state.currentProduct = null;
+        }
         state.success = 'Product deleted successfully';
       })
       .addCase(deleteSellerProduct.rejected, (state, action) => {
@@ -198,6 +256,6 @@ const sellerProductsSlice = createSlice({
   },
 });
 
-export const { clearError, clearSuccess, clearSellerProductsState } = sellerProductsSlice.actions;
+export const { clearError, clearSuccess, clearSellerProductsState, clearCurrentProduct } = sellerProductsSlice.actions;
 
 export default sellerProductsSlice.reducer;

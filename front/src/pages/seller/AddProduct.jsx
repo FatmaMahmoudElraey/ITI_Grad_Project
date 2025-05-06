@@ -195,7 +195,7 @@ export default function AddProduct() {
             </div>
           )}
           
-          <form onSubmit={handleSubmit} className="product-form" style={{boxShadow:"0 10px 30px rgba(0, 0, 0, 0.2)"}}>
+          <form onSubmit={handleSubmit} className="product-form p-4" style={{boxShadow:"0 10px 30px rgba(0, 0, 0, 0.2)", maxHeight: '80vh', overflowY: 'auto', overflowX: 'hidden', width: '100%', maxWidth: '1200px', margin: '20px auto'}}>
             <div className="scrollable-form-container">
               <div className="form-grid">
                 <div className="form-group">

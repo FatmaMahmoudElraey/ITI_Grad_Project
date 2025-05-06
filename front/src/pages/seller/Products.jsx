@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Sidebar from "../../components/Seller/Sidebar";
 import DataTable from "../../components/Seller/DataTable";
-import { FiPlus, FiEdit, FiTrash2, FiSearch } from "react-icons/fi";
+import { FiPlus, FiEdit, FiTrash2, FiSearch, FiAlertCircle } from "react-icons/fi";
 import { fetchCategories } from "../../store/slices/productsSlice";
 import { fetchSellerProducts, deleteSellerProduct } from "../../store/slices/sellerProductsSlice";
 import { loadUser } from "../../store/slices/authSlice";
@@ -11,15 +11,37 @@ import "../../assets/css/dashboard/dash.css";
 
 export default function Products() {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [isDeleting, setIsDeleting] = useState(null);
+  const [notification, setNotification] = useState(null);
 
   // Get data from Redux store
   const { items: sellerProducts, loading, error } = useSelector(state => state.sellerProducts);
   const { categories } = useSelector(state => state.products);
   const { isAuthenticated, user } = useSelector(state => state.auth);
+
+  // Check for notification from navigation state
+  useEffect(() => {
+    if (location.state?.message) {
+      setNotification({
+        message: location.state.message,
+        type: location.state.messageType || 'success'
+      });
+      
+      // Clear the navigation state
+      window.history.replaceState({}, document.title);
+      
+      // Auto-dismiss notification after 5 seconds
+      const timer = setTimeout(() => {
+        setNotification(null);
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
 
   // Load user data if not already loaded
   useEffect(() => {
@@ -36,16 +58,35 @@ export default function Products() {
     }
   }, [dispatch, user]);
 
-  // No need to filter products as fetchSellerProducts already returns only the seller's products
-
   const handleDelete = async (productId) => {
-    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    if (!window.confirm("Are you sure you want to delete this product? This action cannot be undone.")) return;
 
     try {
       setIsDeleting(productId);
       await dispatch(deleteSellerProduct(productId)).unwrap();
+      
+      // Show success notification
+      setNotification({
+        message: "Product deleted successfully!",
+        type: "success"
+      });
+      
+      // Auto-dismiss notification after 5 seconds
+      setTimeout(() => {
+        setNotification(null);
+      }, 5000);
     } catch (error) {
-      console.error("Failed to delete product:", error);
+      
+      // Show error notification
+      setNotification({
+        message: typeof error === 'string' ? error : "Failed to delete product. Please try again.",
+        type: "error"
+      });
+      
+      // Auto-dismiss notification after 5 seconds
+      setTimeout(() => {
+        setNotification(null);
+      }, 5000);
     } finally {
       setIsDeleting(null);
     }
@@ -58,7 +99,9 @@ export default function Products() {
     
     const matchesSearch = productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          productDescription.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
+    const matchesCategory = selectedCategory === "all" || 
+                          (product.category && String(product.category) === String(selectedCategory)) ||
+                          (product.category_id && String(product.category_id) === String(selectedCategory));
     return matchesSearch && matchesCategory;
   }) : [];
 
@@ -69,7 +112,7 @@ export default function Products() {
     }).format(value);
   };
 
-  if (loading) {
+  if (loading && sellerProducts.length === 0) {
     return (
       <div className="dashboard-container">
         <Sidebar />
@@ -77,25 +120,6 @@ export default function Products() {
           <div className="card loading-container">
             <div className="loading-spinner"></div>
             <p>Loading products...</p>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="dashboard-container">
-        <Sidebar />
-        <main className="dashboard-main">
-          <div className="card error-content">
-            <p>{typeof error === 'object' ? 'Failed to load products. Please try again.' : error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="button button-primary"
-            >
-              Retry
-            </button>
           </div>
         </main>
       </div>
@@ -111,16 +135,29 @@ export default function Products() {
           <h1 className="dashboard-header">Products</h1>
           <button
             onClick={() => navigate('/seller/products/add')}
-            className="button button-primary"
+            className="button button-primary mb-3"
           >
             <FiPlus className="icon" /> Add New Product
           </button>
         </div>
+        
+        {/* Notification */}
+        {notification && (
+          <div className={`notification ${notification.type}`}>
+            {notification.type === 'error' && <FiAlertCircle className="notification-icon" />}
+            {notification.message}
+            <button 
+              className="close-notification" 
+              onClick={() => setNotification(null)}
+            >
+              &times;
+            </button>
+          </div>
+        )}
 
         <div className="card filters-container">
           <div className="filter-group">
-            <div className="search-input-wrapper">
-              <FiSearch className="search-icon" />
+            <div className="search-input-wrapper ">
               <input
                 type="text"
                 placeholder="Search products..."
@@ -144,7 +181,22 @@ export default function Products() {
           </div>
         </div>
 
-        {filteredProducts.length === 0 ? (
+        {error && (
+          <div className="card error-content">
+            <p>{typeof error === 'object' ? 'Failed to load products. Please try again.' : error}</p>
+            <button
+              onClick={() => {
+                dispatch(fetchSellerProducts());
+                dispatch(fetchCategories());
+              }}
+              className="button button-primary"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        {!error && filteredProducts.length === 0 ? (
           <div className="card empty-state">
             <p>No products found matching your criteria</p>
             <button
@@ -165,17 +217,15 @@ export default function Products() {
                 { key: 'actions', label: 'Actions' }
               ]}
               data={filteredProducts.map(product => {
-                const category = categories.find(c => c.id === product.category);
+                const category = categories.find(c => c.id === product.category || c.id === product.category_id);
                 return {
                   ...product,
                   name: product.name || product.title || 'Unnamed Product',
                   category: category?.name || product.category_name || 'Uncategorized',
                   price: formatCurrency(product.price || 0),
                   status: (
-                    <span className={`status-badge ${
-                      product.is_approved === true ? 'status-active' : 'status-inactive'
-                    }`}>
-                      {product.is_approved === true ? 'Approved' : <span style={{ color: 'red' }}>Not Approved</span>}
+                    <span className={`status-badge ${product.is_approved ? 'status-active' : 'status-inactive'}`}>
+                      {product.is_approved ? 'Approved' : <span style={{ color: 'red' }}>Not Approved</span>}
                     </span>
                   ),
                   actions: (
@@ -183,6 +233,7 @@ export default function Products() {
                       <button 
                         onClick={() => navigate(`/seller/products/edit/${product.id}`)}
                         className="button button-secondary button-sm"
+                        title="Edit product"
                       >
                         <FiEdit className="icon" /> Edit
                       </button>
@@ -190,6 +241,7 @@ export default function Products() {
                         onClick={() => handleDelete(product.id)}
                         className="button button-danger button-sm"
                         disabled={isDeleting === product.id}
+                        title="Delete product"
                       >
                         {isDeleting === product.id ? (
                           'Deleting...'
@@ -210,6 +262,61 @@ export default function Products() {
           </div>
         )}
       </main>
+      
+      <style jsx="true">{`
+        .notification {
+          margin-bottom: 20px;
+          padding: 12px 16px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          position: relative;
+          animation: slideIn 0.3s ease-out;
+        }
+        
+        .notification.success {
+          background-color: #d4edda;
+          color: #155724;
+          border-left: 4px solid #28a745;
+        }
+        
+        .notification.error {
+          background-color: #f8d7da;
+          color: #721c24;
+          border-left: 4px solid #dc3545;
+        }
+        
+        .notification-icon {
+          margin-right: 8px;
+        }
+        
+        .close-notification {
+          position: absolute;
+          right: 10px;
+          top: 50%;
+          transform: translateY(-50%);
+          background: transparent;
+          border: none;
+          font-size: 18px;
+          cursor: pointer;
+          opacity: 0.7;
+        }
+        
+        .close-notification:hover {
+          opacity: 1;
+        }
+        
+        @keyframes slideIn {
+          from {
+            transform: translateY(-20px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   );
 }

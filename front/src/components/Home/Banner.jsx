@@ -2,7 +2,7 @@ import React from 'react';
 import { Container, Row, Col, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { FaArrowRight } from 'react-icons/fa';
-import '../../styles/Home/Banner.css';
+import '../../styles/home/Banner.css';
 
 const Banner = () => {
   return (

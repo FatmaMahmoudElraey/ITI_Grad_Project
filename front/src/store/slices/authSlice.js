@@ -141,8 +141,8 @@ export const activateAccount = createAsyncThunk(
             const firstErrorKey = Object.keys(errorData)[0];
             if (firstErrorKey) {
               const firstError = errorData[firstErrorKey];
-              errorMessage = Array.isArray(firstError) 
-                ? firstError.join(', ') 
+              errorMessage = Array.isArray(firstError)
+                ? firstError.join(', ')
                 : String(firstError);
             }
           }
@@ -182,6 +182,36 @@ export const resetPasswordConfirm = createAsyncThunk(
     }
   }
 );
+
+// NOTE: handle payment state restoration after payment
+export const restoreAuthState = async (dispatch) => {
+  const savedToken = localStorage.getItem('payment_access_token');
+  if (savedToken) {
+    // Restore tokens to sessionStorage
+    sessionStorage.setItem('accessToken', savedToken);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
+
+    const refreshToken = localStorage.getItem('payment_refresh_token');
+    if (refreshToken) {
+      sessionStorage.setItem('refreshToken', refreshToken);
+    }
+
+    // Clean up
+    localStorage.removeItem('payment_access_token');
+    localStorage.removeItem('payment_refresh_token');
+    localStorage.removeItem('payment_in_progress');
+
+    // Update Redux state
+    try {
+      await dispatch(loadUser()).unwrap();
+      return true;
+    } catch (err) {
+      console.error("Failed to restore auth state:", err);
+      return false;
+    }
+  }
+  return false;
+};
 
 // Initialize auth state
 const initialState = {

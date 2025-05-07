@@ -53,7 +53,7 @@ class Order(models.Model):
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     created_at = models.DateTimeField(auto_now_add=True)
-    payment_status = models.CharField(max_length=1, choices=STATUS_CHOICES, default=PENDING)
+    payment_status = models.CharField(max_length=1, choices=STATUS_CHOICES, default=COMPLETE)
 
     # Add these fields
     shipping_address = models.TextField(blank=True, null=True)

@@ -42,6 +42,7 @@ import GoogleCallback from "./pages/GoogleCallback";
 import PaymentResult from "./pages/PaymentResult";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ResetPasswordConfirmPage from "./pages/ResetPasswordConfirmPage";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
 import Chatbot from "./components/Chatbot.jsx";
 
 
@@ -58,6 +59,7 @@ function App() {
             <Route path="profile" element={<UserProfile />} />
             <Route path="register" element={<RegisterPage />} />
             <Route path="login" element={<LoginPage />} />
+            <Route path="verify-email" element={<VerifyEmailPage />} />
             <Route path="activate/:uid/:token" element={<ActivateAccount />} />
             <Route path="blogs" element={<BlogFAQPage />} />
             <Route path="blog/:id" element={<BlogDetailsPage />} />

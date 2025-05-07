@@ -27,7 +27,7 @@ import {
   FaShoppingCart,
 } from "react-icons/fa";
 import { motion } from "framer-motion";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, Link } from "react-router-dom";
 import { FaLocationDot } from "react-icons/fa6";
 
 export default function UserProfile() {
@@ -124,10 +124,15 @@ export default function UserProfile() {
   const handleDeleteAccount = async () => {
     try {
       await dispatch(deleteUserAccount(userProfile.user.id)).unwrap();
+      // Clear all session storage (tokens, etc.)
       sessionStorage.clear();
-      navigate("/");
+      // Show success message
+      alert("Your account has been deactivated successfully. You will now be redirected to the login page.");
+      // Redirect to login page
+      navigate("/login");
     } catch (err) {
-      console.error("Failed to delete account:", err);
+      console.error("Failed to deactivate account:", err);
+      alert("Failed to deactivate your account. Please try again or contact support.");
     }
   };
 
@@ -430,7 +435,7 @@ export default function UserProfile() {
                     className="d-flex align-items-center justify-content-center"
                     onClick={() => setShowDeleteConfirm(true)}
                   >
-                    <FaTrash className="me-2" /> Delete Account
+                    <FaTrash className="me-2" /> Deactivate Account
                   </Button>
                   <Button
                     variant="danger"
@@ -467,11 +472,7 @@ export default function UserProfile() {
                   <>
                     <div className="d-flex justify-content-between align-items-center mb-4">
                       <h5 className="mb-0">Your Purchased Items</h5>
-                      <Form.Control
-                        type="search"
-                        placeholder="Search purchases..."
-                        className="w-auto"
-                      />
+                      
                     </div>
 
                     {userProfile?.orders?.length > 0 ? (
@@ -550,7 +551,11 @@ export default function UserProfile() {
                           Browse our marketplace to find amazing digital
                           products
                         </p>
-                        <Button variant="primary">Explore Marketplace</Button>
+                        <Button variant="primary">
+                          <Link to="/shop" className="text-white">
+                           Explore Marketplace
+                          </Link>
+                          </Button>
                       </div>
                     )}
                   </>
@@ -717,7 +722,7 @@ export default function UserProfile() {
         size="sm"
       >
         <Modal.Header closeButton className="border-bottom-0">
-          <Modal.Title className="text-danger">Delete Account</Modal.Title>
+          <Modal.Title className="text-danger">Deactivate Account</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div className="text-center mb-4">
@@ -726,8 +731,8 @@ export default function UserProfile() {
             </div>
             <h5>Are you sure?</h5>
             <p className="text-muted">
-              This will permanently delete your account and all associated data.
-              This action cannot be undone.
+              This will deactivate your account, preventing you from logging in.
+              Your data will remain in the database but you will no longer have access to the platform.
             </p>
           </div>
         </Modal.Body>
@@ -739,7 +744,7 @@ export default function UserProfile() {
             Cancel
           </Button>
           <Button variant="danger" onClick={handleDeleteAccount}>
-            Delete Account
+            Deactivate Account
           </Button>
         </Modal.Footer>
       </Modal>

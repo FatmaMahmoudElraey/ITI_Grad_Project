@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Badge, Button, Stack, Toast, ToastContainer } from 'react-bootstrap';
+import { Card, Badge, Button, Stack } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiStar, FiHeart, FiShoppingCart } from 'react-icons/fi';
@@ -26,9 +26,7 @@ const TemplateCard = (product) => {
   
   // Debug image structure
   const [isFavorite, setIsFavorite] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
-  const [toastVariant, setToastVariant] = useState('success');
+  // Removed toast state variables as we're using SweetAlert instead
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { isAuthenticated } = useSelector((state) => state.auth);
@@ -109,24 +107,44 @@ const TemplateCard = (product) => {
         .unwrap()
         .then(response => {
           console.log('Successfully added/updated cart item in database:', response);
-          setToastMessage(`${title} has been added to your cart.`);
-          setToastVariant('success');
-          setShowToast(true);
-          setTimeout(() => setShowToast(false), 2000);
+          // Show success SweetAlert
+          Swal.fire({
+            icon: 'success',
+            title: 'Added to Cart!',
+            text: `${title} has been added to your cart.`,
+            timer: 2000,
+            showConfirmButton: false,
+            position: 'top-end',
+            toast: true,
+            timerProgressBar: true
+          });
         })
         .catch(error => {
           console.error('Failed to save cart item to database:', error);
-          setToastMessage(`${title} added to local cart only. Database sync failed.`);
-          setToastVariant('warning');
-          setShowToast(true);
-          setTimeout(() => setShowToast(false), 2000);
+          // Show warning SweetAlert
+          Swal.fire({
+            icon: 'warning',
+            title: 'Partially Added',
+            text: `${title} added to local cart only. Database sync failed.`,
+            timer: 3000,
+            showConfirmButton: false,
+            position: 'top-end',
+            toast: true,
+            timerProgressBar: true
+          });
         });
     } else {
       // For non-authenticated users, just show a success message
-      setToastMessage(`${title} has been added to your cart.`);
-      setToastVariant('success');
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 2000);
+      Swal.fire({
+        icon: 'success',
+        title: 'Added to Cart!',
+        text: `${title} has been added to your cart.`,
+        timer: 2000,
+        showConfirmButton: false,
+        position: 'top-end',
+        toast: true,
+        timerProgressBar: true
+      });
     }
   };
 
@@ -147,23 +165,7 @@ const TemplateCard = (product) => {
 
   return (
     <>
-      <ToastContainer position="top-end" className="p-3" style={{ zIndex: 1 }}>
-        <Toast show={showToast} onClose={() => setShowToast(false)} bg={toastVariant} delay={2000} autohide>
-          <Toast.Header closeButton>
-            <FiShoppingCart className="me-2" />
-            <strong className="me-auto">Added to Cart</strong>
-          </Toast.Header>
-          <Toast.Body className="text-white">
-            {toastMessage}
-            <div className="mt-2">
-              <Button size="sm" variant="light" onClick={() => navigate('/cart')}>
-                View Cart
-              </Button>
-            </div>
-          </Toast.Body>
-        </Toast>
-      </ToastContainer>
-      <Card className="h-100 border-0 shadow-sm hover-shadow transition">
+      <Card className="h-100 border-0 shadow-md hover-shadow transition">
       <div className="position-relative">
         <Card.Img 
           variant="top" 

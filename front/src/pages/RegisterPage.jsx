@@ -97,12 +97,14 @@ export default function RegisterPage() {
           email: '',
           password: '',
           confirmPassword: '',
-          phone_number: ''
+          phone_number: '',
+          role: 'user'
         });
         
+        // Redirect to verification page instead of login
         setTimeout(() => {
-          navigate('/login');
-        }, 3000);
+          navigate('/verify-email');
+        }, 1500);
       }
     }
   };
@@ -130,7 +132,7 @@ export default function RegisterPage() {
 
                     {registrationSuccess && (
                       <div className="alert alert-success" role="alert">
-                        Registration successful! Redirecting to login page...
+                        Registration successful! Redirecting to verification page...
                       </div>
                     )}
                     

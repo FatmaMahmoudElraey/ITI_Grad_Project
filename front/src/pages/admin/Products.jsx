@@ -687,7 +687,7 @@ const Products = () => {
                 </button>
               </div>
               <form onSubmit={handleAddProduct}>
-                <div className="modal-body">
+                <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
                   <div className="form-group">
                     <label htmlFor="title">Title *</label>
                     <input 
@@ -918,7 +918,7 @@ const Products = () => {
                 </button>
               </div>
               <form onSubmit={handleUpdateProduct}>
-                <div className="modal-body">
+                <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
                   <div className="form-group">
                     <label htmlFor="edit-title">Title *</label>
                     <input 

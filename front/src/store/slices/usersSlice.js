@@ -106,12 +106,15 @@ export const updateUserProfile = createAsyncThunk(
 
 export const deleteUserAccount = createAsyncThunk(
   'users/deleteAccount',
-  async (userId, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      await api.delete(`${ENDPOINTS.USER_DETAILS}${userId}/`);
-      return userId;
+      // Instead of deleting, deactivate the account by setting is_active to false
+      await api.patch(`${ENDPOINTS.CUSTOMERS}${_}/`, {
+        is_active: false
+      });
+      return _;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to delete account');
+      return rejectWithValue(error.response?.data?.message || 'Failed to deactivate account');
     }
   }
 );

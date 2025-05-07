@@ -53,15 +53,23 @@ const Users = () => {
     setShowEditModal(true);
   };
 
-  // Handle user delete
+  // Handle user deactivation (soft delete)
   const handleDeleteUser = async (user) => {
-    if (window.confirm(`Are you sure you want to delete ${user.first_name} ${user.last_name}?`)) {
+    if (window.confirm(`Are you sure you want to deactivate ${user.first_name} ${user.last_name}? This will prevent them from logging in but their data will remain in the database.`)) {
       try {
-        await axios.delete(`http://localhost:8000/api/auth/users/${user.id}/`);
-        setUsers(users.filter(u => u.id !== user.id));
+        // Update user's is_active to false (soft delete)
+        await axios.patch(`http://localhost:8000/api/auth/customers/${user.id}/`, {
+          is_active: false
+        });
+        // Update the UI to reflect the change
+        const updatedUsers = users.map(u => 
+          u.id === user.id ? { ...u, is_active: false } : u
+        );
+        setUsers(updatedUsers);
+        alert('User has been deactivated successfully. They will no longer be able to log in, but their data remains in the database.');
       } catch (error) {
-        console.error('Error deleting user:', error);
-        alert('Failed to delete user. Please try again.');
+        console.error('Error deactivating user:', error);
+        alert('Failed to deactivate user. Please try again.');
       }
     }
   };
@@ -365,9 +373,9 @@ const Users = () => {
           <button 
             className="btn btn-sm btn-danger" 
             onClick={() => handleDeleteUser(item)}
-            title="Delete"
+            title="Deactivate User"
           >
-            <FaTrash />
+            <FaTrash /> Deactivate
           </button>
         </div>
       )

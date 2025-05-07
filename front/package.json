@@ -23,6 +23,7 @@
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
     "chart.js": "^4.4.9",
+    "cohere-ai": "^7.17.1",
     "framer-motion": "^12.9.2",
     "jquery": "^3.7.1",
     "popper.js": "^1.16.1",
@@ -41,7 +42,8 @@
     "react-router-dom": "^7.5.0",
     "redux": "^5.0.1",
     "redux-toolkit": "^1.1.2",
-    "sweetalert2": "^11.19.1"
+    "sweetalert2": "^11.19.1",
+    "swiper": "^11.2.6"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",

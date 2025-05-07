@@ -42,6 +42,8 @@ import GoogleCallback from "./pages/GoogleCallback";
 import PaymentResult from "./pages/PaymentResult";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ResetPasswordConfirmPage from "./pages/ResetPasswordConfirmPage";
+import Chatbot from "./components/Chatbot.jsx";
+
 
 function App() {
   return (
@@ -110,6 +112,7 @@ function App() {
             </Route>
           </Route>
         </Routes>
+        <Chatbot />
       </BrowserRouter>
     </AuthLoader>
   );

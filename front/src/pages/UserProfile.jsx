@@ -6,6 +6,7 @@ import {
   updateUserProfile,
   fetchUserFavorites,
 } from "../store/slices/usersSlice";
+import Swal from "sweetalert2";
 import { createProductReview } from "../store/slices/productsSlice";
 import {
   Card,
@@ -126,11 +127,12 @@ export default function UserProfile() {
       setShowEditModal(false);
     } catch (err) {
       console.error("Failed to update profile:", err);
-      alert(
-        `Failed to update profile: ${
-          err.message || "Please check your form data"
-        }`
-      );
+      Swal.fire({
+        title: 'Error',
+        text: `Failed to update profile: ${err.message || "Please check your form data"}`,
+        icon: 'error',
+        confirmButtonColor: '#660ff1'
+      });
     }
   };
 
@@ -140,12 +142,23 @@ export default function UserProfile() {
       // Clear all session storage (tokens, etc.)
       sessionStorage.clear();
       // Show success message
-      alert("Your account has been deactivated successfully. You will now be redirected to the login page.");
+      Swal.fire({
+        title: 'Account Deactivated',
+        text: 'Your account has been deactivated successfully. You will now be redirected to the login page.',
+        icon: 'success',
+        timer: 3000,
+        showConfirmButton: false
+      });
       // Redirect to login page
       navigate("/login");
     } catch (err) {
       console.error("Failed to deactivate account:", err);
-      alert("Failed to deactivate your account. Please try again or contact support.");
+      Swal.fire({
+        title: 'Error',
+        text: 'Failed to deactivate your account. Please try again or contact support.',
+        icon: 'error',
+        confirmButtonColor: '#660ff1'
+      });
     }
   };
 
@@ -239,7 +252,12 @@ export default function UserProfile() {
       // Get the access token from session storage
       const token = sessionStorage.getItem("accessToken");
       if (!token) {
-        alert("You need to be logged in to download files");
+        Swal.fire({
+          title: 'Authentication Required',
+          text: 'You need to be logged in to download files',
+          icon: 'warning',
+          confirmButtonColor: '#660ff1'
+        });
         return;
       }
 
@@ -291,7 +309,12 @@ export default function UserProfile() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error downloading file:", error);
-      alert(`Failed to download file: ${error.message}`);
+      Swal.fire({
+        title: 'Download Failed',
+        text: `Failed to download file: ${error.message}`,
+        icon: 'error',
+        confirmButtonColor: '#660ff1'
+      });
     }
   };
 

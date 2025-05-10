@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter } from 'react-icons/fa';
 import DataTable from '../../components/Admin/DataTable';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -109,15 +110,38 @@ const Products = () => {
 
   // Handle product delete
   const handleDeleteProduct = async (product) => {
-    if (window.confirm(`Are you sure you want to delete ${product.title}?`)) {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: `Do you want to delete ${product.title}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel'
+    });
+    
+    if (result.isConfirmed) {
       try {
         await axios.delete(`http://localhost:8000/api/products/${product.id}/`, {
           headers: getAuthHeader()
         });
         setProducts(products.filter(p => p.id !== product.id));
+        
+        Swal.fire({
+          title: 'Deleted!',
+          text: `${product.title} has been deleted.`,
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        });
       } catch (error) {
         console.error('Error deleting product:', error);
-        alert('Failed to delete product. Please try again.');
+        Swal.fire({
+          title: 'Error',
+          text: 'Failed to delete product. Please try again.',
+          icon: 'error'
+        });
       }
     }
   };
@@ -139,7 +163,11 @@ const Products = () => {
       setProducts(updatedProducts);
     } catch (error) {
       console.error('Error updating product approval status:', error);
-      alert('Failed to update product approval status. Please try again.');
+      Swal.fire({
+        title: 'Error',
+        text: 'Failed to update product approval status. Please try again.',
+        icon: 'error'
+      });
     }
   };
 
@@ -161,7 +189,11 @@ const Products = () => {
       setProducts(updatedProducts);
     } catch (error) {
       console.error('Error updating product featured status:', error);
-      alert('Failed to update product featured status. Please try again.');
+      Swal.fire({
+        title: 'Error',
+        text: 'Failed to update product featured status. Please try again.',
+        icon: 'error'
+      });
     }
   };
 
@@ -258,7 +290,11 @@ const Products = () => {
       setProducts(updatedProducts);
     } catch (error) {
       console.error('Error removing image:', error);
-      alert('Failed to remove image. Please try again.');
+      Swal.fire({
+        title: 'Error',
+        text: 'Failed to remove image. Please try again.',
+        icon: 'error'
+      });
     }
   };
 
@@ -376,7 +412,11 @@ const Products = () => {
       if (error.response && error.response.data) {
         setFormErrors(error.response.data);
       } else {
-        alert('Failed to add product. Please try again.');
+        Swal.fire({
+          title: 'Error',
+          text: 'Failed to add product. Please try again.',
+          icon: 'error'
+        });
       }
     }
   };
@@ -453,7 +493,11 @@ const Products = () => {
       if (error.response && error.response.data) {
         setFormErrors(error.response.data);
       } else {
-        alert('Failed to update product. Please try again.');
+        Swal.fire({
+          title: 'Error',
+          text: 'Failed to update product. Please try again.',
+          icon: 'error'
+        });
       }
     }
   };

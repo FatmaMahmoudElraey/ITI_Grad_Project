@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaUserAlt, FaUserCog, FaUserTie } from 'react-icons/fa';
 import DataTable from '../../components/Admin/DataTable';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -55,7 +56,18 @@ const Users = () => {
 
   // Handle user deactivation (soft delete)
   const handleDeleteUser = async (user) => {
-    if (window.confirm(`Are you sure you want to deactivate ${user.first_name} ${user.last_name}? This will prevent them from logging in but their data will remain in the database.`)) {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: `Are you sure you want to deactivate ${user.first_name} ${user.last_name}? This will prevent them from logging in but their data will remain in the database.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, deactivate',
+      cancelButtonText: 'Cancel'
+    });
+    
+    if (result.isConfirmed) {
       try {
         // Update user's is_active to false (soft delete)
         await axios.patch(`http://localhost:8000/api/auth/customers/${user.id}/`, {
@@ -66,10 +78,21 @@ const Users = () => {
           u.id === user.id ? { ...u, is_active: false } : u
         );
         setUsers(updatedUsers);
-        alert('User has been deactivated successfully. They will no longer be able to log in, but their data remains in the database.');
+        
+        Swal.fire({
+          title: 'Deactivated!',
+          text: 'User has been deactivated successfully. They will no longer be able to log in, but their data remains in the database.',
+          icon: 'success',
+          timer: 3000,
+          showConfirmButton: false
+        });
       } catch (error) {
         console.error('Error deactivating user:', error);
-        alert('Failed to deactivate user. Please try again.');
+        Swal.fire({
+          title: 'Error',
+          text: 'Failed to deactivate user. Please try again.',
+          icon: 'error'
+        });
       }
     }
   };
@@ -88,7 +111,11 @@ const Users = () => {
       setUsers(updatedUsers);
     } catch (error) {
       console.error('Error updating user active status:', error);
-      alert('Failed to update user active status. Please try again.');
+      Swal.fire({
+        title: 'Error',
+        text: 'Failed to update user active status. Please try again.',
+        icon: 'error'
+      });
     }
   };
 
@@ -216,7 +243,11 @@ const Users = () => {
           
           setFormErrors(serverErrors);
         } else {
-          alert('Failed to add user. Please try again.');
+          Swal.fire({
+            title: 'Error',
+            text: 'Failed to add user. Please try again.',
+            icon: 'error'
+          });
         }
       } else {
         alert('Failed to add user. Please try again.');
@@ -264,7 +295,11 @@ const Users = () => {
       if (error.response && error.response.data) {
         setFormErrors(error.response.data);
       } else {
-        alert('Failed to update user. Please try again.');
+        Swal.fire({
+          title: 'Error',
+          text: 'Failed to update user. Please try again.',
+          icon: 'error'
+        });
       }
     }
   };

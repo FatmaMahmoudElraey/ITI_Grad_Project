@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faShoppingCart, faArrowLeft, faTag } from '@fortawesome/free-solid-svg-icons';
+import Swal from 'sweetalert2';
 import { removeFromCart, clearCart } from '../store/slices/cartSlice';
 import { fetchCart, removeCartItem } from '../store/slices/cartApiSlice';
 
@@ -72,7 +73,12 @@ const Cart = () => {
     } else {
       setDiscount(0);
       setCouponApplied(false);
-      alert('Invalid coupon code');
+      Swal.fire({
+        title: 'Invalid Coupon',
+        text: 'The coupon code you entered is invalid.',
+        icon: 'error',
+        confirmButtonColor: '#660ff1'
+      });
     }
   };
 

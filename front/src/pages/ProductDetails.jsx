@@ -215,7 +215,7 @@ const ProductDetailsPage = () => {
                 src={selectedProduct.photo}
                 alt={selectedProduct.title}
                 className="d-block w-100 rounded shadow-sm"
-                style={{ maxHeight: '500px', objectFit: 'cover' }}
+                style={{ maxHeight: '500px', objectFit: 'contain' }}
                 onError={(e) => {
                   e.target.src = "/placeholder-image.jpg"; 
                 }}
@@ -225,7 +225,7 @@ const ProductDetailsPage = () => {
                 src="/placeholder-image.jpg"
                 alt="No image available"
                 className="d-block w-100 rounded shadow-sm"
-                style={{ maxHeight: '500px', objectFit: 'cover' }}
+                style={{ maxHeight: '500px', objectFit: 'contain' }}
               />
             )}
           </div>

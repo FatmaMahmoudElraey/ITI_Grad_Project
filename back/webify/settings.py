@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'djoser',
     'corsheaders',
     "channels",
+    "debug_toolbar",
     'accounts.apps.AccountsConfig',
     'authsys.apps.AuthsysConfig',
     'products',
@@ -70,9 +71,14 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ASGI_APPLICATION = "webify.asgi.application"
+
+INTERNAL_IPS = [
+    "127.0.0.1"
+]
 
 CHANNEL_LAYERS = {
     "default": {

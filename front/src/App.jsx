@@ -33,6 +33,7 @@ import AdminProducts from "./pages/admin/Products.jsx";
 import AdminOrders from "./pages/admin/Orders.jsx";
 import AdminUsers from "./pages/admin/Users.jsx";
 import AdminCategories from "./pages/admin/Categories.jsx";
+import NotApprovedProducts from "./pages/admin/NotApprovedProducts.jsx";
 
 // Import Protected Routes
 import AdminRoute from "./components/ProtectedRoutes/AdminRoute.jsx";
@@ -108,6 +109,7 @@ function App() {
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminProducts />} />
               <Route path="products" element={<AdminProducts />} />
+              <Route path="not-approved-products" element={<NotApprovedProducts />} />
               <Route path="categories" element={<AdminCategories />} />
               <Route path="orders" element={<AdminOrders />} />
               <Route path="users" element={<AdminUsers />} />

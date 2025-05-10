@@ -7,7 +7,8 @@ import {
   FaSignOutAlt,
   FaAngleLeft,
   FaBars,
-  FaListAlt
+  FaListAlt,
+  FaExclamationTriangle
 } from 'react-icons/fa';
 import logo from '../../assets/images/navbar/logo.png'; // Update with your actual logo path
 
@@ -16,6 +17,7 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
   
   const menuItems = [
     { path: '/admin/products', icon: <FaBox />, label: 'Products' },
+    { path: '/admin/not-approved-products', icon: <FaExclamationTriangle />, label: 'Pending Approval' },
     { path: '/admin/categories', icon: <FaListAlt />, label: 'Categories' },
     { path: '/admin/orders', icon: <FaShoppingCart />, label: 'Orders' },
     { path: '/admin/users', icon: <FaUsers />, label: 'Users' },

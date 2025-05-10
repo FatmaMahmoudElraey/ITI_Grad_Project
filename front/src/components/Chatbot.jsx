@@ -3,7 +3,7 @@ import { CohereClient } from "cohere-ai";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const cohere = new CohereClient({
-  token: "ElceQAe1xy3YcDSqJHvxRVfGnggnlEAvRMAHrZGX"
+  token: import.meta.env.VITE_CHATBOT_TOKEN
 });
 
 const Chatbot = () => {

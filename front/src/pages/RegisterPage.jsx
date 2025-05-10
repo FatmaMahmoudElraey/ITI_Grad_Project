@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { registerUser, clearError } from '../store/slices/authSlice';
+import GoogleLoginButton from '../components/GoogleLoginButton';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -321,6 +322,13 @@ export default function RegisterPage() {
                             "Register"
                           )}
                         </button>
+                      </div>
+
+                      <div className="d-flex justify-content-center my-4">
+                        <div className="text-center">
+                          <p className="text-muted mb-3">Or register with</p>
+                          <GoogleLoginButton />
+                        </div>
                       </div>
 
                       <p className="text-center text-muted mt-4">

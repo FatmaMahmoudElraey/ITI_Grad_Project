@@ -29,7 +29,6 @@ SECRET_KEY = 'django-insecure-)mx5num+p$9vtlb$+)n5022t7nx#&q57w7u1hqp6t&v4i6pr3y
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
 #setting of token time, and headers type
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
@@ -127,6 +126,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:8000",
 ]
+ALLOWED_HOSTS = ['webify-app-f9068c4398f5.herokuapp.com', 'localhost', '127.0.0.1']
+
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases

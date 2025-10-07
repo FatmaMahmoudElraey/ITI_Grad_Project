@@ -248,8 +248,13 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'accounts.UserAccount'
-
-BASE_APP_URL = "http://localhost:5173"
-BASE_API_URL = "http://localhost:8000"
+#for prod :
+BASE_APP_URL = os.getenv('BASE_APP_URL') #"http://localhost:5173"
+BASE_API_URL = os.getenv('BASE_API_URL') #"http://localhost:8000"
 GOOGLE_OAUTH2_CLIENT_ID = os.getenv("GOOGLE_OAUTH2_CLIENT_ID")
 GOOGLE_OAUTH2_CLIENT_SECRET = os.getenv("GOOGLE_OAUTH2_CLIENT_SECRET")
+#for dev :
+# BASE_APP_URL = "http://localhost:5173"
+# BASE_API_URL = "http://localhost:8000"
+# GOOGLE_OAUTH2_CLIENT_ID = os.getenv("GOOGLE_OAUTH2_CLIENT_ID")
+# GOOGLE_OAUTH2_CLIENT_SECRET = os.getenv("GOOGLE_OAUTH2_CLIENT_SECRET")

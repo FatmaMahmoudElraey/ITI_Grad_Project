@@ -7,6 +7,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
 const initialState = {
@@ -21,13 +22,7 @@ const initialState = {
 };
 
 // Add request interceptor to add token
-api.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem('accessToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// No interceptor: cookie-based auth uses HttpOnly cookies sent automatically
 
 export const fetchUsers = createAsyncThunk(
   'users/fetchUsers',
@@ -106,18 +101,19 @@ export const updateUserProfile = createAsyncThunk(
 
 export const deleteUserAccount = createAsyncThunk(
   'users/deleteAccount',
-  async (_, { rejectWithValue }) => {
+  async (userId, { rejectWithValue }) => {
     try {
-      // Instead of deleting, deactivate the account by setting is_active to false
-      await api.patch(`${ENDPOINTS.CUSTOMERS}${_}/`, {
-        is_active: false
+      // Instead of deleting, deactivate the account
+      await api.patch(`${ENDPOINTS.CUSTOMERS}${userId}/`, {
+        is_active: false,
       });
-      return _;
+      return userId;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to deactivate account');
     }
   }
 );
+
 
 // Users slice
 const usersSlice = createSlice({

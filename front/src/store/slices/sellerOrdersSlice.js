@@ -2,11 +2,8 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { ENDPOINTS } from '../../api/constants';
 
-// Helper function to get auth header
-const getAuthHeader = () => {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
+// No-op auth header - cookies will be sent automatically by axios
+const getAuthHeader = () => ({});
 
 // Fetch all orders for the seller
 export const fetchSellerOrders = createAsyncThunk(

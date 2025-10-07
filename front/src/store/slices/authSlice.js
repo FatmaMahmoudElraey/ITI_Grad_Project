@@ -7,12 +7,8 @@ export const loadUser = createAsyncThunk(
   "auth/loadUser",
   async (_, thunkAPI) => {
     try {
-      const token = sessionStorage.getItem("accessToken");
-      if (!token) return thunkAPI.rejectWithValue("No token found");
-
-      const response = await axios.get(ENDPOINTS.USER_DETAILS, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // With cookie-based auth we rely on the cookie being present and sent via credentials
+      const response = await axios.get(ENDPOINTS.USER_DETAILS);
 
       return response.data; // User data
     } catch (error) {
@@ -26,19 +22,17 @@ export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await axios.post(ENDPOINTS.LOGIN, credentials);
-      // Store tokens in local storage
-      sessionStorage.setItem("accessToken", response.data.access);
-      sessionStorage.setItem("refreshToken", response.data.refresh);
-
-      // Set default authorization header for all future requests
-      axios.defaults.headers.common[
-        "Authorization"
-      ] = `Bearer ${response.data.access}`;
-
-      // Fetch user data
-      const userResponse = await axios.get(ENDPOINTS.USER_DETAILS);
-      return { tokens: response.data, user: userResponse.data };
+      const response = await axios.post(ENDPOINTS.LOGIN, credentials, { withCredentials: true });
+      // If server returns tokens (and cookies couldn't be set due to dev cross-origin),
+      // set a temporary in-memory Authorization header so subsequent requests work in this session.
+      if (response.data?.access) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
+      }
+      // With cookie-based flow the server sets HttpOnly cookies for access/refresh
+      // so we don't store tokens in client storage or set Authorization header.
+      // Fetch user data (cookies are sent automatically thanks to withCredentials)
+      const userResponse = await axios.get(ENDPOINTS.USER_DETAILS, { withCredentials: true });
+      return { user: userResponse.data };
     } catch (error) {
       return rejectWithValue(
         error.response ? error.response.data : "Login failed"
@@ -65,13 +59,10 @@ export const logoutUser = createAsyncThunk(
   "auth/logoutUser",
   async (_, { rejectWithValue }) => {
     try {
-      // Clear tokens from local storage
-      sessionStorage.removeItem("accessToken");
-      sessionStorage.removeItem("refreshToken");
-
-      // Remove authorization header
-      delete axios.defaults.headers.common["Authorization"];
-
+      // Call server logout endpoint so it can blacklist refresh token and clear cookies
+      await axios.post(`${BASE_URL}/api/auth/jwt/logout/`, {}, { withCredentials: true });
+      // Ensure any client-side auth state is cleared; cookies removed by server
+      delete axios.defaults.headers.common['Authorization'];
       return null;
     } catch (error) {
       return rejectWithValue("Logout failed");
@@ -82,29 +73,20 @@ export const logoutUser = createAsyncThunk(
 export const refreshToken = createAsyncThunk(
   "auth/refreshToken",
   async (_, { rejectWithValue }) => {
-    const refreshToken = sessionStorage.getItem("refreshToken");
-    if (!refreshToken) {
-      return rejectWithValue("No refresh token available");
-    }
-
     try {
-      const response = await axios.post(ENDPOINTS.REFRESH_TOKEN, {
-        refresh: refreshToken,
-      });
-      sessionStorage.setItem("accessToken", response.data.access);
+      // Server will read refresh token from cookie if present
+      const response = await axios.post(ENDPOINTS.REFRESH_TOKEN, {}, { withCredentials: true });
 
-      // Update authorization header
-      axios.defaults.headers.common[
-        "Authorization"
-      ] = `Bearer ${response.data.access}`;
+      // If backend returned a new access token, update in-memory header for this session
+      if (response.data?.access) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
+      }
 
+      // Server will update cookies; client doesn't persist tokens
       return response.data;
     } catch (error) {
-      // If refresh token is invalid, log the user out
-      sessionStorage.removeItem("accessToken");
-      sessionStorage.removeItem("refreshToken");
-      delete axios.defaults.headers.common["Authorization"];
-
+      // If refresh token is invalid, clear client auth state
+      delete axios.defaults.headers.common['Authorization'];
       return rejectWithValue(
         error.response ? error.response.data : "Token refresh failed"
       );
@@ -185,23 +167,22 @@ export const resetPasswordConfirm = createAsyncThunk(
 
 // NOTE: handle payment state restoration after payment
 export const restoreAuthState = async (dispatch) => {
+  // Payment flow: we still check for any saved tokens left in localStorage from older flows
+  // but prefer cookie-based flow. If found, attempt to restore minimal state and then clean up.
   const savedToken = localStorage.getItem('payment_access_token');
   if (savedToken) {
-    // Restore tokens to sessionStorage
-    sessionStorage.setItem('accessToken', savedToken);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
-
-    const refreshToken = localStorage.getItem('payment_refresh_token');
-    if (refreshToken) {
-      sessionStorage.setItem('refreshToken', refreshToken);
+    try {
+      // Optionally call a backend endpoint to exchange the saved token for setting cookies
+      await axios.post(`${BASE_URL}/api/auth/restore-payment-auth/`, { token: savedToken });
+    } catch (err) {
+      // Ignore failures here; proceed to cleanup
     }
 
-    // Clean up
+    // Clean up localStorage regardless
     localStorage.removeItem('payment_access_token');
     localStorage.removeItem('payment_refresh_token');
     localStorage.removeItem('payment_in_progress');
 
-    // Update Redux state
     try {
       await dispatch(loadUser()).unwrap();
       return true;
@@ -216,17 +197,13 @@ export const restoreAuthState = async (dispatch) => {
 // Initialize auth state
 const initialState = {
   user: null,
-  isAuthenticated: !!sessionStorage.getItem("accessToken"),
+  isAuthenticated: false,
   loading: false,
   error: null,
   success: null,
 };
 
-// Setup axios with stored token if it exists
-const token = sessionStorage.getItem("accessToken");
-if (token) {
-  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-}
+// axios will send cookies; no need to set Authorization header on client
 
 // Slice
 const authSlice = createSlice({

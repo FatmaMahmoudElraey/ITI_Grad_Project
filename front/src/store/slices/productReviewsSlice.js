@@ -2,11 +2,8 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { ENDPOINTS } from '../../api/constants';
 
-// Helper function to get auth header
-const getAuthHeader = () => {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
+// No-op auth header - cookies will be sent automatically by axios
+const getAuthHeader = () => ({});
 
 // Fetch all reviews for a specific product
 export const fetchProductReviews = createAsyncThunk(
@@ -49,7 +46,7 @@ export const fetchSellerProductReviews = createAsyncThunk(
       // Filter products to only include those belonging to the current seller
       const allProducts = productsResponse.data || [];
       const sellerIdStr = String(sellerId);
-      
+
       const sellerProducts = allProducts.filter(product => {
         return (
           (product.seller && String(product.seller) === sellerIdStr) || 

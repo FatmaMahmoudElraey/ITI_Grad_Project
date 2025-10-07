@@ -1,5 +1,5 @@
 // API constants
-export const BASE_URL = "http://127.0.0.1:8000";
+export const BASE_URL = "https://webify-app-f9068c4398f5.herokuapp.com";
 
 // Endpoints
 export const ENDPOINTS = {

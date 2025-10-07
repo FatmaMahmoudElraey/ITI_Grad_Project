@@ -9,6 +9,7 @@ import store from './store/index.js';
 import { Provider } from 'react-redux';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { initSecurity } from './utils/securityMiddleware';
+import './api/axiosConfig';
 
 // Initialize security middleware to protect against React Router vulnerabilities
 initSecurity();

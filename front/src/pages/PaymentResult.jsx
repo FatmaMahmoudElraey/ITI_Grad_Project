@@ -36,37 +36,6 @@ const PaymentResult = () => {
           // In this case, we don't need to confirm the payment again since the backend already did
           // Just restore auth if needed and show success message
 
-          // IMPORTANT: Restore auth tokens more reliably
-          let token = sessionStorage.getItem('accessToken');
-          if (!token) {
-            console.log("No token in sessionStorage, attempting to restore from payment_access_token");
-            const savedToken = localStorage.getItem('payment_access_token');
-            if (savedToken) {
-              // Restore the tokens and auth state
-              sessionStorage.setItem('accessToken', savedToken);
-              axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
-              token = savedToken;
-
-              const refreshToken = localStorage.getItem('payment_refresh_token');
-              if (refreshToken) {
-                sessionStorage.setItem('refreshToken', refreshToken);
-              }
-
-              // Clean up temporary storage
-              localStorage.removeItem('payment_access_token');
-              localStorage.removeItem('payment_refresh_token');
-              localStorage.removeItem('payment_in_progress');
-
-              // Update Redux auth state
-              try {
-                await dispatch(loadUser()).unwrap();
-                console.log("Successfully restored user authentication state");
-              } catch (authError) {
-                console.error("Failed to load user after token restoration:", authError);
-              }
-            }
-          }
-
           // Clear the cart
           dispatch(clearCart());
 
@@ -98,56 +67,12 @@ const PaymentResult = () => {
           return;
         }
 
-        // IMPORTANT: Restore auth tokens more reliably
-        let token = sessionStorage.getItem('accessToken');
-        if (!token) {
-          console.log("No token in sessionStorage, attempting to restore from payment_access_token");
-          const savedToken = localStorage.getItem('payment_access_token');
-          if (savedToken) {
-            // Restore the tokens
-            sessionStorage.setItem('accessToken', savedToken);
-            axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
-            token = savedToken;
-
-            const refreshToken = localStorage.getItem('payment_refresh_token');
-            if (refreshToken) {
-              sessionStorage.setItem('refreshToken', refreshToken);
-            }
-
-            // Clean up temporary storage
-            localStorage.removeItem('payment_access_token');
-            localStorage.removeItem('payment_refresh_token');
-            localStorage.removeItem('payment_in_progress');
-
-            // CRITICAL: Dispatch loadUser to refresh Redux auth state
-            try {
-              await dispatch(loadUser()).unwrap();
-              console.log("Successfully restored user authentication state");
-            } catch (authError) {
-              console.error("Failed to load user after token restoration:", authError);
-            }
-          } else {
-            setError('Authentication required');
-            setLoading(false);
-            return;
-          }
-        }
-
-        // Now make the API call with the restored token
-        await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}/payments/confirm/`,
-          {
-            payment_id: paymentId,
-            transaction_id: txnId,
-            status: isSuccess ? 'paid' : 'failed'
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
+        // Call the backend confirm endpoint; server will use cookies for auth
+        await axios.post(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}/payments/confirm/`, {
+          payment_id: paymentId,
+          transaction_id: txnId,
+          status: isSuccess ? 'paid' : 'failed'
+        });
 
         // Show success/error alert
         if (isSuccess) {

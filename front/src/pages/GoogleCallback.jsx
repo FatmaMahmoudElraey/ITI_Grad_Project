@@ -44,33 +44,14 @@ const GoogleCallback = () => {
           code,
         });
 
-        // Store tokens and set up axios defaults
-        if (response.data && response.data.access) {
-          console.log("Successfully obtained tokens, setting up session");
-          sessionStorage.setItem("accessToken", response.data.access);
-          sessionStorage.setItem("refreshToken", response.data.refresh);
-          axios.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${response.data.access}`;
-
-          // Store user information
-          if (response.data.user) {
-            sessionStorage.setItem("email", response.data.user.email);
-            sessionStorage.setItem("user_id", response.data.user.id);
-          }
-
-          // FIXME: Dispatch to Redux to update auth state , no gletch after this
-          try {
-            await dispatch(loadUser()).unwrap();
-            console.log("Redux auth state updated successfully");
-          } catch (reduxError) {
-            console.error("Failed to update Redux auth state:", reduxError);
-          }
-
-          // NOTE:Clear the URL parameters to prevent reprocessing on refresh
-          navigate("/", { replace: true });
-        } else {
-          throw new Error("No access token received from server");
+        // Server should set HttpOnly cookies during the token exchange. Now load user info.
+        try {
+          await dispatch(loadUser()).unwrap();
+          console.log("Redux auth state updated successfully");
+          navigate('/', { replace: true });
+        } catch (reduxError) {
+          console.error("Failed to update Redux auth state:", reduxError);
+          setError('Failed to complete login via Google');
         }
       } catch (error) {
         console.error("Google authentication error:", error);

@@ -182,49 +182,12 @@ export default function UserProfile() {
         throw new Error('Invalid product ID');
       }
       
-      // Get the access token from session storage
-      const token = sessionStorage.getItem("accessToken");
-      if (!token) {
-        throw new Error('You need to be logged in to submit a review');
-      }
-      
-      // Use URLSearchParams for a simple form submission
-      const params = new URLSearchParams();
-      params.append('product', currentProductToReview.id);
-      params.append('rating', reviewData.rating);
-      params.append('comment', reviewData.comment);
-      
-      console.log('Review data being sent:', {
+      // Submit review via axios; cookies will be sent automatically
+      const response = await axios.post(ENDPOINTS.PRODUCT_REVIEWS, {
         product: currentProductToReview.id,
         rating: reviewData.rating,
-        comment: reviewData.comment
+        comment: reviewData.comment,
       });
-      
-      // Make a direct fetch request to the API
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"}/api/product-reviews/`,
-        {
-          method: "POST",
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': `Bearer ${token}`
-          },
-          body: params
-        }
-      );
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Review submission error:', errorText);
-        try {
-          const errorData = JSON.parse(errorText);
-          throw new Error(errorData.detail || 'Failed to submit review');
-        } catch (e) {
-          throw new Error('Failed to submit review: ' + errorText.substring(0, 100));
-        }
-      }
-      
-      const data = await response.json();
       console.log('Review submitted successfully:', data);
       
       setShowReviewModal(false);
@@ -249,30 +212,10 @@ export default function UserProfile() {
 
   const handleDownload = async (productId) => {
     try {
-      // Get the access token from session storage
-      const token = sessionStorage.getItem("accessToken");
-      if (!token) {
-        Swal.fire({
-          title: 'Authentication Required',
-          text: 'You need to be logged in to download files',
-          icon: 'warning',
-          confirmButtonColor: '#660ff1'
-        });
-        return;
-      }
-
-      // Create a fetch request to the download endpoint
-      const response = await fetch(
-        `${
-          import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"
-        }/api/products/${productId}/download/`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      // Use axios to download (cookies sent automatically)
+      const response = await axios.get(`${ENDPOINTS.PRODUCTS}${productId}/download/`, {
+        responseType: 'blob'
+      });
 
       if (!response.ok) {
         throw new Error(`Download failed: ${response.statusText}`);

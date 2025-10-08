@@ -8,6 +8,7 @@ from .serializers import (
     ProductReviewSerializer,
     ProductFlagSerializer,
 )
+from .pagination import ProductPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from rest_framework.exceptions import PermissionDenied
@@ -32,6 +33,7 @@ class ProductViewSet(ModelViewSet):
     filterset_fields = ['category', 'tags', 'price']
     search_fields = ['title', 'description']
     ordering_fields = ['price', 'created_at']
+    pagination_class = ProductPagination
 
     def get_queryset(self):
         # Return all products regardless of approval status

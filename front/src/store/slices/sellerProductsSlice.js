@@ -1,31 +1,38 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { ENDPOINTS } from '../../api/constants';
+import { loadUser } from './authSlice';
 
-// Helper function to get auth header
-const getAuthHeader = () => {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
+// No-op auth header - cookies will be sent automatically by axios
+const getAuthHeader = () => ({});
 
 // Fetch all products for the seller, including non-approved ones
 export const fetchSellerProducts = createAsyncThunk(
   'sellerProducts/fetchAll',
-  async (_, { rejectWithValue, getState }) => {
+  async (_, { rejectWithValue, getState, dispatch }) => {
     try {
       // Get the current user from state
       const { auth } = getState();
       const sellerId = auth.user?.id;
       
+      // If user isn't loaded, try loading it
       if (!sellerId) {
-        return rejectWithValue('User ID not found. Please log in again.');
+        try {
+          await dispatch(loadUser()).unwrap();
+        } catch (e) {
+          return rejectWithValue('User not authenticated. Please log in.');
+        }
+      }
+
+      const updatedAuth = getState().auth;
+      const updatedSellerId = updatedAuth.user?.id;
+      if (!updatedSellerId) {
+        return rejectWithValue('User ID not found after attempting to load user. Please log in.');
       }
       
       // Fetch all products, including non-approved ones
       // Use the regular products endpoint since there's no specific seller endpoint
-      const response = await axios.get(ENDPOINTS.PRODUCTS, {
-        headers: getAuthHeader()
-      });
+  const response = await axios.get(ENDPOINTS.PRODUCTS);
       
       // Filter products to only include those belonging to the current seller
       const allProducts = response.data || [];
@@ -45,9 +52,8 @@ export const fetchSellerProducts = createAsyncThunk(
       
       return sellerProducts;
     } catch (error) {
-      return rejectWithValue(
-        typeof error.response?.data === 'object' ? 'Could not fetch seller products' : error.response?.data || 'Could not fetch seller products'
-      );
+      const serverMsg = error.response?.data ? JSON.stringify(error.response.data) : error.message;
+      return rejectWithValue(`Could not fetch seller products: ${serverMsg}`);
     }
   }
 );
@@ -57,9 +63,7 @@ export const fetchProductById = createAsyncThunk(
   'sellerProducts/fetchById',
   async (productId, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${ENDPOINTS.PRODUCTS}${productId}/`, {
-        headers: getAuthHeader()
-      });
+      const response = await axios.get(`${ENDPOINTS.PRODUCTS}${productId}/`);
       return response.data;
     } catch (error) {
       return rejectWithValue(
@@ -76,7 +80,6 @@ export const createSellerProduct = createAsyncThunk(
     try {
       const response = await axios.post(ENDPOINTS.PRODUCTS, productData, {
         headers: {
-          ...getAuthHeader(),
           'Content-Type': 'multipart/form-data'
         }
       });
@@ -96,7 +99,6 @@ export const updateSellerProduct = createAsyncThunk(
     try {
       const response = await axios.patch(`${ENDPOINTS.PRODUCTS}${productId}/`, productData, {
         headers: {
-          ...getAuthHeader(),
           'Content-Type': 'multipart/form-data'
         }
       });
@@ -114,9 +116,7 @@ export const deleteSellerProduct = createAsyncThunk(
   'sellerProducts/delete',
   async (productId, { rejectWithValue }) => {
     try {
-      await axios.delete(`${ENDPOINTS.PRODUCTS}${productId}/`, {
-        headers: getAuthHeader()
-      });
+      await axios.delete(`${ENDPOINTS.PRODUCTS}${productId}/`);
       return productId;
     } catch (error) {
       // Provide more detailed error message

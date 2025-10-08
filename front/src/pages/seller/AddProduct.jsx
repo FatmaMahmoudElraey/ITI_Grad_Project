@@ -42,11 +42,7 @@ export default function AddProduct() {
     fetchData();
   }, []);
 
-  // Helper function to get auth header
-  const getAuthHeader = () => {
-    const token = localStorage.getItem('token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  };
+  // Using cookie-based auth; axios will send cookies automatically (withCredentials=true)
 
   const validateForm = () => {
     const newErrors = {};
@@ -144,7 +140,6 @@ export default function AddProduct() {
       
       const response = await axios.post('http://localhost:8000/api/products/', formDataObj, {
         headers: {
-          ...getAuthHeader(),
           'Content-Type': 'multipart/form-data'
         }
       });

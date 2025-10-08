@@ -19,10 +19,7 @@ const Categories = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Helper function to get auth header
-  const getAuthHeader = () => {
-    const token = localStorage.getItem('token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  };
+  // Using cookie-based auth; axios will send cookies automatically (withCredentials=true)
 
   // Fetch categories and products
   useEffect(() => {

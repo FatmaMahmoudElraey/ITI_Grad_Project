@@ -2,11 +2,8 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { BASE_URL, ENDPOINTS } from '../../api/constants';
 
-// Helper function to get auth header
-const getAuthHeader = () => {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
+// No-op auth header - cookies will be sent automatically by axios
+const getAuthHeader = () => ({});
 
 // We'll get the user ID from the state in the thunk
 

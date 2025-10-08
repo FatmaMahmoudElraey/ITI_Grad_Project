@@ -35,11 +35,7 @@ export default function EditProduct() {
   const [categories, setCategories] = useState([]);
   const [allTags, setAllTags] = useState([]);
 
-  // Helper function to get auth header
-  const getAuthHeader = () => {
-    const token = localStorage.getItem('token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  };
+  // Using cookie-based auth; axios will send cookies automatically (withCredentials=true)
 
   // Fetch product data and other necessary data
   useEffect(() => {

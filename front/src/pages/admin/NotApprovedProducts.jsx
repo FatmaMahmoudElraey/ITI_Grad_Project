@@ -16,11 +16,7 @@ const NotApprovedProducts = () => {
   const [formErrors, setFormErrors] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Helper function to get auth header
-  const getAuthHeader = () => {
-    const token = sessionStorage.getItem('accessToken');
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  };
+  // Using cookie-based auth; axios will send cookies automatically (withCredentials=true)
 
   useEffect(() => {
     // Fetch not approved products and categories from the database
@@ -40,9 +36,7 @@ const NotApprovedProducts = () => {
         }
         
         // Then fetch products
-        const productsResponse = await axios.get(ENDPOINTS.PRODUCTS, {
-          headers: getAuthHeader()
-        });
+        const productsResponse = await axios.get(ENDPOINTS.PRODUCTS);
         
         // Filter only not approved products
         const notApprovedProducts = productsResponse.data.filter(product => !product.is_approved);
@@ -115,9 +109,7 @@ const NotApprovedProducts = () => {
     
     if (result.isConfirmed) {
       try {
-        await axios.delete(`${ENDPOINTS.PRODUCTS}${product.id}/`, {
-          headers: getAuthHeader()
-        });
+        await axios.delete(`${ENDPOINTS.PRODUCTS}${product.id}/`);
         setProducts(products.filter(p => p.id !== product.id));
         
         Swal.fire({

@@ -20,17 +20,17 @@ const Header = ({ toggleSidebar }) => {
   const dispatch = useDispatch();
 
   const handleLogout = () => {
-    // First clear all storage
-    localStorage.clear();
-    sessionStorage.clear();
-    
-    // Remove authorization header
-    delete axios.defaults.headers.common["Authorization"];
-    
-    // Then dispatch logout action to update Redux state
+    // Call server logout so it clears cookies & blacklists refresh token
+    axios.post('/api/auth/jwt/logout/').catch(() => {});
+
+    // Clear client auth state (do not clear entire localStorage to preserve cart/checkout data)
+    sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem('refreshToken');
+
+    // Update Redux state
     dispatch(clearAuthState());
-    
-    // Finally redirect to login page
+
+    // Redirect to login page
     navigate('/login', { replace: true });
   };
 

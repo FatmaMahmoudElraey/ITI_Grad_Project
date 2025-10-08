@@ -13,7 +13,8 @@ function Chat({ name, othername }) {
   const [error, setError] = useState(null);
   const [connectionAttempts, setConnectionAttempts] = useState(0);
   const messagesEndRef = useRef(null);
-  const token = sessionStorage.getItem('accessToken');
+  // Using cookie-based auth; we do not read tokens from sessionStorage
+  const token = null;
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -35,11 +36,7 @@ function Chat({ name, othername }) {
         setLoading(true);
         setError(null);
         console.log(`Fetching messages for chat with: ${othername}`);
-        const response = await axios.get(`${ENDPOINTS.CHAT_MESSAGES}?email=${encodeURIComponent(othername)}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        const response = await axios.get(`${ENDPOINTS.CHAT_MESSAGES}?email=${encodeURIComponent(othername)}`);
         
         if (Array.isArray(response.data)) {
           console.log(`Received ${response.data.length} messages`);
@@ -76,7 +73,7 @@ function Chat({ name, othername }) {
   // Set up WebSocket connection
   useEffect(() => {
     // Create WebSocket connection with proper URL format
-    if (!othername || !token) {
+    if (!othername) {
       console.error('Missing othername or token for WebSocket connection');
       // Don't show error if we're redirecting anyway
       if (location.pathname !== '/chat') {
@@ -91,9 +88,10 @@ function Chat({ name, othername }) {
       return;
     }
 
-    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    // Use localhost:8000 for development
-    const wsUrl = `${wsProtocol}//localhost:8000/ws/chat/${encodeURIComponent(othername)}/?token=${encodeURIComponent(token)}`;
+  const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  // Use localhost:8000 for development
+  // NOTE: With HttpOnly cookie auth, the server must authenticate WebSocket connections via cookies/session.
+  const wsUrl = `${wsProtocol}//localhost:8000/ws/chat/${encodeURIComponent(othername)}/`;
     console.log(`Connecting to WebSocket (attempt ${connectionAttempts + 1}):`, wsUrl);
     
     let ws = null;

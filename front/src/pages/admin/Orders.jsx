@@ -12,10 +12,7 @@ const Orders = () => {
   const [error, setError] = useState(null);
 
   // Helper function to get auth header
-  const getAuthHeader = () => {
-    const token = localStorage.getItem('token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  };
+  // Using cookie-based auth; axios will send cookies automatically (withCredentials=true)
 
   useEffect(() => {
     // Fetch all orders from the database for admin dashboard

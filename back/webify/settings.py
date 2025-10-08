@@ -74,6 +74,8 @@ MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
+CSRF_TRUSTED_ORIGINS= ["http://localhost:5173"]
+
 ASGI_APPLICATION = "webify.asgi.application"
 
 INTERNAL_IPS = [
@@ -95,7 +97,7 @@ ROOT_URLCONF = 'webify.urls'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'authsys.authentication.CookieJWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
@@ -120,11 +122,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'webify.wsgi.application'
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://127.0.0.1:5173",
     "http://localhost:8000",
+    "http://127.0.0.1:8000",
 ]
 ALLOWED_HOSTS = ['webify-app-f9068c4398f5.herokuapp.com', 'localhost', '127.0.0.1']
 

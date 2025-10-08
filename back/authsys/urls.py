@@ -3,7 +3,7 @@ from django.urls import path, include, re_path
 # from django.views.decorators.csrf import csrf_exempt
 # from djoser.views import TokenCreateView
 # from djoser.social import urls as social_urls
-from .views import redirect_to_frontend
+from .views import redirect_to_frontend, CookieTokenObtainPairView, CookieTokenRefreshView, LogoutView
 from .google_auth import GoogleLoginView
 
 urlpatterns = [
@@ -11,6 +11,10 @@ urlpatterns = [
     path('', include('djoser.urls')),
 
     # 2) JWT (login→create, refresh, verify)
+    # Override JWT create/refresh with cookie-based endpoints
+    path('jwt/create/', CookieTokenObtainPairView.as_view(), name='jwt_create'),
+    path('jwt/refresh/', CookieTokenRefreshView.as_view(), name='jwt_refresh'),
+    path('jwt/logout/', LogoutView.as_view(), name='jwt_logout'),
     path('', include('djoser.urls.jwt')),
 
     # 3) Social OAuth flows (e.g. /api/auth/o/google/)

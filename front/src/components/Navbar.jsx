@@ -150,7 +150,7 @@ export default function Header() {
 
             {/* Desktop Search Box - visible only on large screens */}
             <Form onSubmit={handleSearch} className="search-wrapper flex-grow-1 mx-4 d-none d-lg-block" style={{ maxWidth: '550px' }}>
-              <div className="d-flex align-items-center dropdown-search w-100" style={{ minWidth: '1100px' }}>
+              <div className="d-flex align-items-center dropdown-search w-100" >
                 <div className="search-container position-relative flex-grow-1">
                   <FiSearch className="search-icon position-absolute top-50 translate-middle-y start-0 ms-3" />
                   <Form.Control
@@ -160,7 +160,6 @@ export default function Header() {
                     aria-label="Search"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{ minWidth: '900px' }} // Added minWidth to make it wider
                   />
                 </div>
               </div>

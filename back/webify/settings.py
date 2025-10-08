@@ -124,14 +124,9 @@ WSGI_APPLICATION = 'webify.wsgi.application'
 
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-]
-ALLOWED_HOSTS = ['webify-app-f9068c4398f5.herokuapp.com', 'localhost', '127.0.0.1']
 
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
+CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases

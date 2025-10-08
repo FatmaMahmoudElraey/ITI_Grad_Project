@@ -378,6 +378,10 @@
   color: rgba(255,255,255,1);
 }
 
+#categories-dropdown{
+  padding-right: 12px;
+}
+
 /* Custom styles for dropdown arrow */
 .custom-dropdown .dropdown-toggle::after {
   margin-left: 0;

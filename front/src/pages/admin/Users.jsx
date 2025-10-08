@@ -26,14 +26,14 @@ const Users = () => {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:8000/api/auth/users/');
-        
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/auth/users/`);
+
         // Add date_joined if it's missing
         const usersWithDateJoined = response.data.map(user => ({
           ...user,
           date_joined: user.date_joined || new Date().toISOString()
         }));
-        
+
         setUsers(usersWithDateJoined);
         setLoading(false);
       } catch (error) {
@@ -66,7 +66,7 @@ const Users = () => {
       confirmButtonText: 'Yes, deactivate',
       cancelButtonText: 'Cancel'
     });
-    
+
     if (result.isConfirmed) {
       try {
         // Update user's is_active to false (soft delete)
@@ -74,11 +74,11 @@ const Users = () => {
           is_active: false
         });
         // Update the UI to reflect the change
-        const updatedUsers = users.map(u => 
+        const updatedUsers = users.map(u =>
           u.id === user.id ? { ...u, is_active: false } : u
         );
         setUsers(updatedUsers);
-        
+
         Swal.fire({
           title: 'Deactivated!',
           text: 'User has been deactivated successfully. They will no longer be able to log in, but their data remains in the database.',
@@ -101,11 +101,14 @@ const Users = () => {
   const handleActiveToggle = async (user) => {
     try {
       const updatedUser = { ...user, is_active: !user.is_active };
-      await axios.patch(`http://localhost:8000/api/auth/customers/${user.id}/`, {
-        is_active: updatedUser.is_active
-      });
-      
-      const updatedUsers = users.map(u => 
+      await axios.patch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/auth/customers/${user.id}/`,
+        {
+          is_active: updatedUser.is_active,
+        }
+      );
+
+      const updatedUsers = users.map(u =>
         u.id === user.id ? { ...u, is_active: updatedUser.is_active } : u
       );
       setUsers(updatedUsers);
@@ -140,40 +143,40 @@ const Users = () => {
   // Validate user form
   const validateUserForm = (user) => {
     const errors = {};
-    
+
     if (!user.first_name.trim()) {
       errors.first_name = 'First name is required';
     }
-    
+
     if (!user.last_name.trim()) {
       errors.last_name = 'Last name is required';
     }
-    
+
     if (!user.email.trim()) {
       errors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(user.email)) {
       errors.email = 'Email is invalid';
     }
-    
+
     // Only validate password for new users or if password field is filled for existing users
     if ((!user.id && !user.password) || (user.id && user.password && user.password.length > 0 && user.password.length < 6)) {
       errors.password = 'Password must be at least 6 characters';
     }
-    
+
     return errors;
   };
 
   // Handle add user form submission
   const handleAddUser = async (e) => {
     e.preventDefault();
-    
+
     // Validate form
     const errors = validateUserForm(newUser);
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
     }
-    
+
     try {
       // Format the user data to match what the backend expects
       const formattedUser = {
@@ -185,21 +188,21 @@ const Users = () => {
         role: newUser.role,
         re_password: newUser.password // Djoser often requires password confirmation
       };
-      
+
       console.log('Sending user data:', formattedUser);
-      await axios.post('http://localhost:8000/api/auth/users/', formattedUser);
-      
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/auth/users/`, formattedUser);
+
       // Fetch the updated user list instead of trying to add the response data
-      const response = await axios.get('http://localhost:8000/api/auth/users/');
-      
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/auth/users/`);
+
       // Add date_joined if it's missing
       const usersWithDateJoined = response.data.map(user => ({
         ...user,
         date_joined: user.date_joined || new Date().toISOString()
       }));
-      
+
       setUsers(usersWithDateJoined);
-      
+
       // Reset form and close modal
       setNewUser({
         first_name: '',
@@ -213,16 +216,16 @@ const Users = () => {
       setShowAddModal(false);
     } catch (error) {
       console.error('Error adding user:', error);
-      
+
       // Log detailed error information
       if (error.response) {
         console.error('Error response data:', error.response.data);
         console.error('Error response status:', error.response.status);
         console.error('Error response headers:', error.response.headers);
-        
+
         // Format error messages for display
         const serverErrors = {};
-        
+
         // Handle different error formats from the server
         if (error.response.data) {
           Object.keys(error.response.data).forEach(key => {
@@ -233,14 +236,14 @@ const Users = () => {
               serverErrors[key] = error.response.data[key];
             }
           });
-          
+
           // Special handling for email errors which are common
           if (error.response.data.email) {
             if (Array.isArray(error.response.data.email) && error.response.data.email[0].includes('already exists')) {
               serverErrors.email = 'This email is already in use. Please try another one.';
             }
           }
-          
+
           setFormErrors(serverErrors);
         } else {
           Swal.fire({
@@ -258,39 +261,39 @@ const Users = () => {
   // Handle edit user form submission
   const handleUpdateUser = async (e) => {
     e.preventDefault();
-    
+
     // Validate form
     const errors = validateUserForm(currentUser);
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
     }
-    
+
     try {
       // Create a copy of the user data to send to the server
       const userData = { ...currentUser };
-      
+
       // Only include password if it's not empty
       if (!userData.password) {
         delete userData.password;
       }
-      
-      await axios.put(`http://localhost:8000/api/auth/customers/${currentUser.id}/`, userData);
-      
+
+      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/auth/customers/${currentUser.id}/`, userData);
+
       // Update the user in the list
-      const updatedUsers = users.map(user => 
+      const updatedUsers = users.map(user =>
         user.id === currentUser.id ? { ...user, ...userData } : user
       );
-      
+
       setUsers(updatedUsers);
-      
+
       // Reset form and close modal
       setCurrentUser(null);
       setFormErrors({});
       setShowEditModal(false);
     } catch (error) {
       console.error('Error updating user:', error);
-      
+
       // Handle validation errors from the server
       if (error.response && error.response.data) {
         setFormErrors(error.response.data);
@@ -307,11 +310,11 @@ const Users = () => {
   // Format date to local format
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
-    
+
     try {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) return 'Invalid Date';
-      
+
       return date.toLocaleDateString();
     } catch (error) {
       console.error('Error formatting date:', error);
@@ -332,21 +335,21 @@ const Users = () => {
   };
 
   // Filter users by role
-  const filteredUsers = filterRole 
+  const filteredUsers = filterRole
     ? users.filter(user => user.role === filterRole)
     : users;
 
   // Table columns
   const columns = [
     { field: 'id', header: 'ID', sortable: true },
-    { 
-      field: 'name', 
-      header: 'Name', 
+    {
+      field: 'name',
+      header: 'Name',
       sortable: true,
       render: (item) => (
         <div className="d-flex align-items-center">
-          <img 
-            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(`${item.first_name} ${item.last_name}`)}&background=random`} 
+          <img
+            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(`${item.first_name} ${item.last_name}`)}&background=random`}
             alt={`${item.first_name} ${item.last_name}`}
             className="img-circle mr-2"
             width="30"
@@ -357,9 +360,9 @@ const Users = () => {
       )
     },
     { field: 'email', header: 'Email', sortable: true },
-    { 
-      field: 'role', 
-      header: 'Role', 
+    {
+      field: 'role',
+      header: 'Role',
       sortable: true,
       render: (item) => (
         <span>
@@ -367,21 +370,21 @@ const Users = () => {
         </span>
       )
     },
-    { 
-      field: 'date_joined', 
-      header: 'Joined Date', 
+    {
+      field: 'date_joined',
+      header: 'Joined Date',
       sortable: true,
       render: (item) => formatDate(item.date_joined)
     },
-    { 
-      field: 'is_active', 
-      header: 'Status', 
+    {
+      field: 'is_active',
+      header: 'Status',
       sortable: true,
       render: (item) => (
         <div className="custom-control custom-switch">
-          <input 
-            type="checkbox" 
-            className="custom-control-input" 
+          <input
+            type="checkbox"
+            className="custom-control-input"
             id={`status-switch-${item.id}`}
             checked={item.is_active}
             onChange={() => handleActiveToggle(item)}
@@ -392,21 +395,21 @@ const Users = () => {
         </div>
       )
     },
-    { 
-      field: 'actions', 
-      header: 'Actions', 
+    {
+      field: 'actions',
+      header: 'Actions',
       sortable: false,
       render: (item) => (
         <div className="btn-group">
-          <button 
-            className="btn btn-sm btn-info mr-1" 
+          <button
+            className="btn btn-sm btn-info mr-1"
             onClick={() => handleEditUser(item)}
             title="Edit"
           >
             <FaEdit />
           </button>
-          <button 
-            className="btn btn-sm btn-danger" 
+          <button
+            className="btn btn-sm btn-danger"
             onClick={() => handleDeleteUser(item)}
             title="Deactivate User"
           >
@@ -462,8 +465,8 @@ const Users = () => {
         <div className="container-fluid">
           <div className="row mb-3">
             <div className="col-md-8">
-              <button 
-                className="btn btn-primary" 
+              <button
+                className="btn btn-primary"
                 onClick={() => setShowAddModal(true)}
               >
                 <FaPlus className="mr-1" /> Add New User
@@ -471,8 +474,8 @@ const Users = () => {
             </div>
             <div className="col-md-4">
               <div className="input-group">
-                <select 
-                  className="form-control" 
+                <select
+                  className="form-control"
                   value={filterRole}
                   onChange={(e) => setFilterRole(e.target.value)}
                 >
@@ -497,10 +500,10 @@ const Users = () => {
                   <h3 className="card-title">All Users</h3>
                   <div className="card-tools">
                     <div className="input-group input-group-sm" style={{ width: '150px' }}>
-                      <input 
-                        type="text" 
-                        name="table_search" 
-                        className="form-control float-right" 
+                      <input
+                        type="text"
+                        name="table_search"
+                        className="form-control float-right"
                         placeholder="Search"
                       />
                       <div className="input-group-append">
@@ -512,9 +515,9 @@ const Users = () => {
                   </div>
                 </div>
                 <div className="card-body table-responsive p-0">
-                  <DataTable 
-                    columns={columns} 
-                    data={filteredUsers} 
+                  <DataTable
+                    columns={columns}
+                    data={filteredUsers}
                     itemsPerPage={10}
                     sortable={true}
                   />
@@ -532,9 +535,9 @@ const Users = () => {
             <div className="modal-content">
               <div className="modal-header">
                 <h4 className="modal-title">Add New User</h4>
-                <button 
-                  type="button" 
-                  className="close" 
+                <button
+                  type="button"
+                  className="close"
                   onClick={() => {
                     setShowAddModal(false);
                     setFormErrors({});
@@ -549,8 +552,8 @@ const Users = () => {
                     <div className="col-md-6">
                       <div className="form-group">
                         <label htmlFor="first_name">First Name *</label>
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           className={`form-control ${formErrors.first_name ? 'is-invalid' : ''}`}
                           id="first_name"
                           name="first_name"
@@ -566,8 +569,8 @@ const Users = () => {
                     <div className="col-md-6">
                       <div className="form-group">
                         <label htmlFor="last_name">Last Name *</label>
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           className={`form-control ${formErrors.last_name ? 'is-invalid' : ''}`}
                           id="last_name"
                           name="last_name"
@@ -581,11 +584,11 @@ const Users = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="form-group">
                     <label htmlFor="email">Email *</label>
-                    <input 
-                      type="email" 
+                    <input
+                      type="email"
                       className={`form-control ${formErrors.email ? 'is-invalid' : ''}`}
                       id="email"
                       name="email"
@@ -597,11 +600,11 @@ const Users = () => {
                       <div className="invalid-feedback">{formErrors.email}</div>
                     )}
                   </div>
-                  
+
                   <div className="form-group">
                     <label htmlFor="password">Password *</label>
-                    <input 
-                      type="password" 
+                    <input
+                      type="password"
                       className={`form-control ${formErrors.password ? 'is-invalid' : ''}`}
                       id="password"
                       name="password"
@@ -613,10 +616,10 @@ const Users = () => {
                       <div className="invalid-feedback">{formErrors.password}</div>
                     )}
                   </div>
-                  
+
                   <div className="form-group">
                     <label htmlFor="role">Role</label>
-                    <select 
+                    <select
                       className="form-control"
                       id="role"
                       name="role"
@@ -628,12 +631,12 @@ const Users = () => {
                       <option value="admin">Admin</option>
                     </select>
                   </div>
-                  
+
                   <div className="form-group">
                     <div className="custom-control custom-switch">
-                      <input 
-                        type="checkbox" 
-                        className="custom-control-input" 
+                      <input
+                        type="checkbox"
+                        className="custom-control-input"
                         id="is_active"
                         name="is_active"
                         checked={newUser.is_active}
@@ -644,9 +647,9 @@ const Users = () => {
                   </div>
                 </div>
                 <div className="modal-footer">
-                  <button 
-                    type="button" 
-                    className="btn btn-default" 
+                  <button
+                    type="button"
+                    className="btn btn-default"
                     onClick={() => {
                       setShowAddModal(false);
                       setFormErrors({});
@@ -661,7 +664,7 @@ const Users = () => {
           </div>
         </div>
       )}
-      
+
       {/* Edit User Modal */}
       {showEditModal && currentUser && (
         <div className="modal fade show" style={{ display: 'block' }}>
@@ -669,9 +672,9 @@ const Users = () => {
             <div className="modal-content">
               <div className="modal-header">
                 <h4 className="modal-title">Edit User: {currentUser.first_name} {currentUser.last_name}</h4>
-                <button 
-                  type="button" 
-                  className="close" 
+                <button
+                  type="button"
+                  className="close"
                   onClick={() => {
                     setShowEditModal(false);
                     setCurrentUser(null);
@@ -687,8 +690,8 @@ const Users = () => {
                     <div className="col-md-6">
                       <div className="form-group">
                         <label htmlFor="edit-first_name">First Name *</label>
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           className={`form-control ${formErrors.first_name ? 'is-invalid' : ''}`}
                           id="edit-first_name"
                           name="first_name"
@@ -704,8 +707,8 @@ const Users = () => {
                     <div className="col-md-6">
                       <div className="form-group">
                         <label htmlFor="edit-last_name">Last Name *</label>
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           className={`form-control ${formErrors.last_name ? 'is-invalid' : ''}`}
                           id="edit-last_name"
                           name="last_name"
@@ -719,11 +722,11 @@ const Users = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="form-group">
                     <label htmlFor="edit-email">Email *</label>
-                    <input 
-                      type="email" 
+                    <input
+                      type="email"
                       className={`form-control ${formErrors.email ? 'is-invalid' : ''}`}
                       id="edit-email"
                       name="email"
@@ -735,11 +738,11 @@ const Users = () => {
                       <div className="invalid-feedback">{formErrors.email}</div>
                     )}
                   </div>
-                  
+
                   <div className="form-group">
                     <label htmlFor="edit-password">Password (Leave blank to keep current)</label>
-                    <input 
-                      type="password" 
+                    <input
+                      type="password"
                       className={`form-control ${formErrors.password ? 'is-invalid' : ''}`}
                       id="edit-password"
                       name="password"
@@ -750,10 +753,10 @@ const Users = () => {
                       <div className="invalid-feedback">{formErrors.password}</div>
                     )}
                   </div>
-                  
+
                   <div className="form-group">
                     <label htmlFor="edit-role">Role</label>
-                    <select 
+                    <select
                       className="form-control"
                       id="edit-role"
                       name="role"
@@ -765,12 +768,12 @@ const Users = () => {
                       <option value="admin">Admin</option>
                     </select>
                   </div>
-                  
+
                   <div className="form-group">
                     <div className="custom-control custom-switch">
-                      <input 
-                        type="checkbox" 
-                        className="custom-control-input" 
+                      <input
+                        type="checkbox"
+                        className="custom-control-input"
                         id="edit-is_active"
                         name="is_active"
                         checked={currentUser.is_active}
@@ -781,9 +784,9 @@ const Users = () => {
                   </div>
                 </div>
                 <div className="modal-footer">
-                  <button 
-                    type="button" 
-                    className="btn btn-default" 
+                  <button
+                    type="button"
+                    className="btn btn-default"
                     onClick={() => {
                       setShowEditModal(false);
                       setCurrentUser(null);

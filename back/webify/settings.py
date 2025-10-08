@@ -252,36 +252,13 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'accounts.UserAccount'
-
-BASE_APP_URL = "http://localhost:5173"
-BASE_API_URL = "http://localhost:8000"
+#for prod :
+BASE_APP_URL = os.getenv('BASE_APP_URL') #"http://localhost:5173"
+BASE_API_URL = os.getenv('BASE_API_URL') #"http://localhost:8000"
 GOOGLE_OAUTH2_CLIENT_ID = os.getenv("GOOGLE_OAUTH2_CLIENT_ID")
 GOOGLE_OAUTH2_CLIENT_SECRET = os.getenv("GOOGLE_OAUTH2_CLIENT_SECRET")
-
-# Simple logging configuration to help debug authentication cookie flow during development
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'root': {
-        'handlers': ['console'],
-        'level': 'INFO',
-    },
-    'loggers': {
-        # Enable debug logging for our authsys module so cookie checks are visible
-        'authsys': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'authsys.authentication': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-    },
-}
+#for dev :
+# BASE_APP_URL = "http://localhost:5173"
+# BASE_API_URL = "http://localhost:8000"
+# GOOGLE_OAUTH2_CLIENT_ID = os.getenv("GOOGLE_OAUTH2_CLIENT_ID")
+# GOOGLE_OAUTH2_CLIENT_SECRET = os.getenv("GOOGLE_OAUTH2_CLIENT_SECRET")

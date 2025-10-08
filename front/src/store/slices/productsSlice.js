@@ -4,12 +4,25 @@ import { ENDPOINTS } from '../../api/constants';
 
 export const fetchProducts = createAsyncThunk(
   'products/fetchAll',
-  async (_, { rejectWithValue }) => {
+  async ({ page = 1 } = {}, { rejectWithValue }) => {
     try {
-      const response = await axios.get(ENDPOINTS.PRODUCTS);
-      // Filter products to only include approved ones for public display
-      const approvedProducts = response.data.filter(product => product.is_approved === true);
-      return approvedProducts;
+      const response = await axios.get(ENDPOINTS.PRODUCTS, {
+        params: { page }
+      });
+      const data = response.data;
+      let products = Array.isArray(data) ? data : data.results;
+      const approvedProducts = products.filter(product => product.is_approved === true);
+      if (data && typeof data === 'object' && 'results' in data) {
+        return {
+          items: approvedProducts,
+          count: data.count,
+          next: data.next,
+          previous: data.previous,
+          page_size: data.page_size,
+        };
+      }
+      return { items: approvedProducts, count: approvedProducts.length, next: null, previous: null };
+
     } catch (error) {
       return rejectWithValue(
         error.response ? error.response.data : 'Could not fetch products'
@@ -196,6 +209,11 @@ const productsSlice = createSlice({
     currentProduct: null,
     categories: [],
     tags: [],
+    // Pagination state
+    count: 0,
+    next: null,
+    previous: null,
+    page: 1,
     // Add search state
     searchResults: [],
     searchLoading: false,
@@ -226,7 +244,12 @@ const productsSlice = createSlice({
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload;
+        state.items = action.payload.items;
+        state.count = action.payload.count;
+        state.next = action.payload.next;
+        state.previous = action.payload.previous;
+        state.page_size = action.payload.page_size;
+
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.loading = false;

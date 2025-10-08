@@ -14,8 +14,6 @@ export const ENDPOINTS = {
   USER_PROFILE: `${BASE_URL}/api/auth/users/me/profile/`,
   FAVORITES: `${BASE_URL}/api/auth/favorites/`,
 
-  // Chat
-  CHAT_MESSAGES: `${BASE_URL}/api/auth/chat-messages/`,
 
   // Products
   CATEGORIES: `${BASE_URL}/api/categories/`,

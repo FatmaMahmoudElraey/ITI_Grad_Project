@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaList } from 'react-icons/fa';
 import DataTable from '../../components/Admin/DataTable';
 import axios from 'axios';
+import { BASE_URL } from '../../api/constants';
 
 const Categories = () => {
   const [categories, setCategories] = useState([]);
@@ -28,10 +29,10 @@ const Categories = () => {
         setLoading(true);
         
         // Fetch all categories
-        const categoriesResponse = await axios.get('http://localhost:8000/api/categories/');
+        const categoriesResponse = await axios.get();
         
         // Fetch all products to count products per category
-        const productsResponse = await axios.get('http://localhost:8000/api/products/');
+        const productsResponse = await axios.get(`${BASE_URL}/api/products/`);
         setProducts(productsResponse.data);
         
         // Count products for each category
@@ -72,7 +73,7 @@ const Categories = () => {
       // If no products found locally, try fetching from API
       if (filteredProducts.length === 0) {
         try {
-          const response = await axios.get(`http://localhost:8000/api/products/?category=${categoryId}`);
+          const response = await axios.get(`${BASE_URL}/api/products/?category=${categoryId}`);
           filteredProducts = response.data;
         } catch (error) {
           console.error(`Error fetching products for category ${categoryId}:`, error);
@@ -104,7 +105,7 @@ const Categories = () => {
   const handleDeleteCategory = async (category) => {
     if (window.confirm(`Are you sure you want to delete ${category.name}?`)) {
       try {
-        await axios.delete(`http://localhost:8000/api/categories/${category.id}/`, {
+        await axios.delete(`${BASE_URL}/api/categories/${category.id}/`, {
           headers: getAuthHeader()
         });
         setCategories(categories.filter(c => c.id !== category.id));
@@ -160,7 +161,7 @@ const Categories = () => {
     }
     
     try {
-      const response = await axios.post('http://localhost:8000/api/categories/', newCategory, {
+      const response = await axios.post(`${BASE_URL}/api/categories/`, newCategory, {
         headers: getAuthHeader()
       });
       
@@ -207,7 +208,7 @@ const Categories = () => {
         name: currentCategory.name
       };
       
-      await axios.put(`http://localhost:8000/api/categories/${currentCategory.id}/`, categoryData, {
+      await axios.put(`${BASE_URL}/api/categories/${currentCategory.id}/`, categoryData, {
         headers: getAuthHeader()
       });
       

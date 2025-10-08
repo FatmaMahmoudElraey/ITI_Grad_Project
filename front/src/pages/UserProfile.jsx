@@ -368,9 +368,7 @@ export default function UserProfile() {
                     ? userProfile.picture.startsWith("http")
                       ? userProfile.picture
                       : `${
-                          import.meta.env.VITE_API_BASE_URL ||
-                          "http://127.0.0.1:8000"
-                        }${userProfile.picture}`
+                          import.meta.env.VITE_API_BASE_URL}${userProfile.picture}`
                     : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAb-vb97QXQeIb-chQJOKk3XouQGSsyrakSw&s"
                 }
                 alt="Profile"
@@ -741,9 +739,7 @@ export default function UserProfile() {
                         ? formData.pictureUrl.startsWith("http")
                           ? formData.pictureUrl
                           : `${
-                              import.meta.env.VITE_API_BASE_URL ||
-                              "http://127.0.0.1:8000"
-                            }${formData.pictureUrl}`
+                              import.meta.env.VITE_API_BASE_URL}${formData.pictureUrl}`
                         : "https://i.imgur.com/Qtrsrk5.jpg"
                     }
                     alt="Profile Preview"

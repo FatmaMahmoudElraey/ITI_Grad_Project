@@ -3,6 +3,7 @@ import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaUserAlt, FaUserCog, FaUs
 import DataTable from '../../components/Admin/DataTable';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { BASE_URL } from '../../api/constants';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -70,7 +71,7 @@ const Users = () => {
     if (result.isConfirmed) {
       try {
         // Update user's is_active to false (soft delete)
-        await axios.patch(`http://localhost:8000/api/auth/customers/${user.id}/`, {
+        await axios.patch(`${BASE_URL}/api/auth/customers/${user.id}/`, {
           is_active: false
         });
         // Update the UI to reflect the change

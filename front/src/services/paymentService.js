@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { BASE_URL } from '../api/constants';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = BASE_URL;
 
 export const preserveAuthTokens = () => {
   // No-op: with cookie-based auth we don't copy tokens to localStorage.
@@ -14,7 +15,7 @@ export const createPaymentSession = async (orderId, amountCents) => {
 
   try {
     // Rely on cookies for authentication (axios defaults set withCredentials)
-    const response = await axios.post(`${API_URL}/payments/create-session/`, {
+    const response = await axios.post(`${API_URL}/api/payments/create-session/`, {
       order_id: orderId,
       amount_cents: amountCents
     });
@@ -28,7 +29,7 @@ export const createPaymentSession = async (orderId, amountCents) => {
 
 export const confirmPayment = async (paymentId, transactionId, status) => {
   try {
-    const response = await axios.post(`${API_URL}/payments/confirm/`, {
+    const response = await axios.post(`${API_URL}/api/payments/confirm/`, {
       payment_id: paymentId,
       transaction_id: transactionId,
       status: status

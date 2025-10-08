@@ -68,7 +68,7 @@ const PaymentResult = () => {
         }
 
         // Call the backend confirm endpoint; server will use cookies for auth
-        await axios.post(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}/payments/confirm/`, {
+        await axios.post(`${import.meta.env.VITE_API_BASE_URL}/payments/confirm/`, {
           payment_id: paymentId,
           transaction_id: txnId,
           status: isSuccess ? 'paid' : 'failed'

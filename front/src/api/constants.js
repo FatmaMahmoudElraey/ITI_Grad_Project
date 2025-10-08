@@ -1,6 +1,8 @@
 // API constants
-export const BASE_URL = "https://webify-app-f9068c4398f5.herokuapp.com";
-
+export const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+if (!BASE_URL) {
+  console.warn('[ConfigWarning] API base URL not configured. Using default fallback URL.')
+}
 // Endpoints
 export const ENDPOINTS = {
   // Authentication

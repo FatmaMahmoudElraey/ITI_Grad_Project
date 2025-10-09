@@ -249,8 +249,6 @@ export default function Header() {
         </Offcanvas.Body>
       </Offcanvas>
 
-      {/* Spacer for fixed navbar on mobile */}
-      <div className="navbar-spacer d-lg-none" style={{ height: '56px' }}></div>
     </>
   );
 }

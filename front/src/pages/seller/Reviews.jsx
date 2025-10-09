@@ -65,7 +65,7 @@ export default function Reviews() {
             {error}
             <button 
               onClick={() => window.location.reload()}
-              className="retry-button"
+              className="btn btn-secondary ms-2"
             >
               Retry
             </button>

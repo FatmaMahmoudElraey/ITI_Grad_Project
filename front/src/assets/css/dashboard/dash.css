@@ -18,6 +18,8 @@
     --card-bg: #fff;
     --body-bg: #f8f9fa;
     --hover-bg: rgba(108, 92, 231, 0.05);
+    --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-dark: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     
     /* Shadows */
     --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
@@ -79,7 +81,7 @@
   .sidebar {
     width: 280px;
     min-height: 100vh;
-    background-color: var(--sidebar-bg);
+    background: linear-gradient(135deg, #000157 30%, #332cbe 85%); 
     color: var(--white);
     padding: 2rem 1.5rem;
     display: flex;
@@ -96,9 +98,8 @@
   
   .sidebar-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    margin-bottom: 2rem;
     padding: 0 0.5rem;
   }
   
@@ -162,6 +163,7 @@
     transition: all var(--transition-fast);
     position: relative;
     font-size: 0.95rem;
+    width: 100%;
   }
   
   .nav-link:hover {
@@ -821,6 +823,7 @@
     
     .nav-link {
       white-space: nowrap;
+      font-size: 12px !important;
     }
     
     .submenu {
@@ -857,6 +860,16 @@
     }
   }
 
+  @media (max-width:450px){
+        .nav-link{
+      font-size: 15px !important;
+    }
+  }
+  @media (max-width:360px){
+        .nav-link{
+      font-size: 11px !important;
+    }
+  }
 
 
 /* Products specific styles */

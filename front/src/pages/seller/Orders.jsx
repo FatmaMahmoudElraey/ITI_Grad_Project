@@ -110,7 +110,7 @@ export default function Orders() {
         <div className="page-header">
           <h1 className="dashboard-header">Orders</h1>
           <button 
-            className="button button-secondary"
+            className="btn btn-secondary mb-3"
             onClick={() => navigate('/seller/dashboard')}
           >
             Back to Dashboard

@@ -4,7 +4,6 @@ from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r'favorites', FavoriteViewSet, basename='favorite')
-router.register(r'chat-messages', ChatMessageViewSet, basename='chat-messages')
 
 urlpatterns = [
     path('users/me/', UserDetailView.as_view(), name='user-detail'),

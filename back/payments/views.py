@@ -113,7 +113,7 @@ class PaymentResponseView(APIView):
         print(f"Payment response received: success={success}, txn_id={transaction_id}, order={order_id}")
 
         # Construct the frontend URL with parameters
-        frontend_url = settings.FRONTEND_URL or "http://localhost:5173"
+        frontend_url = settings.FRONTEND_URL 
         redirect_url = f"{frontend_url}/payment-result?status={success}&txn_id={transaction_id}&order={order_id}"
 
         # Redirect the user to the frontend

@@ -5,6 +5,7 @@ import { FiUpload, FiX } from 'react-icons/fi';
 import { FaTag, FaFileAlt, FaVideo, FaImage, FaLink, FaDollarSign, FaSave } from 'react-icons/fa';
 import axios from 'axios';
 import '../../assets/css/dashboard/dash.css';
+import { BASE_URL } from '../../api/constants';
 
 export default function AddProduct() {
   const navigate = useNavigate();
@@ -29,10 +30,10 @@ export default function AddProduct() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const categoriesResponse = await axios.get('http://localhost:8000/api/categories/');
+        const categoriesResponse = await axios.get(`${BASE_URL}/api/categories/`);
         setAllCategories(categoriesResponse.data);
         
-        const tagsResponse = await axios.get('http://localhost:8000/api/tags/');
+        const tagsResponse = await axios.get(`${BASE_URL}/api/tags/`);
         setAllTags(tagsResponse.data);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -138,7 +139,7 @@ export default function AddProduct() {
         formDataObj.append('live_demo_url', formData.live_demo_url);
       }
       
-      const response = await axios.post('http://localhost:8000/api/products/', formDataObj, {
+      const response = await axios.post(`${BASE_URL}/api/products/`, formDataObj, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

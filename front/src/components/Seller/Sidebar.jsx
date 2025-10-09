@@ -24,16 +24,9 @@ export default function Sidebar() {
   };
 
   return (
-    <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
-      <div className="sidebar-header">
-        <h2>Seller Panel</h2>
-        <button 
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="collapse-toggle"
-          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {isCollapsed ? '→' : '←'}
-        </button>
+    <div className={` sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+      <div className="sidebar-header text-center">
+        <h2 className='pt-3'>Seller Panel</h2>
       </div>
       
       <hr className="sidebar-divider" />
@@ -48,10 +41,10 @@ export default function Sidebar() {
                   className={isActive(item) ? 'nav-link active' : 'nav-link'}
                   onClick={() => item.subItems && toggleItemExpand(item.path)}
                 >
-                  <i className={`${item.iconClass} nav-icon`}></i>
+                  <i className={`${item.iconClass} nav-icon ps-2`}></i>
                   {!isCollapsed && (
                     <>
-                      <span className="nav-label">{item.label}</span>
+                      <span className="nav-label ms-2">{item.label}</span>
                       {item.badge && (
                         <span className="nav-badge">{item.badge}</span>
                       )}
@@ -80,10 +73,6 @@ export default function Sidebar() {
           ))}
         </ul>
       </nav>
-
-      <div className="user-profile">
-        {/* Optional: Add profile section here */}
-      </div>
     </div>
   );
 }

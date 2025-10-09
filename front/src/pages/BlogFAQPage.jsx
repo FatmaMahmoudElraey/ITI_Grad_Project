@@ -23,7 +23,7 @@ const faqData = [
     {
       id: "faq4",
       question: "How do I get technical support?",
-      answer: "Our support team is available via email and live chat. You can also access our knowledge base and user guides for self-help. Premium support is available with selected plans.",
+      answer: "Our support team is available via email. You can also access our knowledge base and user guides for self-help. Premium support is available with selected plans.",
     },
     {
       id: "faq5",

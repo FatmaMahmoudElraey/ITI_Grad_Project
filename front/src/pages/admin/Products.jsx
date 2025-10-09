@@ -3,6 +3,7 @@ import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter } from 'react-icons/fa';
 import DataTable from '../../components/Admin/DataTable';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { BASE_URL } from '../../api/constants';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -41,7 +42,7 @@ const Products = () => {
         // First fetch all available categories
         let availableCategories = [];
         try {
-          const categoriesResponse = await axios.get('http://localhost:8000/api/categories/');
+          const categoriesResponse = await axios.get(`${BASE_URL}/api/categories/`);
           availableCategories = categoriesResponse.data;
           setAllCategories(availableCategories);
         } catch (error) {
@@ -50,7 +51,7 @@ const Products = () => {
         }
         
         // Then fetch products
-        const productsResponse = await axios.get('http://localhost:8000/api/products/');
+        const productsResponse = await axios.get(`${BASE_URL}/api/products/`);
         
         // Enhance products with category information
         const enhancedProducts = productsResponse.data.map(product => {
@@ -120,7 +121,7 @@ const Products = () => {
     
     if (result.isConfirmed) {
       try {
-        await axios.delete(`http://localhost:8000/api/products/${product.id}/`, {
+        await axios.delete(`${BASE_URL}/api/products/${product.id}/`, {
           headers: getAuthHeader()
         });
         setProducts(products.filter(p => p.id !== product.id));
@@ -147,7 +148,7 @@ const Products = () => {
   const handleApprovalToggle = async (product) => {
     try {
       const response = await axios.patch(
-        `http://localhost:8000/api/products/${product.id}/toggle_approved/`, 
+        `${BASE_URL}api/products/${product.id}/toggle_approved/`, 
         {},
         {
           headers: getAuthHeader()
@@ -172,7 +173,7 @@ const Products = () => {
   const handleFeaturedToggle = async (product) => {
     try {
       const response = await axios.patch(
-        `http://localhost:8000/api/products/${product.id}/toggle_featured/`, 
+        `${BASE_URL}/api/products/${product.id}/toggle_featured/`, 
         {},
         {
           headers: getAuthHeader()
@@ -261,7 +262,7 @@ const Products = () => {
   const handleRemoveExistingImage = async (imageId) => {
     try {
       await axios.delete(
-        `http://localhost:8000/api/products/${currentProduct.id}/remove_image/`,
+        `${BASE_URL}/api/products/${currentProduct.id}/remove_image/`,
         {
           params: { image_id: imageId },
           headers: getAuthHeader()
@@ -362,7 +363,7 @@ const Products = () => {
       formData.append('is_approved', newProduct.is_approved);
       formData.append('is_featured', newProduct.is_featured);
       
-      const response = await axios.post('http://localhost:8000/api/products/', formData, {
+      const response = await axios.post(`${BASE_URL}/api/products/`, formData, {
         headers: {
           ...getAuthHeader(),
           'Content-Type': 'multipart/form-data'
@@ -463,7 +464,7 @@ const Products = () => {
       
       // Send request to update product
       const response = await axios.patch(
-        `http://localhost:8000/api/products/${currentProduct.id}/`, 
+        `${BASE_URL}/api/products/${currentProduct.id}/`, 
         formData,
         {
           headers: {

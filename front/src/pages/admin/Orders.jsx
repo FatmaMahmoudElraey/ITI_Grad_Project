@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaEye, FaFilter, FaDownload } from 'react-icons/fa';
 import DataTable from '../../components/Admin/DataTable';
 import axios from 'axios';
+import { BASE_URL } from '../../api/constants';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -24,7 +25,7 @@ const Orders = () => {
         // First try to fetch orders directly from Django admin API
         try {
           // This approach uses Django admin API directly
-          const response = await axios.get('http://localhost:8000/api/admin/orders/', {
+          const response = await axios.get(`${BASE_URL}/api/admin/orders/`, {
             headers: getAuthHeader()
           });
           
@@ -39,7 +40,7 @@ const Orders = () => {
         
         // Fallback: Try to fetch all orders using regular API
         // This will only work if the user has admin permissions
-        const response = await axios.get('http://localhost:8000/api/orders/', {
+        const response = await axios.get(`${BASE_URL}/api/orders/`, {
           headers: getAuthHeader()
         });
         
@@ -49,7 +50,7 @@ const Orders = () => {
         const ordersWithDetails = await Promise.all(
           response.data.map(async (order) => {
             try {
-              const detailsResponse = await axios.get(`http://localhost:8000/api/orders/${order.id}/`, {
+              const detailsResponse = await axios.get(`${BASE_URL}/api/orders/${order.id}/`, {
                 headers: getAuthHeader()
               });
               return detailsResponse.data;
@@ -104,7 +105,7 @@ const Orders = () => {
   // Handle status change
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      await axios.patch(`http://localhost:8000/api/orders/${orderId}/`, {
+      await axios.patch(`${BASE_URL}/api/orders/${orderId}/`, {
         payment_status: newStatus
       }, {
         headers: getAuthHeader()

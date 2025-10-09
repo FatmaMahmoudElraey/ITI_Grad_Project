@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Seller/Sidebar";
 import { FaTag, FaFileAlt, FaVideo, FaImage, FaLink, FaDollarSign, FaExclamationTriangle } from 'react-icons/fa';
 import axios from 'axios';
+import { BASE_URL } from '../../api/constants';
 
 export default function EditProduct() {
   const navigate = useNavigate();
@@ -50,16 +51,16 @@ export default function EditProduct() {
         }
 
         // Fetch categories
-        const categoriesResponse = await axios.get('http://localhost:8000/api/categories/');
+        const categoriesResponse = await axios.get(`${BASE_URL}/api/categories/`);
         setCategories(categoriesResponse.data);
         
         // Fetch tags
-        const tagsResponse = await axios.get('http://localhost:8000/api/tags/');
+        const tagsResponse = await axios.get(`${BASE_URL}/api/tags/`);
         setAllTags(tagsResponse.data);
         
         // Fetch product data
         if (productId) {
-          const response = await axios.get(`http://localhost:8000/api/products/${productId}/`, {
+          const response = await axios.get(`${BASE_URL}/api/products/${productId}/`, {
             headers: getAuthHeader()
           });
           
@@ -265,7 +266,7 @@ export default function EditProduct() {
       
       // Make direct API call to update product
       const response = await axios.patch(
-        `http://localhost:8000/api/products/${productId}/`, 
+        `${BASE_URL}/api/products/${productId}/`, 
         formDataObj,
         {
           headers: {

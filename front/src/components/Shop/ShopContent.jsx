@@ -17,7 +17,12 @@ const ShopContent = ({
   sortedAndFilteredTemplates,
   sortBy,
   setSortBy,
-  sortOptions
+  sortOptions,
+  currentPage,
+  setCurrentPage,
+  totalPages,
+  next,
+  previous
 }) => {
   const searchInput = (
     <div className="mb-4">
@@ -152,17 +157,48 @@ const ShopContent = ({
             No templates found matching your criteria. Try adjusting your filters.
           </div>
         ) : (
-          <Row xs={1} md={2} lg={3} className="g-4">
-            {sortedAndFilteredTemplates.map(template => (
-              <Col key={template.id} className="mb-4">
-                <TemplateCard 
-                  {...template}
-                  reviews={template.reviews || []}
-                  tags={template.tags || []}
-                />
-              </Col>
-            ))}
-          </Row>
+          <>
+            <Row xs={1} md={2} lg={3} className="g-4">
+              {sortedAndFilteredTemplates.map(template => (
+                <Col key={template.id} className="mb-4">
+                  <TemplateCard 
+                    {...template}
+                    reviews={template.reviews || []}
+                    tags={template.tags || []}
+                  />
+                </Col>
+              ))}
+            </Row>
+            {/* Pagination Controls */}
+            <div className="d-flex justify-content-center align-items-center mt-4">
+              <Button
+                variant="outline-primary"
+                className="me-2"
+                disabled={currentPage === 1 || !previous}
+                onClick={() => setCurrentPage(currentPage - 1)}
+              >
+                Previous
+              </Button>
+              {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((pageNum) => (
+                <Button
+                  key={pageNum}
+                  variant={currentPage === pageNum ? "primary" : "outline-secondary"}
+                  className="mx-1"
+                  onClick={() => setCurrentPage(pageNum)}
+                >
+                  {pageNum}
+                </Button>
+              ))}
+              <Button
+                variant="outline-primary"
+                className="ms-2"
+                disabled={currentPage === totalPages || !next}
+                onClick={() => setCurrentPage(currentPage + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          </>
         )}
       </Col>
     </Row>

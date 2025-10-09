@@ -10,7 +10,10 @@ import HeroSection from '../components/Shop/HeroSection';
 
 export default function Shop() {
   const dispatch = useDispatch();
-  const { items: products, categories, tags, loading, error } = useSelector(state => state.products);
+  const { items: products, categories, tags, loading, error, count, next, previous, page_size } = useSelector(state => state.products);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = page_size || 10; // fallback to 10
+  const totalPages = Math.ceil(count / pageSize);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -25,10 +28,10 @@ export default function Shop() {
   });
 
   useEffect(() => {
-    dispatch(fetchProducts());
+    dispatch(fetchProducts({ page: currentPage }));
     dispatch(fetchCategories());
     dispatch(fetchTags());
-  }, [dispatch]);
+  }, [dispatch, currentPage]);
 
   useEffect(() => {
     const categoryParam = searchParams.get('category');
@@ -152,6 +155,11 @@ export default function Shop() {
           sortBy={sortBy}
           setSortBy={setSortBy}
           sortOptions={sortOptions}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          totalPages={totalPages}
+          next={next}
+          previous={previous}
         />
 
         <FeaturedProducts />

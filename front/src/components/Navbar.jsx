@@ -114,7 +114,7 @@ export default function Header() {
         </>
       ) : (
         <Nav.Link as={Link} to="/login" className="nav-link-item">
-          <div className="d-flex align-items-center">
+          <div className="d-flex align-items-center" style={{ whiteSpace: 'nowrap' }}>
             <FiUser className="me-1" />
             <span>Sign in</span>
           </div>

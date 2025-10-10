@@ -8,7 +8,7 @@ import '../../styles/home/hero.css';
 
 export default function Hero() {
   return (
-    <div style={{ background: 'linear-gradient(to right, #f5e3e1, #eef0ee, #dcefeb)' }} className="py-5">
+    <div style={{ background: 'linear-gradient(to right, #f5e3e1, #eef0ee, #dcefeb)', overflow:'hidden' }} className="py-5">
       <Container>
         <Row className="align-items-center g-5">
           <Col lg={5}>

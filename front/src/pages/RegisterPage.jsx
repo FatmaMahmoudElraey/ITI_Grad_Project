@@ -126,9 +126,9 @@ export default function RegisterPage() {
                   />
                 </div>
                 <div className="col-md-6">
-                  <div className="card-body p-5">
-                    <h2 className="mb-4 fw-bold" style={{ color: "#660ff1" }}>
-                      Create Account
+                  <div className="card-body">
+                    <h2 className="mb-4 fw-bold text-center" style={{ color: "#660ff1" }}>
+                      Register Now
                     </h2>
 
                     {registrationSuccess && (

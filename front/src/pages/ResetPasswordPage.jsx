@@ -44,7 +44,7 @@ const ResetPasswordPage = () => {
       <div className="row justify-content-center">
         <div className="col-md-6">
           <Card className="shadow border-0 rounded-4">
-            <Card.Body className="p-5">
+            <Card.Body>
               <h2
                 className="mb-4 fw-bold text-center"
                 style={{ color: "#660ff1" }}

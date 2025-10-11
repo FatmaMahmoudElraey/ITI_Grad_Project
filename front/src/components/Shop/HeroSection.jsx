@@ -49,46 +49,44 @@ const HeroSection = ({ categories, stats }) => {
           </Col>
 
           {/* Stats Cards */}
-          <Col lg={6}>
-            <Row className="g-3">
-              {[
-                { title: 'Templates', value: `${stats.templates}+`, color: '#FF6B6B' },
-                { title: 'Categories', value: `${stats.categories}+`, color: '#4ECDC4' },
-                { title: 'Customers', value: `${Math.floor(stats.customers/1000)}k+`, color: '#45B7D1' },
-                { title: 'Downloads', value: `${Math.floor(stats.downloads/1000)}k+`, color: '#96C93D' }
-              ].map((stat, index) => (
-                <Col md={6} key={index}>
-                  <motion.div
+                <Col lg={6}>
+                <Row className="g-3">
+                  {[
+                  { title: 'Templates', value: `${stats.templates}+`, color: '#FF6B6B' },
+                  { title: 'Categories', value: `${stats.categories}+`, color: '#4ECDC4' },
+                  { title: 'Customers', value: `${Math.floor(stats.customers/1000)}k+`, color: '#45B7D1' },
+                  { title: 'Downloads', value: `${Math.floor(stats.downloads/1000)}k+`, color: '#96C93D' }
+                  ].map((stat, index) => (
+                  <Col xs={6} sm={6} key={index}>
+                    <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
-                  >
-                    <Card className="border-0 shadow-sm h-100">
-                      <Card.Body className="d-flex align-items-center">
+                    >
+                    <Card className="border-0 shadow-sm p-0">
+                      <Card.Body className="d-flex align-items-center ">
+                      <div 
+                        className="rounded-circle p-3 me-2"
+                        style={{ backgroundColor: `${stat.color}20` }}
+                      >
                         <div 
-                          className="rounded-circle p-3 me-3"
-                          style={{ backgroundColor: `${stat.color}20` }}
-                        >
-                          <div 
-                            className="rounded-circle p-2"
-                            style={{ backgroundColor: stat.color }}
-                          />
-                        </div>
-                        <div>
-                          <h3 className="fw-bold mb-0">{stat.value}</h3>
-                          <p className="text-muted mb-0">{stat.title}</p>
-                        </div>
+                        className="rounded-circle p-2"
+                        style={{ backgroundColor: stat.color }}
+                        />
+                      </div>
+                      <div>
+                        <h3 className="fw-bold mb-0">{stat.value}</h3>
+                        <p className="text-muted mb-0">{stat.title}</p>
+                      </div>
                       </Card.Body>
                     </Card>
-                  </motion.div>
+                    </motion.div>
+                  </Col>
+                  ))}
+                </Row>
                 </Col>
-              ))}
-            </Row>
-          </Col>
-        </Row>
-      </Container>
-
-      {/* Background Decoration */}
+              </Row>
+              </Container>
       <div className="position-absolute top-0 end-0 mt-5">
         <svg width="350" height="350" viewBox="0 0 200 200">
           <path

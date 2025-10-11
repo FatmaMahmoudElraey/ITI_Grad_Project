@@ -110,10 +110,10 @@ export default function LoginPage() {
   };
 
   return (
-    <section className="h-100 bg-light" style={{ minHeight: "100vh" }}>
-      <div className="container py-5 h-100">
-        <div className="row d-flex justify-content-center align-items-center h-100">
-          <div className="col-lg-10">
+    <section className="bg-light">
+      <div className="container py-5">
+        <div className="row d-flex justify-content-center align-items-center">
+          <div className="col-lg-8">
             <div className="card shadow-lg border-0 rounded-4">
               <div className="row g-0">
                 <div className="col-md-6 d-none d-md-block">
@@ -125,8 +125,8 @@ export default function LoginPage() {
                   />
                 </div>
                 <div className="col-md-6">
-                  <div className="card-body p-5">
-                    <h2 className="mb-4 fw-bold" style={{ color: "#660ff1" }}>
+                  <div className="card-body">
+                    <h2 className="mb-4 fw-bold text-center" style={{ color: "#660ff1" }}>
                       Welcome Back
                     </h2>
 
@@ -187,14 +187,14 @@ export default function LoginPage() {
                           className="text-decoration-none"
                           style={{ color: "#660ff1" }}
                         >
-                          Forgot password?
+                          Reset password
                         </Link>
                       </div>
 
                       <div className="d-grid mb-3">
                         <button
                           type="submit"
-                          className="btn btn-lg"
+                          className="btn btn-lg fw-bold"
                           style={{
                             backgroundColor: "#660ff1",
                             color: "white",

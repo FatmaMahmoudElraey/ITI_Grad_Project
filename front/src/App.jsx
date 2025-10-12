@@ -25,7 +25,8 @@ import Shop from "./pages/Shop.jsx";
 import ProductDetailsPage from "./pages/ProductDetails.jsx";
 import SearchPage from "./pages/SearchPage.jsx";
 import BlogDetailsPage from "./pages/BlogDetailsPage.jsx";
-import BlogFAQPage from "./pages/BlogFAQPage.jsx";
+import BlogPage from "./pages/BlogPage.jsx";
+import FAQPage from "./pages/FAQ.jsx";
 
 // Import Admin Pages
 import AdminLayout from "./components/Admin/AdminLayout.jsx";
@@ -62,7 +63,8 @@ function App() {
             <Route path="login" element={<LoginPage />} />
             <Route path="verify-email" element={<VerifyEmailPage />} />
             <Route path="activate/:uid/:token" element={<ActivateAccount />} />
-            <Route path="blogs" element={<BlogFAQPage />} />
+            <Route path="blogs" element={<BlogPage />} />
+            <Route path="FAQ" element={<FAQPage />} />
             <Route path="blog/:id" element={<BlogDetailsPage />} />
             <Route path="shop" element={<Shop />} />
             <Route

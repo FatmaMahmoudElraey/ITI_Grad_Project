@@ -7,6 +7,10 @@ import FeaturedProducts from '../components/FeaturedProducts';
 import LatestProducts from '../components/LatestProducts';
 import ShopContent from '../components/Shop/ShopContent';
 import HeroSection from '../components/Shop/HeroSection';
+import MobileShopNav from '../components/Shop/MobileShopNav';
+import TemplateCard from '../components/TemplateCard';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
 
 export default function Shop() {
   const dispatch = useDispatch();
@@ -26,6 +30,7 @@ export default function Shop() {
     customers: 0,
     downloads: 0
   });
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   useEffect(() => {
     dispatch(fetchProducts({ page: currentPage }));
@@ -139,29 +144,134 @@ export default function Shop() {
         handleCategoryChange={handleCategoryChange}
       />
 
-      <Container className="my-5">
-        <ShopContent
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          selectedCategory={selectedCategory}
-          categories={categories}
-          handleCategoryChange={handleCategoryChange}
-          priceRange={priceRange}
-          handleMinPriceChange={handleMinPriceChange}
-          handleMaxPriceChange={handleMaxPriceChange}
-          handleClearFilters={handleClearFilters}
-          loading={loading}
-          sortedAndFilteredTemplates={sortedAndFilteredTemplates}
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          sortOptions={sortOptions}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-          totalPages={totalPages}
-          next={next}
-          previous={previous}
-        />
+      {/* Mobile Filters Button */}
+      <div className="d-lg-none text-center mb-2">
+        <button className="btn btn-outline-primary" onClick={() => setShowMobileFilters(true)}>
+          <span className="me-2"><i className="bi bi-funnel" /></span>Filters
+        </button>
+      </div>
 
+      {/* Mobile Filters Offcanvas */}
+      <MobileShopNav
+        show={showMobileFilters}
+        onHide={() => setShowMobileFilters(false)}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        selectedCategory={selectedCategory}
+        categories={categories}
+        handleCategoryChange={handleCategoryChange}
+        priceRange={priceRange}
+        handleMinPriceChange={handleMinPriceChange}
+        handleMaxPriceChange={handleMaxPriceChange}
+        handleClearFilters={handleClearFilters}
+      />
+
+      <Container className="my-2">
+        {/* Desktop ShopContent (with sidebar filters) only on lg+ */}
+        <div className="d-none d-lg-block">
+          <ShopContent
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            selectedCategory={selectedCategory}
+            categories={categories}
+            handleCategoryChange={handleCategoryChange}
+            priceRange={priceRange}
+            handleMinPriceChange={handleMinPriceChange}
+            handleMaxPriceChange={handleMaxPriceChange}
+            handleClearFilters={handleClearFilters}
+            loading={loading}
+            sortedAndFilteredTemplates={sortedAndFilteredTemplates}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            sortOptions={sortOptions}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            totalPages={totalPages}
+            next={next}
+            previous={previous}
+          />
+        </div>
+        {/* Mobile template grid only (filters are in offcanvas) */}
+        <div className="d-lg-none">
+          {/* Only the grid and sort bar, not the sidebar */}
+          <div className="d-flex justify-content-between align-items-center mb-4 bg-light p-3 rounded">
+            <div>
+              <strong>{sortedAndFilteredTemplates.length}</strong> templates found
+            </div>
+            <div className="d-flex align-items-center">
+              <span className="me-2">Sort by:</span>
+              <select
+                className="form-select"
+                style={{ maxWidth: 160 }}
+                value={sortBy}
+                onChange={e => setSortBy(e.target.value)}
+              >
+                {sortOptions.map(option => (
+                  <option key={option.value} value={option.value}>{option.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          {loading ? (
+            <div className="text-center p-5">
+              <div className="spinner-border" style={{ color: '#660ff1' }}>
+                <span className="visually-hidden">Loading...</span>
+              </div>
+              <p className="mt-3">Loading templates...</p>
+            </div>
+          ) : sortedAndFilteredTemplates.length === 0 ? (
+            <div className="alert alert-info" role="alert">
+              <i className="bi bi-info-circle me-2" />
+              No templates found matching your criteria. Try adjusting your filters.
+            </div>
+          ) : (
+            <>
+              <Swiper
+  spaceBetween={16}
+  slidesPerView={1.2}
+  breakpoints={{
+    480: { slidesPerView: 1.2 },
+    600: { slidesPerView: 2 },
+    768: { slidesPerView: 2.2 },
+  }}
+>
+  {sortedAndFilteredTemplates.map(template => (
+    <SwiperSlide key={template.id}>
+      <div className="mb-4">
+        <TemplateCard {...template} reviews={template.reviews || []} tags={template.tags || []} />
+      </div>
+    </SwiperSlide>
+  ))}
+</Swiper>
+              {/* Pagination Controls */}
+              <div className="d-flex justify-content-center align-items-center mt-4">
+                <button
+                  className="btn btn-outline-primary me-2"
+                  disabled={currentPage === 1 || !previous}
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                >
+                  Previous
+                </button>
+                {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((pageNum) => (
+                  <button
+                    key={pageNum}
+                    className={`btn mx-1 ${currentPage === pageNum ? 'btn-primary' : 'btn-outline-secondary'}`}
+                    onClick={() => setCurrentPage(pageNum)}
+                  >
+                    {pageNum}
+                  </button>
+                ))}
+                <button
+                  className="btn btn-outline-primary ms-2"
+                  disabled={currentPage === totalPages || !next}
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                >
+                  Next
+                </button>
+              </div>
+            </>
+          )}
+        </div>
         <FeaturedProducts />
         <LatestProducts />
       </Container>

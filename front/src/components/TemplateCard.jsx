@@ -165,7 +165,7 @@ const TemplateCard = (product) => {
 
   return (
     <>
-      <Card className="h-100 border-0 shadow-md hover-shadow transition">
+      <Card className="h-100 border-0 shadow-md hover-shadow transition" style={{ minHeight: 420, display: 'flex', flexDirection: 'column' }}>
       <div className="position-relative">
         <Card.Img 
           variant="top" 
@@ -215,7 +215,7 @@ const TemplateCard = (product) => {
         </Button>
       </div>
 
-      <Card.Body className="d-flex flex-column">
+      <Card.Body className="d-flex flex-column" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <div className="d-flex justify-content-between align-items-start mb-2">
           <Card.Title as="h5" className="mb-0">{title}</Card.Title>
         </div>
@@ -225,7 +225,7 @@ const TemplateCard = (product) => {
           <small className="text-muted">({reviews.length} reviews)</small>
         </div>
 
-        <Card.Text className="text-muted small mb-3" style={{ minHeight: '3rem' }}>
+        <Card.Text className="text-muted small mb-3" style={{ minHeight: '3rem', maxHeight: '3rem', overflow: 'hidden' }}>
           {description?.length > 100 
             ? `${description.substring(0, 100)}...` 
             : description}
@@ -263,7 +263,7 @@ const TemplateCard = (product) => {
               )}
             </div>
 
-            <Link to={`/product-details/${id}`} className="text-decoration-none">
+            <Link to={`/product-details/${id}`} className="text-decoration-none mb-2">
               <Button
                 variant="outline-primary"
                 size="sm"
@@ -275,9 +275,9 @@ const TemplateCard = (product) => {
 
           <div className="d-grid">
             <Button
+            className='btn btn-success fw-bold'
               variant="primary"
               onClick={handleAddToCart}
-              style={{ backgroundColor: '#660ff1', border: 'none' }}
             >
               Add to Cart
             </Button>

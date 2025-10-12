@@ -7,7 +7,7 @@ const Footer = () => {
   const navigate = useNavigate();
 
   return (
-    <footer className="bg-dark text-white py-5 mt-5">
+    <footer className="bg-dark text-white pt-5 mt-5">
       <Container>
         <Row>
           <Col md={4} className="mb-4 mb-md-0">
@@ -22,8 +22,8 @@ const Footer = () => {
               <span className="brand-text">WEBIFY</span>
             </Navbar.Brand>
             <p className="mb-4">
-              Discover our premium collection of website templates. 
-              From e-commerce to portfolios, find the perfect template 
+              Discover our premium collection of website templates from e-commerce to portfolios.<br/>
+               find the perfect template 
               to showcase your brand.
             </p>
             <div className="d-flex gap-3 mb-4">
@@ -64,16 +64,16 @@ const Footer = () => {
             <h5 className="text-uppercase mb-4">Support</h5>
             <ListGroup variant="flush" className="footer-links">
               <ListGroup.Item className="bg-transparent border-0 p-0 mb-2">
-                <Link to="/faq" className="text-white text-decoration-none">FAQ</Link>
+                <Link to="/FAQ" className="text-white text-decoration-none">FAQ</Link>
               </ListGroup.Item>
               <ListGroup.Item className="bg-transparent border-0 p-0 mb-2">
-                <Link to="/privacy-policy" className="text-white text-decoration-none">Privacy Policy</Link>
+                <Link to="/blogs" className="text-white text-decoration-none">Blogs</Link>
               </ListGroup.Item>
               <ListGroup.Item className="bg-transparent border-0 p-0 mb-2">
-                <Link to="/terms" className="text-white text-decoration-none">Terms of Service</Link>
+                <Link to="#" className="text-white text-decoration-none">Terms of Service</Link>
               </ListGroup.Item>
               <ListGroup.Item className="bg-transparent border-0 p-0 mb-2">
-                <Link to="/help" className="text-white text-decoration-none">Help Center</Link>
+                <Link to="#" className="text-white text-decoration-none">Help Center</Link>
               </ListGroup.Item>
             </ListGroup>
           </Col>
@@ -98,18 +98,18 @@ const Footer = () => {
                 Subscribe
               </button>
             </div>
-            <p className="small text-muted">
+            <p className="small" style={{color:"#d7bfffff"}}>
               We respect your privacy. Unsubscribe at any time.
             </p>
           </Col>
         </Row>
 
-        <hr className="my-4" style={{ borderColor: 'rgba(255,255,255,0.1)' }} />
+        <hr className="my-3" style={{ borderColor: 'rgba(255,255,255,0.1)' }} />
 
         <Row className="align-items-center">
-          <Col md={6} className="text-center text-md-start">
-            <p className="small text-muted mb-0">
-              &copy; {new Date().getFullYear()} Template Market. All rights reserved.
+          <Col md={12} className=" ">
+            <p className="small text-center text-white mb-0">
+              &copy; {new Date().getFullYear()} Webify. All rights reserved.
             </p>
           </Col>
           <Col md={6} className="text-center text-md-end mt-3 mt-md-0">

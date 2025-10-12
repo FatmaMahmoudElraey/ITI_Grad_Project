@@ -189,8 +189,9 @@ export const searchProducts = createAsyncThunk(
   async (searchQuery, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${ENDPOINTS.PRODUCTS}?search=${encodeURIComponent(searchQuery)}`);
-      // Filter products to only include approved ones for public display
-      const approvedProducts = response.data.filter(product => product.is_approved === true);
+      const data = response.data;
+      const products = Array.isArray(data) ? data : data.results;
+      const approvedProducts = products.filter(product => product.is_approved === true);
       return approvedProducts;
     } catch (error) {
       return rejectWithValue(

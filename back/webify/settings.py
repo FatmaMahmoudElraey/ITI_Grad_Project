@@ -74,7 +74,7 @@ MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
-CSRF_TRUSTED_ORIGINS= ["http://localhost:5173"]
+CSRF_TRUSTED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS").split(",")
 
 ASGI_APPLICATION = "webify.asgi.application"
 

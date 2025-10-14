@@ -103,6 +103,14 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     )
 }
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': BASE_DIR / 'cache',  # folder to store cached data
+    }
+}
+
 FRONTEND_URL = os.getenv('FRONTEND_URL')
 
 TEMPLATES = [

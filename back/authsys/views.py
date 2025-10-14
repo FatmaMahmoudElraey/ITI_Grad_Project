@@ -30,7 +30,8 @@ class CookieTokenObtainPairView(TokenObtainPairView):
                 # In production, use SameSite=None with Secure=True for cross-site cookies.
                 secure=True,
                 samesite=('Lax' if settings.DEBUG else 'None'),
-                path='/'
+                path='/',
+                domain=None
             )
 
         if refresh:
@@ -41,7 +42,8 @@ class CookieTokenObtainPairView(TokenObtainPairView):
                 httponly=True,
                 secure=True,
                 samesite=('Lax' if settings.DEBUG else 'None'),
-                path='/'
+                path='/',
+                domain=None  
             )
 
         return super().finalize_response(request, response, *args, **kwargs)
@@ -75,7 +77,8 @@ class CookieTokenRefreshView(TokenRefreshView):
                 httponly=True,
                 secure=True,
                 samesite=('Lax' if settings.DEBUG else 'None'),
-                path='/'
+                path='/',
+                domain=None  
             )
 
         # If refresh rotation enabled, update refresh cookie as well
@@ -86,7 +89,8 @@ class CookieTokenRefreshView(TokenRefreshView):
                 httponly=True,
                 secure=True,
                 samesite=('Lax' if settings.DEBUG else 'None'),
-                path='/'
+                path='/',
+                domain=None  
             )
 
         return response

@@ -28,7 +28,7 @@ class CookieTokenObtainPairView(TokenObtainPairView):
                 httponly=True,
                 # In local development (DEBUG=True) use SameSite='Lax' and secure=False.
                 # In production, use SameSite=None with Secure=True for cross-site cookies.
-                secure=(not settings.DEBUG),
+                secure=True,
                 samesite=('Lax' if settings.DEBUG else 'None'),
                 path='/'
             )
@@ -39,7 +39,7 @@ class CookieTokenObtainPairView(TokenObtainPairView):
                 key='refresh_token',
                 value=refresh,
                 httponly=True,
-                secure=(not settings.DEBUG),
+                secure=True,
                 samesite=('Lax' if settings.DEBUG else 'None'),
                 path='/'
             )
@@ -73,7 +73,7 @@ class CookieTokenRefreshView(TokenRefreshView):
                 key='access_token',
                 value=access,
                 httponly=True,
-                secure=(not settings.DEBUG),
+                secure=True,
                 samesite=('Lax' if settings.DEBUG else 'None'),
                 path='/'
             )
@@ -84,7 +84,7 @@ class CookieTokenRefreshView(TokenRefreshView):
                 key='refresh_token',
                 value=refresh,
                 httponly=True,
-                secure=(not settings.DEBUG),
+                secure=True,
                 samesite=('Lax' if settings.DEBUG else 'None'),
                 path='/'
             )

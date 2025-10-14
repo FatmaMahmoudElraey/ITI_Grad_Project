@@ -17,16 +17,23 @@ from rest_framework.response import Response
 from django.http import FileResponse, HttpResponseNotFound
 from orders.models import OrderItem
 import os
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 
+CACHE_TTL = 60 * 5  # 5 minutes
+
+@method_decorator(cache_page(CACHE_TTL), name='list')
 class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
-
+@method_decorator(cache_page(CACHE_TTL), name='list')
 class TagViewSet(ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
+@method_decorator(cache_page(CACHE_TTL), name='list')
+@method_decorator(cache_page(CACHE_TTL), name='featured')
 class ProductViewSet(ModelViewSet):
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
@@ -168,6 +175,7 @@ class ProductViewSet(ModelViewSet):
         serializer = self.get_serializer(product)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+@method_decorator(cache_page(CACHE_TTL), name='list')
 class LatestProductsViewSet(ModelViewSet):
     serializer_class = ProductSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]

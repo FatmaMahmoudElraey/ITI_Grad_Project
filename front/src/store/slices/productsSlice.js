@@ -51,7 +51,8 @@ export const fetchLatestProducts = createAsyncThunk(
     try {
       const response = await axios.get(ENDPOINTS.LATEST_PRODUCTS);
       // Filter to only include approved products for public display
-      const approvedProducts = response.data.filter(product => product.is_approved === true);
+      const allProducts = response.data?.results || response.data || [];
+      const approvedProducts = allProducts.filter(product => product.is_approved === true);
       return approvedProducts;
     } catch (error) {
       return rejectWithValue(
@@ -67,7 +68,8 @@ export const fetchFeaturedProducts = createAsyncThunk(
     try {
       const response = await axios.get(ENDPOINTS.FEATURED_PRODUCTS);
       // Filter to only include approved products for public display
-      const approvedProducts = response.data.filter(product => product.is_approved === true);
+      const allProducts = response.data?.results || response.data || [];
+      const approvedProducts = allProducts.filter(product => product.is_approved === true);
       return approvedProducts;
     } catch (error) {
       return rejectWithValue(

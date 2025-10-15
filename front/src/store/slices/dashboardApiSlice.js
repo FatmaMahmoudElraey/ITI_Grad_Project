@@ -30,11 +30,7 @@ export const fetchDashboardStats = createAsyncThunk(
       });
       
       // Filter products by seller ID manually
-      const allProducts = productsResponse.data || [];
-      
-      // Log for debugging
-      console.log('Seller ID:', sellerId);
-      console.log('First few products:', allProducts.slice(0, 3));
+      const allProducts = productsResponse.data?.results || productsResponse.data || [];
       
       const products = allProducts.filter(product => {
         // Convert IDs to strings for comparison to handle both number and string IDs
@@ -51,15 +47,16 @@ export const fetchDashboardStats = createAsyncThunk(
           (product.user && product.user.id && String(product.user.id) === sellerIdStr)
         );
       });
+      const sellerProductIds = products.map(p => p.id);
       
       // Filter orders by seller ID manually
-      const allOrders = ordersResponse.data || [];
+      const allOrders = ordersResponse.data?.results || ordersResponse.data || [];
       const orders = allOrders.filter(order => {
         // Check if order has items that contain products from this seller
         if (order.items && Array.isArray(order.items)) {
           return order.items.some(item => {
             const productId = item.product_id || (item.product && item.product.id);
-            return products.some(p => p.id === productId);
+            return sellerProductIds.includes(productId);
           });
         }
         return false;
@@ -163,7 +160,7 @@ export const fetchDashboardStats = createAsyncThunk(
         products_trend: { value: 5.2, direction: 'up' }
       };
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'Failed to fetch dashboard stats');
+      return rejectWithValue(error.response?.data || error.message || 'Failed to fetch dashboard stats');
     }
   }
 );
@@ -190,7 +187,7 @@ export const fetchMonthlySales = createAsyncThunk(
       });
       
       // Filter products by seller ID
-      const allProducts = productsResponse.data || [];
+      const allProducts = productsResponse.data?.results || productsResponse.data || [];
       
       const sellerProducts = allProducts.filter(product => {
         // Convert IDs to strings for comparison to handle both number and string IDs
@@ -212,7 +209,7 @@ export const fetchMonthlySales = createAsyncThunk(
       const sellerProductIds = sellerProducts.map(p => p.id);
       
       // Filter orders that contain products from this seller
-      const allOrders = ordersResponse.data || [];
+      const allOrders = ordersResponse.data?.results || ordersResponse.data || [];
       const orders = allOrders.filter(order => {
         if (order.items && Array.isArray(order.items)) {
           return order.items.some(item => {
@@ -284,7 +281,7 @@ export const fetchCategoryDistribution = createAsyncThunk(
       });
       
       const categories = categoriesResponse.data || [];
-      const allProducts = productsResponse.data || [];
+      const allProducts = productsResponse.data?.results || productsResponse.data || [];
       
       // Filter products by seller ID
       const products = allProducts.filter(product => 
@@ -338,7 +335,7 @@ export const fetchRecentOrders = createAsyncThunk(
       });
       
       // Filter products by seller ID
-      const allProducts = productsResponse.data || [];
+      const allProducts = productsResponse.data?.results || productsResponse.data || [];
       
       const sellerProducts = allProducts.filter(product => {
         // Convert IDs to strings for comparison to handle both number and string IDs
@@ -360,7 +357,7 @@ export const fetchRecentOrders = createAsyncThunk(
       const sellerProductIds = sellerProducts.map(p => p.id);
       
       // Get all orders
-      const allOrders = ordersResponse.data || [];
+      const allOrders = ordersResponse.data?.results || ordersResponse.data || [];
       
       // Filter orders that might be related to this seller
       const sellerOrders = allOrders.filter(order => {
@@ -444,7 +441,7 @@ export const fetchPopularProducts = createAsyncThunk(
         headers: getAuthHeader()
       });
       
-      const allProducts = productsResponse.data || [];
+      const allProducts = productsResponse.data?.results || productsResponse.data || [];
       
       // Filter products by seller ID
       const products = allProducts.filter(product => 

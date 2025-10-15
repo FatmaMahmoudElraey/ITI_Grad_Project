@@ -8,13 +8,6 @@ export default function Sidebar() {
   const [expandedItems, setExpandedItems] = useState([]);
   const location = useLocation();
 
-  const toggleItemExpand = (path) => {
-    setExpandedItems(prev =>
-      prev.includes(path) 
-        ? prev.filter(item => item !== path)
-        : [...prev, path]
-    );
-  };
 
   const isActive = (item) => {
     if (item.exact) {
@@ -39,7 +32,6 @@ export default function Sidebar() {
                 <NavLink
                   to={item.path}
                   className={isActive(item) ? 'nav-link active' : 'nav-link'}
-                  onClick={() => item.subItems && toggleItemExpand(item.path)}
                 >
                   <i className={`${item.iconClass} nav-icon ps-2`}></i>
                   {!isCollapsed && (
@@ -51,23 +43,6 @@ export default function Sidebar() {
                     </>
                   )}
                 </NavLink>
-
-                {item.subItems && !isCollapsed && expandedItems.includes(item.path) && (
-                  <ul className="submenu">
-                    {item.subItems.map(subItem => (
-                      <li key={subItem.path}>
-                        <NavLink
-                          to={subItem.path}
-                          className={({ isActive }) => 
-                            `submenu-link ${isActive ? 'active' : ''}`
-                          }
-                        >
-                          {subItem.label}
-                        </NavLink>
-                      </li>
-                    ))}
-                  </ul>
-                )}
               </div>
             </li>
           ))}

@@ -13,7 +13,7 @@ export const fetchProductReviews = createAsyncThunk(
       const response = await axios.get(`${ENDPOINTS.PRODUCT_REVIEWS}?product=${productId}`, {
         headers: getAuthHeader()
       });
-      return { productId, reviews: response.data };
+      return { productId, reviews: response.data?.results || response.data || [] };
     } catch (error) {
       console.error('Error fetching product reviews:', error);
       return rejectWithValue(
@@ -44,7 +44,7 @@ export const fetchSellerProductReviews = createAsyncThunk(
       });
       
       // Filter products to only include those belonging to the current seller
-      const allProducts = productsResponse.data || [];
+      const allProducts = productsResponse.data?.results || productsResponse.data || [];
       const sellerIdStr = String(sellerId);
 
       const sellerProducts = allProducts.filter(product => {
@@ -73,7 +73,7 @@ export const fetchSellerProductReviews = createAsyncThunk(
         headers: getAuthHeader()
       });
       
-      const allReviews = reviewsResponse.data || [];
+      const allReviews = reviewsResponse.data?.results || reviewsResponse.data || [];
       
       // Filter reviews to only include those for the seller's products
       const sellerProductReviews = allReviews.filter(review => {

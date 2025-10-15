@@ -35,9 +35,8 @@ export const fetchSellerProducts = createAsyncThunk(
   const response = await axios.get(ENDPOINTS.PRODUCTS);
       
       // Filter products to only include those belonging to the current seller
-      const allProducts = response.data || [];
-      const sellerIdStr = String(sellerId);
-      
+      const allProducts = response.data?.results || response.data || [];
+      const sellerIdStr = String(updatedSellerId);      
       const sellerProducts = allProducts.filter(product => {
         return (
           (product.seller && String(product.seller) === sellerIdStr) || 

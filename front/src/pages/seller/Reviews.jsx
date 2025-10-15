@@ -82,7 +82,7 @@ export default function Reviews() {
       <main className="dashboard-main">
         <div className="page-header">
           <h1 className="dashboard-header">Product Reviews</h1>
-          <Link to="/seller/products" className="button primary-button">
+          <Link to="/seller/products" className="btn btn-secondary mb-3">
             Back to Products
           </Link>
         </div>

@@ -229,17 +229,17 @@ export default function Products() {
                     </span>
                   ),
                   actions: (
-                    <div className="actions-container">
+                    <div className="actions-container d-flex flex-sm-column flex-md-row">
                       <button 
                         onClick={() => navigate(`/seller/products/edit/${product.id}`)}
-                        className="button button-secondary button-sm"
+                        className="button button-secondary button-sm me-2 mb-sm-2 mb-md-0"
                         title="Edit product"
                       >
                         <FiEdit className="icon" /> Edit
                       </button>
                       <button 
                         onClick={() => handleDelete(product.id)}
-                        className="button button-danger button-sm"
+                        className="button button-danger button-sm "
                         disabled={isDeleting === product.id}
                         title="Delete product"
                       >

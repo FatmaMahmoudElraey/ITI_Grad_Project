@@ -9,10 +9,6 @@ const sellerNavigation = [
       path: "/seller/products",
       label: "Products",
       iconClass: "bi bi-bag-fill",
-      subItems: [
-        { path: "/seller/products/list", label: "All Products" },
-        { path: "/seller/products/add", label: "Add New" },
-      ],
     },
     {
       path: "/seller/orders",

@@ -31,11 +31,7 @@ export default function Hero() {
               </Link>
               <Link to="/about" className="text-decoration-none">
                 <Button 
-                  style={{ 
-                    backgroundColor: 'transparent', 
-                    border: '2px solid #660ff1',
-                    color: '#660ff1'
-                  }}
+                  style={{ backgroundColor: '#660ff1', border:"none", fontWeight:"bold" }}
                   size="lg" 
                   className="d-flex align-items-center gap-2"
                 >

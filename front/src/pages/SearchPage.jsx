@@ -36,7 +36,7 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="container mt-5" style={{height:"100vh"}}>
+    <div className="container mt-5">
       <h1>Search Results for "{searchQuery}"</h1>
       {searchResults.length === 0 && !searchLoading && (
         <p>No products found for "{searchQuery}".</p>

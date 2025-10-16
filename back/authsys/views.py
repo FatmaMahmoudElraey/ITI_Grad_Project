@@ -29,7 +29,7 @@ class CookieTokenObtainPairView(TokenObtainPairView):
                 # In local development (DEBUG=True) use SameSite='Lax' and secure=False.
                 # In production, use SameSite=None with Secure=True for cross-site cookies.
                 secure=True,
-                samesite=('Lax' if settings.DEBUG else 'None'),
+                samesite='None',
                 path='/',
                 domain=None
             )

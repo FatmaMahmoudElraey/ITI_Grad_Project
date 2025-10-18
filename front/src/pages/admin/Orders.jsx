@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaEye, FaFilter, FaDownload } from 'react-icons/fa';
 import DataTable from '../../components/Admin/DataTable';
 import axios from 'axios';
-import { BASE_URL } from '../../api/constants';
+import { BASE_URL, ENDPOINTS } from '../../api/constants';
 import Swal from 'sweetalert2';
 
 const Orders = () => {
@@ -26,7 +26,7 @@ const Orders = () => {
         // First try to fetch orders directly from Django admin API
         try {
           // This approach uses Django admin API directly
-          const response = await axios.get(`${BASE_URL}/api/admin/orders/`);
+          const response = await axios.get(ENDPOINTS.ADMIN_ORDERS);
           
           // Ensure we have an array to work with
           const ordersData = Array.isArray(response.data) 
@@ -42,7 +42,7 @@ const Orders = () => {
         
         // Fallback: Try to fetch all orders using regular API
         // This will only work if the user has admin permissions
-        const response = await axios.get(`${BASE_URL}/api/orders/`);
+        const response = await axios.get(ENDPOINTS.ADMIN_ORDERS);
         
         // Ensure we have an array to work with
         const ordersData = Array.isArray(response.data) 
@@ -53,7 +53,7 @@ const Orders = () => {
         const ordersWithDetails = await Promise.all(
           ordersData.map(async (order) => {
             try {
-              const detailsResponse = await axios.get(`${BASE_URL}/api/orders/${order.id}/`);
+              const detailsResponse = await axios.get(`${ENDPOINTS.ADMIN_ORDERS}/${order.id}/`);
               return detailsResponse.data;
             } catch (error) {
               return order; // Return the original order if details fetch fails
@@ -105,7 +105,7 @@ const Orders = () => {
   // Handle status change
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      await axios.patch(`${BASE_URL}/api/orders/${orderId}/`, {
+      await axios.patch(`${ENDPOINTS.ADMIN_ORDERS}/${orderId}/`, {
         payment_status: newStatus
       });
       

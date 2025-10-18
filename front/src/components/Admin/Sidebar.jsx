@@ -12,7 +12,7 @@ import {
 } from 'react-icons/fa';
 import logo from '../../assets/images/navbar/logo.png'; // Update with your actual logo path
 
-const Sidebar = ({ collapsed, open, isMobile, onToggleCollapse, onClose }) => {
+const Sidebar = ({ collapsed, open, isMobile, onClose }) => {
   const location = useLocation();
   
   const menuItems = [
@@ -79,12 +79,6 @@ const Sidebar = ({ collapsed, open, isMobile, onToggleCollapse, onClose }) => {
           </ul>
         </nav>
         
-        {/* Sidebar Toggle Button - Only show on desktop */}
-        {!isMobile && (
-          <div className="sidebar-toggle-btn" onClick={onToggleCollapse}>
-            <i>{collapsed ? <FaBars /> : <FaAngleLeft />}</i>
-          </div>
-        )}
       </div>
     </aside>
   );

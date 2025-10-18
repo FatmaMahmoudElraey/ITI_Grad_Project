@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaList } from 'react-icons/fa';
 import DataTable from '../../components/Admin/DataTable';
 import axios from 'axios';
-import { BASE_URL } from '../../api/constants';
+import { BASE_URL, ENDPOINTS } from '../../api/constants';
 
 const Categories = () => {
   const [categories, setCategories] = useState([]);
@@ -29,15 +29,19 @@ const Categories = () => {
         setLoading(true);
         
         // Fetch all categories
-        const categoriesResponse = await axios.get();
+        const categoriesResponse = await axios.get(ENDPOINTS.CATEGORIES);
         
         // Fetch all products to count products per category
-        const productsResponse = await axios.get(`${BASE_URL}/api/products/`);
-        setProducts(productsResponse.data);
+        const productsResponse = await axios.get(ENDPOINTS.PRODUCTS);
+        const productsData = Array.isArray(productsResponse.data) 
+          ? productsResponse.data 
+          : productsResponse.data.results || [];
+
+        setProducts(productsData);
         
         // Count products for each category
         const categoriesWithCount = categoriesResponse.data.map(category => {
-          const productCount = productsResponse.data.filter(
+          const productCount = productsData.filter(
             product => product.category === category.id || 
                       (product.category_name && product.category_name === category.name)
           ).length;
@@ -259,14 +263,14 @@ const Categories = () => {
       render: (item) => (
         <div className="btn-group">
           <button 
-            className="btn btn-sm btn-primary mr-1" 
+            className="btn btn-sm btn-primary me-2" 
             onClick={() => handleCategorySelect(item)}
             title="View Products"
           >
             <FaList />
           </button>
           <button 
-            className="btn btn-sm btn-info mr-1" 
+            className="btn btn-sm btn-info me-2" 
             onClick={() => handleEditCategory(item)}
             title="Edit"
           >
@@ -343,12 +347,6 @@ const Categories = () => {
           <div className="row mb-2">
             <div className="col-sm-6">
               <h1 className="m-0">Categories Management</h1>
-            </div>
-            <div className="col-sm-6">
-              <ol className="breadcrumb float-sm-right">
-                <li className="breadcrumb-item"><a href="#">Home</a></li>
-                <li className="breadcrumb-item active">Categories</li>
-              </ol>
             </div>
           </div>
         </div>

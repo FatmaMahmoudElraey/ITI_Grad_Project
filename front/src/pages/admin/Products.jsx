@@ -46,15 +46,18 @@ const Products = () => {
           availableCategories = categoriesResponse.data;
           setAllCategories(availableCategories);
         } catch (error) {
-          console.error('Error fetching categories:', error);
           availableCategories = [];
         }
         
         // Then fetch products
         const productsResponse = await axios.get(`${BASE_URL}/api/products/`);
         
+        const productsData = Array.isArray(productsResponse.data) 
+          ? productsResponse.data 
+          : productsResponse.data.results || [];
+        
         // Enhance products with category information
-        const enhancedProducts = productsResponse.data.map(product => {
+        const enhancedProducts = productsData.map(product => {
           // If the product has a category_name but we have the full category object,
           // add the category ID to the product
           if (product.category_name && !product.category) {
@@ -81,7 +84,8 @@ const Products = () => {
         
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching products:', error);
+        setProducts([]);
+        setCategories([]);
         setLoading(false);
       }
     };
@@ -121,9 +125,7 @@ const Products = () => {
     
     if (result.isConfirmed) {
       try {
-        await axios.delete(`${BASE_URL}/api/products/${product.id}/`, {
-          headers: getAuthHeader()
-        });
+        await axios.delete(`${BASE_URL}/api/products/${product.id}/`);
         setProducts(products.filter(p => p.id !== product.id));
         
         Swal.fire({
@@ -134,7 +136,6 @@ const Products = () => {
           showConfirmButton: false
         });
       } catch (error) {
-        console.error('Error deleting product:', error);
         Swal.fire({
           title: 'Error',
           text: 'Failed to delete product. Please try again.',
@@ -148,11 +149,8 @@ const Products = () => {
   const handleApprovalToggle = async (product) => {
     try {
       const response = await axios.patch(
-        `${BASE_URL}api/products/${product.id}/toggle_approved/`, 
-        {},
-        {
-          headers: getAuthHeader()
-        }
+        `${BASE_URL}/api/products/${product.id}/toggle_approved/`, 
+        {}
       );
       
       const updatedProducts = products.map(p => 
@@ -160,7 +158,6 @@ const Products = () => {
       );
       setProducts(updatedProducts);
     } catch (error) {
-      console.error('Error updating product approval status:', error);
       Swal.fire({
         title: 'Error',
         text: 'Failed to update product approval status. Please try again.',
@@ -174,10 +171,7 @@ const Products = () => {
     try {
       const response = await axios.patch(
         `${BASE_URL}/api/products/${product.id}/toggle_featured/`, 
-        {},
-        {
-          headers: getAuthHeader()
-        }
+        {}
       );
       
       // Update the product in the local state with the response data
@@ -186,7 +180,6 @@ const Products = () => {
       );
       setProducts(updatedProducts);
     } catch (error) {
-      console.error('Error updating product featured status:', error);
       Swal.fire({
         title: 'Error',
         text: 'Failed to update product featured status. Please try again.',
@@ -264,8 +257,7 @@ const Products = () => {
       await axios.delete(
         `${BASE_URL}/api/products/${currentProduct.id}/remove_image/`,
         {
-          params: { image_id: imageId },
-          headers: getAuthHeader()
+          params: { image_id: imageId }
         }
       );
       
@@ -287,7 +279,6 @@ const Products = () => {
       });
       setProducts(updatedProducts);
     } catch (error) {
-      console.error('Error removing image:', error);
       Swal.fire({
         title: 'Error',
         text: 'Failed to remove image. Please try again.',
@@ -365,7 +356,6 @@ const Products = () => {
       
       const response = await axios.post(`${BASE_URL}/api/products/`, formData, {
         headers: {
-          ...getAuthHeader(),
           'Content-Type': 'multipart/form-data'
         }
       });
@@ -404,7 +394,6 @@ const Products = () => {
       setFormErrors({});
       setShowAddModal(false);
     } catch (error) {
-      console.error('Error adding product:', error);
       
       // Handle validation errors from server
       if (error.response && error.response.data) {
@@ -468,7 +457,6 @@ const Products = () => {
         formData,
         {
           headers: {
-            ...getAuthHeader(),
             'Content-Type': 'multipart/form-data'
           }
         }
@@ -485,7 +473,6 @@ const Products = () => {
       setCurrentProduct(null);
       setFormErrors({});
     } catch (error) {
-      console.error('Error updating product:', error);
       
       // Handle validation errors from server
       if (error.response && error.response.data) {
@@ -583,7 +570,7 @@ const Products = () => {
       render: (item) => (
         <div className="btn-group">
           <button 
-            className="btn btn-sm btn-info mr-1" 
+            className="btn btn-sm btn-info me-1" 
             onClick={() => handleEditProduct(item)}
             title="Edit"
           >
@@ -631,12 +618,6 @@ const Products = () => {
             <div className="col-sm-6">
               <h1 className="m-0">Products Management</h1>
             </div>
-            <div className="col-sm-6">
-              <ol className="breadcrumb float-sm-right">
-                <li className="breadcrumb-item"><a href="#">Home</a></li>
-                <li className="breadcrumb-item active">Products</li>
-              </ol>
-            </div>
           </div>
         </div>
       </div>
@@ -647,7 +628,7 @@ const Products = () => {
           <div className="row mb-3">
             <div className="col-md-4">
               <button 
-                className="btn btn-primary" 
+                className="btn btn-primary mb-3" 
                 onClick={() => setShowAddModal(true)}
               >
                 <FaPlus className="mr-1" /> Add New Product

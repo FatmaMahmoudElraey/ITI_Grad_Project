@@ -38,7 +38,6 @@ const Users = () => {
         setUsers(usersWithDateJoined);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching users:', error);
         setLoading(false);
       }
     };
@@ -88,7 +87,6 @@ const Users = () => {
           showConfirmButton: false
         });
       } catch (error) {
-        console.error('Error deactivating user:', error);
         Swal.fire({
           title: 'Error',
           text: 'Failed to deactivate user. Please try again.',
@@ -114,7 +112,6 @@ const Users = () => {
       );
       setUsers(updatedUsers);
     } catch (error) {
-      console.error('Error updating user active status:', error);
       Swal.fire({
         title: 'Error',
         text: 'Failed to update user active status. Please try again.',
@@ -190,7 +187,6 @@ const Users = () => {
         re_password: newUser.password // Djoser often requires password confirmation
       };
 
-      console.log('Sending user data:', formattedUser);
       await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/auth/users/`, formattedUser);
 
       // Fetch the updated user list instead of trying to add the response data
@@ -216,14 +212,8 @@ const Users = () => {
       setFormErrors({});
       setShowAddModal(false);
     } catch (error) {
-      console.error('Error adding user:', error);
-
       // Log detailed error information
       if (error.response) {
-        console.error('Error response data:', error.response.data);
-        console.error('Error response status:', error.response.status);
-        console.error('Error response headers:', error.response.headers);
-
         // Format error messages for display
         const serverErrors = {};
 
@@ -293,7 +283,6 @@ const Users = () => {
       setFormErrors({});
       setShowEditModal(false);
     } catch (error) {
-      console.error('Error updating user:', error);
 
       // Handle validation errors from the server
       if (error.response && error.response.data) {
@@ -318,20 +307,7 @@ const Users = () => {
 
       return date.toLocaleDateString();
     } catch (error) {
-      console.error('Error formatting date:', error);
       return 'Invalid Date';
-    }
-  };
-
-  // Get role icon
-  const getRoleIcon = (role) => {
-    switch (role) {
-      case 'admin':
-        return <FaUserCog className="text-danger" />;
-      case 'seller':
-        return <FaUserTie className="text-success" />;
-      default:
-        return <FaUserAlt className="text-primary" />;
     }
   };
 
@@ -349,14 +325,9 @@ const Users = () => {
       sortable: true,
       render: (item) => (
         <div className="d-flex align-items-center">
-          <img
-            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(`${item.first_name} ${item.last_name}`)}&background=random`}
-            alt={`${item.first_name} ${item.last_name}`}
-            className="img-circle mr-2"
-            width="30"
-            height="30"
-          />
-          {`${item.first_name} ${item.last_name}`}
+          {item.first_name && item.last_name?
+          `${item.first_name} ${item.last_name}`: <>No Name</>
+          }
         </div>
       )
     },
@@ -367,7 +338,7 @@ const Users = () => {
       sortable: true,
       render: (item) => (
         <span>
-          {getRoleIcon(item.role)} {item.role ? (item.role.charAt(0).toUpperCase() + item.role.slice(1)) : 'User'}
+          {item.role ? (item.role.charAt(0).toUpperCase() + item.role.slice(1)) : 'User'}
         </span>
       )
     },
@@ -410,7 +381,7 @@ const Users = () => {
             <FaEdit />
           </button>
           <button
-            className="btn btn-sm btn-danger"
+            className="btn btn-sm btn-danger ms-2"
             onClick={() => handleDeleteUser(item)}
             title="Deactivate User"
           >
@@ -450,12 +421,6 @@ const Users = () => {
           <div className="row mb-2">
             <div className="col-sm-6">
               <h1 className="m-0">Users Management</h1>
-            </div>
-            <div className="col-sm-6">
-              <ol className="breadcrumb float-sm-right">
-                <li className="breadcrumb-item"><a href="#">Home</a></li>
-                <li className="breadcrumb-item active">Users</li>
-              </ol>
             </div>
           </div>
         </div>

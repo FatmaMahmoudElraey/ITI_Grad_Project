@@ -12,7 +12,7 @@ import {
 } from 'react-icons/fa';
 import logo from '../../assets/images/navbar/logo.png'; // Update with your actual logo path
 
-const Sidebar = ({ collapsed, onToggleCollapse }) => {
+const Sidebar = ({ collapsed, open, isMobile, onClose }) => {
   const location = useLocation();
   
   const menuItems = [
@@ -27,29 +27,51 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
     return location.pathname === path;
   };
 
+  const handleLinkClick = () => {
+    if (isMobile && onClose) {
+      onClose();
+    }
+  };
+
+  const getSidebarClasses = () => {
+    let classes = 'main-sidebar sidebar-dark-primary elevation-4';
+    
+    if (isMobile) {
+      classes += open ? ' sidebar-open' : '';
+    } else {
+      classes += collapsed ? ' sidebar-collapse' : '';
+    }
+    
+    return classes;
+  };
+
   return (
-    <aside className={`main-sidebar sidebar-dark-primary elevation-4 ${collapsed ? 'sidebar-collapse' : ''}`}>
+    <aside className={getSidebarClasses()}>
       {/* Brand Logo */}
-      <Link to="/admin/products" className="brand-link">
+      <Link to="/admin/products" className="brand-link" onClick={handleLinkClick}>
         <img 
           src={logo} 
           alt="AdminLTE Logo" 
           className="brand-image img-circle elevation-3" 
           style={{ opacity: '.8' }} 
         />
-        <span className="brand-text font-weight-light">Admin Panel</span>
+        <span className="brand-text fw-bold text-light">Admin Panel</span>
       </Link>
 
       {/* Sidebar */}
       <div className="sidebar">
         {/* Sidebar Menu */}
         <nav className="mt-2">
-          <ul className="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+          <ul className="nav nav-pills nav-sidebar flex-column justify-content-center" data-widget="treeview" role="menu" data-accordion="false">
             {menuItems.map((item, index) => (
               <li className="nav-item" key={index}>
-                <Link to={item.path} className={`nav-link ${isActive(item.path) ? 'active' : ''}`}>
+                <Link 
+                  to={item.path} 
+                  className={`nav-link flex-row justify-content-start align-items-center  mb-1${isActive(item.path) ? 'active' : ''}`}
+                  onClick={handleLinkClick}
+                >
                   <i className="nav-icon">{item.icon}</i>
-                  <p>{item.label}</p>
+                  <p className='m-0'>{item.label}</p>
                 </Link>
               </li>
             ))}
@@ -57,10 +79,6 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
           </ul>
         </nav>
         
-        {/* Sidebar Toggle Button */}
-        <div className="sidebar-toggle-btn" onClick={onToggleCollapse}>
-          <i>{collapsed ? <FaBars /> : <FaAngleLeft />}</i>
-        </div>
       </div>
     </aside>
   );

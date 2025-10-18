@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaSort, FaSortUp, FaSortDown, FaSearch, FaEdit, FaTrash } from 'react-icons/fa';
 
 const DataTable = ({ 
@@ -16,6 +16,18 @@ const DataTable = ({
   const [sortDirection, setSortDirection] = useState('asc');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(itemsPerPageOptions[0]);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 767.98);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Handle sorting
   const handleSort = (field) => {
@@ -34,7 +46,7 @@ const DataTable = ({
   };
 
   // Filter data based on search term
-  const filteredData = data.filter(item => {
+  const filteredData = (data || []).filter(item => {
     if (!searchTerm) return true;
     
     return columns.some(column => {
@@ -63,23 +75,23 @@ const DataTable = ({
   const paginatedData = sortedData.slice(startIndex, startIndex + itemsPerPage);
 
   return (
-    <div className="card">
+    <div className="card p-1">
       <div className="card-header">
         <h3 className="card-title">{title}</h3>
         
         {searchable && (
           <div className="card-tools">
             <div className="input-group input-group-sm" style={{ width: '150px' }}>
-              <input 
-                type="text" 
-                name="table_search" 
-                className="form-control float-right" 
-                placeholder="Search" 
+              <input
+                type="text"
+                name="table_search"
+                className="form-control float-right"
+                placeholder="Search"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <div className="input-group-append">
-                <button type="button" className="btn btn-default">
+                <button type="submit" className="btn btn-default">
                   <FaSearch />
                 </button>
               </div>
@@ -153,9 +165,10 @@ const DataTable = ({
       
       {pagination && totalPages > 1 && (
         <div className="card-footer clearfix">
-          <div className="float-left">
+          <div className={`${isMobile ? 'text-center' : 'float-left'}`}>
             <select 
-              className="form-control form-control-sm" 
+              className="form-control form-control-sm d-inline-block" 
+              style={{ width: 'auto' }}
               value={itemsPerPage}
               onChange={(e) => {
                 setItemsPerPage(Number(e.target.value));
@@ -170,7 +183,7 @@ const DataTable = ({
             </select>
           </div>
           
-          <ul className="pagination pagination-sm m-0 float-right">
+          <ul className={`pagination pagination-sm m-0 ${isMobile ? 'justify-content-center mt-2' : 'float-right'}`}>
             <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
               <a 
                 className="page-link" 
@@ -184,20 +197,63 @@ const DataTable = ({
               </a>
             </li>
             
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-              <li key={page} className={`page-item ${currentPage === page ? 'active' : ''}`}>
-                <a 
-                  className="page-link" 
-                  href="#" 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setCurrentPage(page);
-                  }}
-                >
-                  {page}
-                </a>
-              </li>
-            ))}
+            {/* Show fewer page numbers on mobile */}
+            {isMobile ? (
+              <>
+                {currentPage > 2 && (
+                  <li className="page-item">
+                    <a className="page-link" href="#" onClick={(e) => { e.preventDefault(); setCurrentPage(1); }}>
+                      1
+                    </a>
+                  </li>
+                )}
+                {currentPage > 3 && <li className="page-item disabled"><span className="page-link">...</span></li>}
+                
+                {currentPage > 1 && (
+                  <li className="page-item">
+                    <a className="page-link" href="#" onClick={(e) => { e.preventDefault(); setCurrentPage(currentPage - 1); }}>
+                      {currentPage - 1}
+                    </a>
+                  </li>
+                )}
+                
+                <li className="page-item active">
+                  <span className="page-link">{currentPage}</span>
+                </li>
+                
+                {currentPage < totalPages && (
+                  <li className="page-item">
+                    <a className="page-link" href="#" onClick={(e) => { e.preventDefault(); setCurrentPage(currentPage + 1); }}>
+                      {currentPage + 1}
+                    </a>
+                  </li>
+                )}
+                
+                {currentPage < totalPages - 2 && <li className="page-item disabled"><span className="page-link">...</span></li>}
+                {currentPage < totalPages - 1 && (
+                  <li className="page-item">
+                    <a className="page-link" href="#" onClick={(e) => { e.preventDefault(); setCurrentPage(totalPages); }}>
+                      {totalPages}
+                    </a>
+                  </li>
+                )}
+              </>
+            ) : (
+              Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <li key={page} className={`page-item ${currentPage === page ? 'active' : ''}`}>
+                  <a 
+                    className="page-link" 
+                    href="#" 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentPage(page);
+                    }}
+                  >
+                    {page}
+                  </a>
+                </li>
+              ))
+            )}
             
             <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
               <a 

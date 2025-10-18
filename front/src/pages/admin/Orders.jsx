@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { FaEye, FaFilter, FaDownload } from 'react-icons/fa';
 import DataTable from '../../components/Admin/DataTable';
 import axios from 'axios';
-import { BASE_URL } from '../../api/constants';
+import { BASE_URL, ENDPOINTS } from '../../api/constants';
+import Swal from 'sweetalert2';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -25,37 +26,36 @@ const Orders = () => {
         // First try to fetch orders directly from Django admin API
         try {
           // This approach uses Django admin API directly
-          const response = await axios.get(`${BASE_URL}/api/admin/orders/`, {
-            headers: getAuthHeader()
-          });
+          const response = await axios.get(ENDPOINTS.ADMIN_ORDERS);
           
-          console.log('Admin orders response:', response.data);
-          setOrders(response.data);
+          // Ensure we have an array to work with
+          const ordersData = Array.isArray(response.data) 
+            ? response.data 
+            : response.data.results || [];
+          
+          setOrders(ordersData);
           setLoading(false);
           return; // Exit if successful
         } catch (adminError) {
-          console.log('Admin API not available, falling back to regular API');
           // Continue to fallback approach
         }
         
         // Fallback: Try to fetch all orders using regular API
         // This will only work if the user has admin permissions
-        const response = await axios.get(`${BASE_URL}/api/orders/`, {
-          headers: getAuthHeader()
-        });
+        const response = await axios.get(ENDPOINTS.ADMIN_ORDERS);
         
-        console.log('Regular orders response:', response.data);
+        // Ensure we have an array to work with
+        const ordersData = Array.isArray(response.data) 
+          ? response.data 
+          : response.data.results || [];
         
         // If we need to fetch order details for each order
         const ordersWithDetails = await Promise.all(
-          response.data.map(async (order) => {
+          ordersData.map(async (order) => {
             try {
-              const detailsResponse = await axios.get(`${BASE_URL}/api/orders/${order.id}/`, {
-                headers: getAuthHeader()
-              });
+              const detailsResponse = await axios.get(`${ENDPOINTS.ADMIN_ORDERS}/${order.id}/`);
               return detailsResponse.data;
             } catch (error) {
-              console.error(`Error fetching details for order ${order.id}:`, error);
               return order; // Return the original order if details fetch fails
             }
           })
@@ -64,8 +64,8 @@ const Orders = () => {
         setOrders(ordersWithDetails);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching orders:', error);
         setError('Failed to fetch orders. Make sure you have admin permissions.');
+        setOrders([]);
         setLoading(false);
       }
     };
@@ -105,10 +105,8 @@ const Orders = () => {
   // Handle status change
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      await axios.patch(`${BASE_URL}/api/orders/${orderId}/`, {
+      await axios.patch(`${ENDPOINTS.ADMIN_ORDERS}/${orderId}/`, {
         payment_status: newStatus
-      }, {
-        headers: getAuthHeader()
       });
       
       const updatedOrders = orders.map(order => 
@@ -120,8 +118,11 @@ const Orders = () => {
         setCurrentOrder({ ...currentOrder, payment_status: newStatus });
       }
     } catch (error) {
-      console.error('Error updating order status:', error);
-      alert('Failed to update order status. Please try again.');
+      Swal.fire({
+                title: 'Error',
+                text: 'Failed to change order status. Please try again.',
+                icon: 'error'
+              });
     }
   };
 

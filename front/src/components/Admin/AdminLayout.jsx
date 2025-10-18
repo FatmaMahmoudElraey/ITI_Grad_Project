@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
-import Footer from './Footer';
+import Footer from '../Footer';
 
 // Import AdminLTE styles (make sure these are properly imported in your main index.js or App.js)
 // If you're using a CDN, these imports won't be necessary
@@ -10,8 +10,21 @@ import '../../styles/admin.css';
 
 const AdminLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    // Check if device is mobile
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 767.98);
+    };
+
+    // Initial check
+    checkMobile();
+
+    // Add resize listener
+    window.addEventListener('resize', checkMobile);
+
     // Load AdminLTE scripts
     const loadAdminLTEScripts = async () => {
       // Check if jQuery is already loaded
@@ -53,6 +66,7 @@ const AdminLayout = () => {
 
     // Cleanup function to remove scripts and styles when component unmounts
     return () => {
+      window.removeEventListener('resize', checkMobile);
       const scripts = document.querySelectorAll('script[src*="adminlte"], script[src*="bootstrap"], script[src*="jquery"]');
       scripts.forEach(script => script.remove());
       
@@ -62,7 +76,17 @@ const AdminLayout = () => {
   }, []);
 
   const toggleSidebar = () => {
-    setSidebarCollapsed(!sidebarCollapsed);
+    if (isMobile) {
+      setSidebarOpen(!sidebarOpen);
+    } else {
+      setSidebarCollapsed(!sidebarCollapsed);
+    }
+  };
+
+  const closeSidebar = () => {
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
   };
 
   return (
@@ -71,10 +95,24 @@ const AdminLayout = () => {
       <Header toggleSidebar={toggleSidebar} />
 
       {/* Sidebar */}
-      <Sidebar collapsed={sidebarCollapsed} onToggleCollapse={toggleSidebar} />
+      <Sidebar 
+        collapsed={sidebarCollapsed} 
+        open={sidebarOpen}
+        isMobile={isMobile}
+        onToggleCollapse={toggleSidebar}
+        onClose={closeSidebar}
+      />
+
+      {/* Mobile Overlay */}
+      {isMobile && sidebarOpen && (
+        <div 
+          className={`sidebar-overlay ${sidebarOpen ? 'show' : ''}`}
+          onClick={closeSidebar}
+        />
+      )}
 
       {/* Content Wrapper */}
-      <div className={`content-wrapper ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+      <div className={`content-wrapper ${sidebarCollapsed && !isMobile ? 'sidebar-collapsed' : ''}`}>
         {/* Content Header */}
         <div className="content-header">
           <div className="container-fluid">
@@ -91,7 +129,7 @@ const AdminLayout = () => {
       </div>
 
       {/* Footer */}
-      <Footer />
+      <Footer collapsed={sidebarCollapsed && !isMobile} />
     </div>
   );
 };

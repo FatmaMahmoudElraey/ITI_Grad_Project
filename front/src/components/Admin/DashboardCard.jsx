@@ -1,17 +1,17 @@
 import React from 'react';
 
-const DashboardCard = ({ title, value, icon, color, footerText, footerIcon }) => {
+const DashboardCard = ({ title, value, icon, color, footerText, footerIcon, href = "#" }) => {
   return (
-    <div className="col-lg-3 col-6">
-      <div className="small-box bg-${color}">
+    <div className="col-lg-3 col-md-6 col-sm-6 col-12">
+      <div className={`small-box bg-${color}`}>
         <div className="inner">
-          <h3>{value}</h3>
+          <h3>{value || 0}</h3>
           <p>{title}</p>
         </div>
         <div className="icon">
           <i className="ion">{icon}</i>
         </div>
-        <a href="#" className="small-box-footer">
+        <a href={href} className="small-box-footer">
           {footerText} {footerIcon && <i className="fas fa-arrow-circle-right">{footerIcon}</i>}
         </a>
       </div>

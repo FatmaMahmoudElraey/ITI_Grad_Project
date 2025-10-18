@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   FaBell, 
@@ -16,8 +16,20 @@ import axios from 'axios';
 
 const Header = ({ toggleSidebar }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 767.98);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleLogout = () => {
     // Call server logout so it clears cookies & blacklists refresh token
@@ -35,32 +47,37 @@ const Header = ({ toggleSidebar }) => {
   };
 
   return (
-    <nav className="main-header navbar navbar-expand navbar-white navbar-light">
+    <nav className="main-header navbar navbar-expand">
       {/* Left navbar links */}
       <ul className="navbar-nav">
         <li className="nav-item">
-          <a className="nav-link" onClick={toggleSidebar} role="button">
+          <a className="nav-link" onClick={toggleSidebar} role="button" style={{ cursor: 'pointer' }}>
             <FaBars />
           </a>
         </li>
         <li className="nav-item d-none d-sm-inline-block">
-          <Link to="/" className="nav-link">Home</Link>
+          <Link to="/" className="nav-link">
+            <FaHome className="mr-1" />
+            Home
+          </Link>
         </li>
-        
       </ul>
 
-      
+
 
       {/* Right navbar links */}
       <ul className="navbar-nav ml-auto">
+      
+        {/* Logout */}
         <li className="nav-item">
           <button 
-            className="btn btn-link nav-link" 
+            className="btn nav-link p-2 me-1" 
             onClick={handleLogout}
             title="Logout"
+            style={{ border: 'none', background: 'none' }}
           >
             <FaSignOutAlt />
-            <span className="d-none d-sm-inline-block ml-1">Logout</span>
+            <span className={`ml-1 ${isMobile ? 'd-none' : 'd-inline-block'}`}>Logout</span>
           </button>
         </li>
       </ul>

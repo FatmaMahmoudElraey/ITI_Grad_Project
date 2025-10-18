@@ -11,8 +11,6 @@
   position: fixed;
   top: 0;
   left: 0;
-  height: 100%;
-  /* width: 250px; */
   background: linear-gradient(135deg, #000157 30%, #332cbe 85%);
   color: #fff;
   z-index: 1000;
@@ -27,7 +25,6 @@
 .sidebar {
   padding: 0;
   overflow-y: auto;
-  height: calc(100% - 57px);
 }
 
 .brand-link {
@@ -570,6 +567,8 @@
   .main-sidebar {
     transform: translateX(-100%);
     width: 250px;
+    height: 100vh;
+    position: fixed;
   }
   
   .main-sidebar.sidebar-open {

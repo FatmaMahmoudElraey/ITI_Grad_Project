@@ -55,7 +55,7 @@ const Sidebar = ({ collapsed, open, isMobile, onToggleCollapse, onClose }) => {
           className="brand-image img-circle elevation-3" 
           style={{ opacity: '.8' }} 
         />
-        <span className="brand-text font-weight-light">Admin Panel</span>
+        <span className="brand-text fw-bold text-light">Admin Panel</span>
       </Link>
 
       {/* Sidebar */}

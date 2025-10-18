@@ -31,15 +31,19 @@ const NotApprovedProducts = () => {
           availableCategories = categoriesResponse.data;
           setAllCategories(availableCategories);
         } catch (error) {
-          console.error('Error fetching categories:', error);
           availableCategories = [];
         }
         
         // Then fetch products
         const productsResponse = await axios.get(ENDPOINTS.PRODUCTS);
         
+        // Ensure we have an array to work with
+        const productsData = Array.isArray(productsResponse.data) 
+          ? productsResponse.data 
+          : productsResponse.data.results || [];
+        
         // Filter only not approved products
-        const notApprovedProducts = productsResponse.data.filter(product => !product.is_approved);
+        const notApprovedProducts = productsData.filter(product => !product.is_approved);
         
         // Enhance products with category information
         const enhancedProducts = notApprovedProducts.map(product => {
@@ -69,7 +73,8 @@ const NotApprovedProducts = () => {
         
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching products:', error);
+        setProducts([]);
+        setCategories([]);
         setLoading(false);
       }
     };
@@ -120,7 +125,6 @@ const NotApprovedProducts = () => {
           showConfirmButton: false
         });
       } catch (error) {
-        console.error('Error deleting product:', error);
         Swal.fire({
           title: 'Error',
           text: 'Failed to delete product. Please try again.',
@@ -136,8 +140,7 @@ const NotApprovedProducts = () => {
       const updatedProduct = { ...product, is_approved: true };
       
       await axios.patch(`${ENDPOINTS.PRODUCTS}${product.id}/`, 
-        { is_approved: true },
-        { headers: getAuthHeader() }
+        { is_approved: true }
       );
       
       // Update local state
@@ -152,7 +155,6 @@ const NotApprovedProducts = () => {
         showConfirmButton: false
       });
     } catch (error) {
-      console.error('Error approving product:', error);
       Swal.fire({
         title: 'Error',
         text: 'Failed to approve product. Please try again.',

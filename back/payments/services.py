@@ -43,8 +43,8 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
         str(data.get('amount_cents', '')) +
         str(data.get('created_at', '')) +
         str(data.get('currency', '')) +
-        str(data.get('error_occured', '')) +
-        str(data.get('has_parent_transaction', '')) +
+        bool_to_str(data.get('error_occured', '')) +
+        bool_to_str(data.get('has_parent_transaction', '')) +
         str(data.get('id', '')) +
         str(data.get('integration_id', '')) +
         str(data.get('is_3d_secure', '')) +
@@ -55,11 +55,11 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
         str(data.get('is_voided', '')) +
         str(order_id) +  # Use extracted order ID, not the full dict
         str(data.get('owner', '')) +
-        str(data.get('pending', '')) +
+        bool_to_str(data.get('pending', '')) +
         str(get_nested(data, 'source_data', 'pan')) +
         str(get_nested(data, 'source_data', 'sub_type')) +
         str(get_nested(data, 'source_data', 'type')) +
-        str(data.get('success', ''))
+        bool_to_str(data.get('success', ''))
     )
 
     # Compute HMAC using your secret key
@@ -69,7 +69,7 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
         hashlib.sha512
     ).hexdigest()
 
-    # Log for debugging
+    # Detailed logging
     logger.info("=" * 80)
     logger.info("HMAC VERIFICATION")
     logger.info("=" * 80)

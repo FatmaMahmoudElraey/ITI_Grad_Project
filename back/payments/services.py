@@ -31,6 +31,13 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
                 return ''
         return value
 
+    # Helper to convert boolean to lowercase string (true/false)
+    def bool_to_str(value):
+        """Convert Python boolean to lowercase string for PayMob"""
+        if isinstance(value, bool):
+            return str(value).lower()
+        return str(value)
+
     # Extract order ID - PayMob sends it as nested dict in webhook
     order_value = data.get('order', '')
     if isinstance(order_value, dict):
@@ -54,13 +61,6 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
         bool_to_str(data.get('is_standalone_payment', '')) +
         bool_to_str(data.get('is_voided', '')) +
         str(order_id) +
-        str(data.get('is_3d_secure', '')) +
-        str(data.get('is_auth', '')) +
-        str(data.get('is_capture', '')) +
-        str(data.get('is_refunded', '')) +
-        str(data.get('is_standalone_payment', '')) +
-        str(data.get('is_voided', '')) +
-        str(order_id) +  # Use extracted order ID, not the full dict
         str(data.get('owner', '')) +
         bool_to_str(data.get('pending', '')) +
         str(get_nested(data, 'source_data', 'pan')) +
@@ -78,12 +78,34 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
 
     # Detailed logging
     logger.info("=" * 80)
-    logger.info("HMAC VERIFICATION")
+    logger.info("🔐 HMAC VERIFICATION DETAILED")
     logger.info("=" * 80)
     logger.info(f"Order value type: {type(order_value)}")
     logger.info(f"Extracted order ID: {order_id}")
-    logger.info(f"Concatenated String (first 150 chars): {concatenated_string[:150]}...")
-    logger.info(f"Computed HMAC: {computed}")
+    logger.info(f"\nField breakdown:")
+    logger.info(f"  amount_cents: {data.get('amount_cents', '')}")
+    logger.info(f"  created_at: {data.get('created_at', '')}")
+    logger.info(f"  currency: {data.get('currency', '')}")
+    logger.info(f"  error_occured: {bool_to_str(data.get('error_occured', ''))}")
+    logger.info(f"  has_parent_transaction: {bool_to_str(data.get('has_parent_transaction', ''))}")
+    logger.info(f"  id: {data.get('id', '')}")
+    logger.info(f"  integration_id: {data.get('integration_id', '')}")
+    logger.info(f"  is_3d_secure: {bool_to_str(data.get('is_3d_secure', ''))}")
+    logger.info(f"  is_auth: {bool_to_str(data.get('is_auth', ''))}")
+    logger.info(f"  is_capture: {bool_to_str(data.get('is_capture', ''))}")
+    logger.info(f"  is_refunded: {bool_to_str(data.get('is_refunded', ''))}")
+    logger.info(f"  is_standalone_payment: {bool_to_str(data.get('is_standalone_payment', ''))}")
+    logger.info(f"  is_voided: {bool_to_str(data.get('is_voided', ''))}")
+    logger.info(f"  order: {order_id}")
+    logger.info(f"  owner: {data.get('owner', '')}")
+    logger.info(f"  pending: {bool_to_str(data.get('pending', ''))}")
+    logger.info(f"  source_data.pan: {get_nested(data, 'source_data', 'pan')}")
+    logger.info(f"  source_data.sub_type: {get_nested(data, 'source_data', 'sub_type')}")
+    logger.info(f"  source_data.type: {get_nested(data, 'source_data', 'type')}")
+    logger.info(f"  success: {bool_to_str(data.get('success', ''))}")
+    logger.info(f"\nConcatenated String (first 200 chars): {concatenated_string[:200]}...")
+    logger.info(f"Concatenated String Length: {len(concatenated_string)}")
+    logger.info(f"\nComputed HMAC: {computed}")
     logger.info(f"Received HMAC: {signature}")
     logger.info(f"Match: {hmac.compare_digest(computed, signature)}")
     logger.info("=" * 80)
@@ -153,7 +175,7 @@ def handle_webhook(request) -> dict:
         return {'success': False, 'message': 'Invalid JSON'}
 
     # Log incoming webhook
-    logger.info(f"Webhook received: order={data.get('order')}, success={data.get('success')}")
+    logger.info(f"📥 Webhook received: order={data.get('order')}, success={data.get('success')}")
 
     # 1) Signature verification
     if not verify_webhook_signature(data, signature):
@@ -178,35 +200,30 @@ def get_paymob_auth_token():
             "https://accept.paymobsolutions.com/api/auth/tokens",
             json={"api_key": settings.PAYMOB_API_KEY}
         )
-        response.raise_for_status()  # Raise exception for HTTP errors
+        response.raise_for_status()
         return response.json()["token"]
     except ConnectionError as e:
-        # Handle connection issues specifically
         raise APIException(
             detail="Payment service unavailable. Please check your internet connection and try again.",
             code=status.HTTP_503_SERVICE_UNAVAILABLE
         )
     except Timeout:
-        # Handle timeout issues
         raise APIException(
             detail="Payment service timed out. Please try again later.",
             code=status.HTTP_504_GATEWAY_TIMEOUT
         )
     except RequestException as e:
-        # Handle all other request issues
         raise APIException(
             detail="Error connecting to payment service. Please try again later.",
             code=status.HTTP_502_BAD_GATEWAY
         )
     except Exception as e:
-        # Catch any other unexpected errors
         raise APIException(
             detail="Unexpected error processing payment. Please try again later.",
             code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
 def register_order(order_id: str, amount_cents: int, auth_token: str) -> int:
-    # Your existing code for merchant_order_id and payload
     unique_moid = f"{order_id}-{uuid.uuid4().hex}"
     payload = {
         "auth_token": auth_token,
@@ -226,7 +243,6 @@ def register_order(order_id: str, amount_cents: int, auth_token: str) -> int:
 
     log_payment_step("REGISTER_ORDER", payload)
 
-    # Your existing HTTP request code
     response = requests.post(settings.PAYMOB_ORDER_URL, json=payload)
     try:
         response.raise_for_status()
@@ -239,16 +255,13 @@ def register_order(order_id: str, amount_cents: int, auth_token: str) -> int:
         raise
 
 def get_payment_key(order_id: str, amount_cents: int, auth_token: str, billing_data: dict) -> str:
-    # Log raw billing data before processing
     log_payment_step("BILLING_DATA_ORIGINAL", billing_data)
 
-    # Your existing code for ensuring required fields
     required_fields = ["first_name", "last_name", "email", "phone_number"]
     for field in required_fields:
         if not billing_data.get(field):
             billing_data[field] = "NA" if field != "email" else "customer@example.com"
 
-    # Build the payload
     payload = {
         "auth_token": auth_token,
         "amount_cents": amount_cents,
@@ -261,7 +274,6 @@ def get_payment_key(order_id: str, amount_cents: int, auth_token: str, billing_d
 
     log_payment_step("PAYMENT_KEY", payload)
 
-    # Your existing request code
     response = requests.post(
         settings.PAYMOB_PAYMENT_KEY_URL,
         json=payload
@@ -281,18 +293,13 @@ def build_billing_data(order):
     """Extract billing data from an Order instance with foolproof fallbacks."""
     user = order.user
 
-    # Enhanced debugging log
     print("\n---- BUILDING BILLING DATA ----")
     print(f"Order ID: {order.id}")
 
-    # Create billing data with guaranteed non-null values
     billing_data = {
-        # User information
         "email": (user.email if user and getattr(user, 'email', None) else "customer@example.com"),
         "first_name": (user.first_name if user and getattr(user, 'first_name', None) else "Customer"),
         "last_name": (user.last_name if user and getattr(user, 'last_name', None) else "Name"),
-
-        # Order information with fallbacks
         "phone_number": str(getattr(order, "phone", "+201000000000") or "+201000000000"),
         "apartment": str(getattr(order, "apartment", "NA") or "NA"),
         "floor": str(getattr(order, "floor", "NA") or "NA"),
@@ -305,7 +312,6 @@ def build_billing_data(order):
         "state": str(getattr(order, "state", "NA") or "NA")
     }
 
-    # Log all billing data fields to help with debugging
     for key, value in billing_data.items():
         print(f"  {key}: {value!r}")
 
@@ -315,7 +321,6 @@ def log_payment_step(step_name, data, is_response=False):
     """Log payment process steps with detailed formatting"""
     prefix = "RESPONSE from" if is_response else "REQUEST to"
 
-    # Remove sensitive data before logging
     if isinstance(data, dict):
         data = data.copy()
         if 'auth_token' in data:

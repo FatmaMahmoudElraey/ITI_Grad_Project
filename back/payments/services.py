@@ -31,8 +31,14 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
                 return ''
         return value
 
+    # Extract order ID - PayMob sends it as nested dict in webhook
+    order_value = data.get('order', '')
+    if isinstance(order_value, dict):
+        order_id = order_value.get('id', '')
+    else:
+        order_id = order_value
+
     # PayMob concatenates these fields in this exact order
-    # For nested fields like source_data.pan, access as nested dict
     concatenated_string = (
         str(data.get('amount_cents', '')) +
         str(data.get('created_at', '')) +
@@ -47,7 +53,7 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
         str(data.get('is_refunded', '')) +
         str(data.get('is_standalone_payment', '')) +
         str(data.get('is_voided', '')) +
-        str(data.get('order', '')) +
+        str(order_id) +  # Use extracted order ID, not the full dict
         str(data.get('owner', '')) +
         str(data.get('pending', '')) +
         str(get_nested(data, 'source_data', 'pan')) +
@@ -67,7 +73,9 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
     logger.info("=" * 80)
     logger.info("HMAC VERIFICATION")
     logger.info("=" * 80)
-    logger.info(f"Concatenated String (first 100 chars): {concatenated_string[:100]}...")
+    logger.info(f"Order value type: {type(order_value)}")
+    logger.info(f"Extracted order ID: {order_id}")
+    logger.info(f"Concatenated String (first 150 chars): {concatenated_string[:150]}...")
     logger.info(f"Computed HMAC: {computed}")
     logger.info(f"Received HMAC: {signature}")
     logger.info(f"Match: {hmac.compare_digest(computed, signature)}")
@@ -81,9 +89,18 @@ def process_payment_event(data: dict) -> None:
     """
     # Extract values directly from the webhook data
     success = data.get('success', False)
-    paymob_order_id = data.get('order')
+
+    # Handle nested order object
+    order_value = data.get('order')
+    if isinstance(order_value, dict):
+        paymob_order_id = order_value.get('id')
+    else:
+        paymob_order_id = order_value
+
     txn_id = data.get('id')
     error_occurred = data.get('error_occured', False)
+
+    logger.info(f"Processing payment event: order={paymob_order_id}, txn={txn_id}, success={success}")
 
     if not paymob_order_id:
         logger.error("Webhook missing order ID")
@@ -91,6 +108,7 @@ def process_payment_event(data: dict) -> None:
 
     try:
         payment = Payment.objects.get(paymob_order_id=paymob_order_id)
+        logger.info(f"Found payment record: ID={payment.id}, current status={payment.status}")
     except Payment.DoesNotExist:
         logger.error(f"No Payment found for Paymob order {paymob_order_id}")
         return

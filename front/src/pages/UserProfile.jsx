@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
 import {
   fetchUserProfile,
   deleteUserAccount,
@@ -17,7 +18,7 @@ import {
   Row,
   Col,
   Badge,
-  Alert
+  Alert,
 } from "react-bootstrap";
 import {
   FaEdit,
@@ -45,7 +46,9 @@ export default function UserProfile() {
     loading,
     error,
   } = useSelector((state) => state.users);
-  const { success: reviewSuccess, error: reviewError } = useSelector((state) => state.products);
+  const { success: reviewSuccess, error: reviewError } = useSelector(
+    (state) => state.products
+  );
   const [showEditModal, setShowEditModal] = useState(false);
   const [formData, setFormData] = useState({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -56,7 +59,11 @@ export default function UserProfile() {
     rating: 5,
     comment: "",
   });
-  const [reviewAlert, setReviewAlert] = useState({ show: false, message: "", variant: "success" });
+  const [reviewAlert, setReviewAlert] = useState({
+    show: false,
+    message: "",
+    variant: "success",
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -128,10 +135,12 @@ export default function UserProfile() {
     } catch (err) {
       console.error("Failed to update profile:", err);
       Swal.fire({
-        title: 'Error',
-        text: `Failed to update profile: ${err.message || "Please check your form data"}`,
-        icon: 'error',
-        confirmButtonColor: '#660ff1'
+        title: "Error",
+        text: `Failed to update profile: ${
+          err.message || "Please check your form data"
+        }`,
+        icon: "error",
+        confirmButtonColor: "#660ff1",
       });
     }
   };
@@ -143,21 +152,21 @@ export default function UserProfile() {
       sessionStorage.clear();
       // Show success message
       Swal.fire({
-        title: 'Account Deactivated',
-        text: 'Your account has been deactivated successfully. You will now be redirected to the login page.',
-        icon: 'success',
+        title: "Account Deactivated",
+        text: "Your account has been deactivated successfully. You will now be redirected to the login page.",
+        icon: "success",
         timer: 3000,
-        showConfirmButton: false
+        showConfirmButton: false,
       });
       // Redirect to login page
       navigate("/login");
     } catch (err) {
       console.error("Failed to deactivate account:", err);
       Swal.fire({
-        title: 'Error',
-        text: 'Failed to deactivate your account. Please try again or contact support.',
-        icon: 'error',
-        confirmButtonColor: '#660ff1'
+        title: "Error",
+        text: "Failed to deactivate your account. Please try again or contact support.",
+        icon: "error",
+        confirmButtonColor: "#660ff1",
       });
     }
   };
@@ -174,29 +183,29 @@ export default function UserProfile() {
   const handleSubmitReview = async () => {
     try {
       if (!currentProductToReview) return;
-      
-      console.log('Submitting review for product:', currentProductToReview);
-      
+
+      console.log("Submitting review for product:", currentProductToReview);
+
       // Make sure we have a valid product ID
       if (!currentProductToReview.id) {
-        throw new Error('Invalid product ID');
+        throw new Error("Invalid product ID");
       }
-      
+
       // Submit review via axios; cookies will be sent automatically
       const response = await axios.post(ENDPOINTS.PRODUCT_REVIEWS, {
         product: currentProductToReview.id,
         rating: reviewData.rating,
         comment: reviewData.comment,
       });
-      console.log('Review submitted successfully:', data);
-      
+      console.log("Review submitted successfully:", data);
+
       setShowReviewModal(false);
       setReviewAlert({
         show: true,
         message: "Review submitted successfully!",
         variant: "success",
       });
-      
+
       // Hide alert after 3 seconds
       setTimeout(() => {
         setReviewAlert({ show: false, message: "", variant: "success" });
@@ -213,9 +222,12 @@ export default function UserProfile() {
   const handleDownload = async (productId) => {
     try {
       // Use axios to download (cookies sent automatically)
-      const response = await axios.get(`${ENDPOINTS.PRODUCTS}${productId}/download/`, {
-        responseType: 'blob'
-      });
+      const response = await axios.get(
+        `${ENDPOINTS.PRODUCTS}${productId}/download/`,
+        {
+          responseType: "blob",
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Download failed: ${response.statusText}`);
@@ -253,10 +265,10 @@ export default function UserProfile() {
     } catch (error) {
       console.error("Error downloading file:", error);
       Swal.fire({
-        title: 'Download Failed',
+        title: "Download Failed",
         text: `Failed to download file: ${error.message}`,
-        icon: 'error',
-        confirmButtonColor: '#660ff1'
+        icon: "error",
+        confirmButtonColor: "#660ff1",
       });
     }
   };
@@ -367,8 +379,9 @@ export default function UserProfile() {
                   userProfile?.picture
                     ? userProfile.picture.startsWith("http")
                       ? userProfile.picture
-                      : `${
-                          import.meta.env.VITE_API_BASE_URL}${userProfile.picture}`
+                      : `${import.meta.env.VITE_API_BASE_URL}${
+                          userProfile.picture
+                        }`
                     : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAb-vb97QXQeIb-chQJOKk3XouQGSsyrakSw&s"
                 }
                 alt="Profile"
@@ -525,7 +538,6 @@ export default function UserProfile() {
                   >
                     <FaShoppingCart className="me-2" /> Your Orders
                   </Button>
-
                 </div>
               </Card.Header>
 
@@ -534,7 +546,6 @@ export default function UserProfile() {
                   <>
                     <div className="d-flex justify-content-between align-items-center mb-4">
                       <h5 className="mb-0">Your Purchased Items</h5>
-                      
                     </div>
 
                     {userProfile?.orders?.length > 0 ? (
@@ -549,8 +560,6 @@ export default function UserProfile() {
                             boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
                           }}
                         >
-                          
-
                           {order.items?.map((item) => (
                             <div key={item.id} className="mb-3">
                               {/* Header Row */}
@@ -598,74 +607,93 @@ export default function UserProfile() {
                                 <Button
                                   variant="outline-success"
                                   className="flex-grow-1 d-flex justify-content-center align-items-center"
-                                  onClick={() => handleReviewProduct(item.product)}
+                                  onClick={() =>
+                                    handleReviewProduct(item.product)
+                                  }
                                 >
                                   <FaCommentAlt className="me-2" size={14} />{" "}
                                   Review Product
                                 </Button>
                               </div>
                               <Modal
-        show={showReviewModal}
-        onHide={() => setShowReviewModal(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>
-            Review {currentProductToReview?.title || "Product"}
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {reviewAlert.show && (
-            <Alert variant={reviewAlert.variant} className="mb-3">
-              {reviewAlert.message}
-            </Alert>
-          )}
-          
-          <Form>
-            <Form.Group className="mb-4">
-              <Form.Label>Your Rating</Form.Label>
-              <div className="d-flex gap-2 fs-3">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <span 
-                    key={star} 
-                    onClick={() => setReviewData({...reviewData, rating: star})}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    {star <= reviewData.rating ? (
-                      <FaStarSolid className="text-warning" />
-                    ) : (
-                      <FaRegStar className="text-warning" />
-                    )}
-                  </span>
-                ))}
-              </div>
-            </Form.Group>
-            
-            <Form.Group className="mb-3">
-              <Form.Label>Your Review</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={4}
-                value={reviewData.comment}
-                onChange={(e) => setReviewData({...reviewData, comment: e.target.value})}
-                placeholder="Share your experience with this product..."
-              />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowReviewModal(false)}>
-            Cancel
-          </Button>
-          <Button 
-            variant="primary" 
-            onClick={handleSubmitReview}
-            disabled={!reviewData.comment.trim()}
-          >
-            Submit Review
-          </Button>
-        </Modal.Footer>
-      </Modal>
+                                show={showReviewModal}
+                                onHide={() => setShowReviewModal(false)}
+                                centered
+                              >
+                                <Modal.Header closeButton>
+                                  <Modal.Title>
+                                    Review{" "}
+                                    {currentProductToReview?.title || "Product"}
+                                  </Modal.Title>
+                                </Modal.Header>
+                                <Modal.Body>
+                                  {reviewAlert.show && (
+                                    <Alert
+                                      variant={reviewAlert.variant}
+                                      className="mb-3"
+                                    >
+                                      {reviewAlert.message}
+                                    </Alert>
+                                  )}
+
+                                  <Form>
+                                    <Form.Group className="mb-4">
+                                      <Form.Label>Your Rating</Form.Label>
+                                      <div className="d-flex gap-2 fs-3">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                          <span
+                                            key={star}
+                                            onClick={() =>
+                                              setReviewData({
+                                                ...reviewData,
+                                                rating: star,
+                                              })
+                                            }
+                                            style={{ cursor: "pointer" }}
+                                          >
+                                            {star <= reviewData.rating ? (
+                                              <FaStarSolid className="text-warning" />
+                                            ) : (
+                                              <FaRegStar className="text-warning" />
+                                            )}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </Form.Group>
+
+                                    <Form.Group className="mb-3">
+                                      <Form.Label>Your Review</Form.Label>
+                                      <Form.Control
+                                        as="textarea"
+                                        rows={4}
+                                        value={reviewData.comment}
+                                        onChange={(e) =>
+                                          setReviewData({
+                                            ...reviewData,
+                                            comment: e.target.value,
+                                          })
+                                        }
+                                        placeholder="Share your experience with this product..."
+                                      />
+                                    </Form.Group>
+                                  </Form>
+                                </Modal.Body>
+                                <Modal.Footer>
+                                  <Button
+                                    variant="secondary"
+                                    onClick={() => setShowReviewModal(false)}
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    variant="primary"
+                                    onClick={handleSubmitReview}
+                                    disabled={!reviewData.comment.trim()}
+                                  >
+                                    Submit Review
+                                  </Button>
+                                </Modal.Footer>
+                              </Modal>
                             </div>
                           ))}
                         </div>
@@ -685,15 +713,13 @@ export default function UserProfile() {
                         </p>
                         <Button variant="primary">
                           <Link to="/shop" className="text-white">
-                           Explore Marketplace
+                            Explore Marketplace
                           </Link>
-                          </Button>
+                        </Button>
                       </div>
                     )}
                   </>
                 )}
-
-                
               </Card.Body>
             </Card>
           </Col>
@@ -738,8 +764,9 @@ export default function UserProfile() {
                         : formData.pictureUrl
                         ? formData.pictureUrl.startsWith("http")
                           ? formData.pictureUrl
-                          : `${
-                              import.meta.env.VITE_API_BASE_URL}${formData.pictureUrl}`
+                          : `${import.meta.env.VITE_API_BASE_URL}${
+                              formData.pictureUrl
+                            }`
                         : "https://i.imgur.com/Qtrsrk5.jpg"
                     }
                     alt="Profile Preview"
@@ -862,7 +889,8 @@ export default function UserProfile() {
             <h5>Are you sure?</h5>
             <p className="text-muted">
               This will deactivate your account, preventing you from logging in.
-              Your data will remain in the database but you will no longer have access to the platform.
+              Your data will remain in the database but you will no longer have
+              access to the platform.
             </p>
           </div>
         </Modal.Body>

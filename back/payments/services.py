@@ -31,13 +31,6 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
                 return ''
         return value
 
-    # Helper to convert boolean to lowercase string (true/false)
-    def bool_to_str(value):
-        """Convert Python boolean to lowercase string for PayMob"""
-        if isinstance(value, bool):
-            return str(value).lower()
-        return str(value)
-
     # Extract order ID - PayMob sends it as nested dict in webhook
     order_value = data.get('order', '')
     if isinstance(order_value, dict):
@@ -61,6 +54,13 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
         bool_to_str(data.get('is_standalone_payment', '')) +
         bool_to_str(data.get('is_voided', '')) +
         str(order_id) +
+        str(data.get('is_3d_secure', '')) +
+        str(data.get('is_auth', '')) +
+        str(data.get('is_capture', '')) +
+        str(data.get('is_refunded', '')) +
+        str(data.get('is_standalone_payment', '')) +
+        str(data.get('is_voided', '')) +
+        str(order_id) +  # Use extracted order ID, not the full dict
         str(data.get('owner', '')) +
         bool_to_str(data.get('pending', '')) +
         str(get_nested(data, 'source_data', 'pan')) +
@@ -78,34 +78,12 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
 
     # Detailed logging
     logger.info("=" * 80)
-    logger.info("HMAC VERIFICATION DETAILED")
+    logger.info("HMAC VERIFICATION")
     logger.info("=" * 80)
     logger.info(f"Order value type: {type(order_value)}")
     logger.info(f"Extracted order ID: {order_id}")
-    logger.info(f"\nField breakdown:")
-    logger.info(f"  amount_cents: {data.get('amount_cents', '')}")
-    logger.info(f"  created_at: {data.get('created_at', '')}")
-    logger.info(f"  currency: {data.get('currency', '')}")
-    logger.info(f"  error_occured: {bool_to_str(data.get('error_occured', ''))} (type: {type(data.get('error_occured'))})")
-    logger.info(f"  has_parent_transaction: {bool_to_str(data.get('has_parent_transaction', ''))}")
-    logger.info(f"  id: {data.get('id', '')}")
-    logger.info(f"  integration_id: {data.get('integration_id', '')}")
-    logger.info(f"  is_3d_secure: {bool_to_str(data.get('is_3d_secure', ''))}")
-    logger.info(f"  is_auth: {bool_to_str(data.get('is_auth', ''))}")
-    logger.info(f"  is_capture: {bool_to_str(data.get('is_capture', ''))}")
-    logger.info(f"  is_refunded: {bool_to_str(data.get('is_refunded', ''))}")
-    logger.info(f"  is_standalone_payment: {bool_to_str(data.get('is_standalone_payment', ''))}")
-    logger.info(f"  is_voided: {bool_to_str(data.get('is_voided', ''))}")
-    logger.info(f"  order: {order_id}")
-    logger.info(f"  owner: {data.get('owner', '')}")
-    logger.info(f"  pending: {bool_to_str(data.get('pending', ''))}")
-    logger.info(f"  source_data.pan: {get_nested(data, 'source_data', 'pan')}")
-    logger.info(f"  source_data.sub_type: {get_nested(data, 'source_data', 'sub_type')}")
-    logger.info(f"  source_data.type: {get_nested(data, 'source_data', 'type')}")
-    logger.info(f"  success: {bool_to_str(data.get('success', ''))} (type: {type(data.get('success'))})")
-    logger.info(f"\nConcatenated String (first 200 chars): {concatenated_string[:200]}...")
-    logger.info(f"Concatenated String Length: {len(concatenated_string)}")
-    logger.info(f"\nComputed HMAC: {computed}")
+    logger.info(f"Concatenated String (first 150 chars): {concatenated_string[:150]}...")
+    logger.info(f"Computed HMAC: {computed}")
     logger.info(f"Received HMAC: {signature}")
     logger.info(f"Match: {hmac.compare_digest(computed, signature)}")
     logger.info("=" * 80)

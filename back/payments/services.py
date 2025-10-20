@@ -60,7 +60,7 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
         bool_to_str(data.get('is_refunded', '')) +
         bool_to_str(data.get('is_standalone_payment', '')) +
         bool_to_str(data.get('is_voided', '')) +
-        str(order_id) +  # Use extracted order ID, not the full dict
+        str(order_id) +
         str(data.get('owner', '')) +
         bool_to_str(data.get('pending', '')) +
         str(get_nested(data, 'source_data', 'pan')) +
@@ -169,54 +169,24 @@ def handle_webhook(request) -> dict:
 
     # Parse the JSON data
     try:
-        raw_data = request.data  # DRF parsed JSON
-
-        # Log the complete webhook payload for debugging
-        logger.info("=" * 80)
-        logger.info("WEBHOOK RECEIVED - RAW DATA")
-        logger.info("=" * 80)
-        logger.info(f"Raw data type: {type(raw_data)}")
-        logger.info(f"Raw data keys: {raw_data.keys() if isinstance(raw_data, dict) else 'N/A'}")
-        logger.info(f"Full raw data:\n{json.dumps(raw_data, indent=2, default=str)}")
-        logger.info("=" * 80)
-
-        # PayMob wraps transaction data in 'obj' key
-        if isinstance(raw_data, dict) and 'obj' in raw_data:
-            data = raw_data['obj']
-            logger.info("Found 'obj' key in webhook data")
-        elif isinstance(raw_data, dict) and 'type' in raw_data:
-            # Some PayMob webhooks have 'type' and 'obj' structure
-            data = raw_data.get('obj', raw_data)
-            logger.info("Using webhook data from 'obj' or root")
-        else:
-            data = raw_data
-            logger.info("Using raw data directly (no 'obj' wrapper)")
-
-        logger.info(f"Transaction data keys: {data.keys() if isinstance(data, dict) else 'N/A'}")
-        logger.info(f"Transaction data:\n{json.dumps(data, indent=2, default=str)}")
-
+        data = request.data  # DRF parsed JSON
     except Exception as e:
         logger.error(f"Failed to parse webhook JSON: {e}")
         return {'success': False, 'message': 'Invalid JSON'}
 
+    # Log incoming webhook
+    logger.info(f"Webhook received: order={data.get('order')}, success={data.get('success')}")
+
     # 1) Signature verification
     if not verify_webhook_signature(data, signature):
         logger.warning("Invalid webhook signature")
-        # Log the raw data for debugging HMAC issues
-        logger.error(f"HMAC mismatch details:")
-        logger.error(f"  amount_cents: {data.get('amount_cents')}")
-        logger.error(f"  created_at: {data.get('created_at')}")
-        logger.error(f"  order: {data.get('order')}")
-        logger.error(f"  success: {data.get('success')}")
-        logger.error(f"  source_data: {data.get('source_data')}")
         return {'success': False, 'message': 'Invalid signature'}
 
-    logger.info("Webhook signature verified successfully")
+    logger.info("Webhook signature verified")
 
     # 2) Delegate to event processor
     try:
         process_payment_event(data)
-        logger.info("Payment event processed successfully")
     except Exception as e:
         logger.exception(f"Error processing webhook: {e}")
         return {'success': False, 'message': 'Error processing event'}

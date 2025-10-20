@@ -15,32 +15,58 @@ from rest_framework import status
 
 logger = logging.getLogger(__name__)
 
-def verify_webhook_signature(payload: bytes, signature: str) -> bool:
+def verify_webhook_signature(data: dict, signature: str) -> bool:
     """
     Verify that the incoming webhook payload was signed by Paymob.
-    Uses HMAC SHA-256 with the HMAC key from settings.
+    PayMob concatenates specific fields in order before hashing.
     """
+    # PayMob concatenates these fields in this exact order
+    concatenated_string = (
+        str(data.get('amount_cents', '')) +
+        str(data.get('created_at', '')) +
+        str(data.get('currency', '')) +
+        str(data.get('error_occured', '')) +
+        str(data.get('has_parent_transaction', '')) +
+        str(data.get('id', '')) +
+        str(data.get('integration_id', '')) +
+        str(data.get('is_3d_secure', '')) +
+        str(data.get('is_auth', '')) +
+        str(data.get('is_capture', '')) +
+        str(data.get('is_refunded', '')) +
+        str(data.get('is_standalone_payment', '')) +
+        str(data.get('is_voided', '')) +
+        str(data.get('order', '')) +
+        str(data.get('owner', '')) +
+        str(data.get('pending', '')) +
+        str(data.get('source_data.pan', '')) +
+        str(data.get('source_data.sub_type', '')) +
+        str(data.get('source_data.type', '')) +
+        str(data.get('success', ''))
+    )
+
     # Compute HMAC using your secret key
     computed = hmac.new(
-        settings.PAYMOB_HMAC_KEY.encode(),
-        payload,
-        hashlib.sha256
+        settings.PAYMOB_HMAC_KEY.encode('utf-8'),
+        concatenated_string.encode('utf-8'),
+        hashlib.sha512  # PayMob uses SHA512, not SHA256
     ).hexdigest()
-    # Constant‐time compare to prevent timing attacks (OWASP) :contentReference[oaicite:0]{index=0}
+
+    # Log for debugging (remove in production)
+    logger.info(f"Computed HMAC: {computed}")
+    logger.info(f"Received HMAC: {signature}")
+
+    # Constant-time compare to prevent timing attacks
     return hmac.compare_digest(computed, signature)
 
 def process_payment_event(data: dict) -> None:
     """
     Update the Payment record based on the Paymob webhook event.
     """
-    # PayMob sends different structure - check for 'obj' key
-    obj = data.get('obj', data)
-
-    # Extract values from PayMob's structure
-    success = obj.get('success', False)
-    paymob_order_id = obj.get('order')
-    txn_id = obj.get('id')
-    error_occurred = obj.get('error_occured', False)
+    # Extract values directly from the webhook data
+    success = data.get('success', False)
+    paymob_order_id = data.get('order')
+    txn_id = data.get('id')
+    error_occurred = data.get('error_occured', False)
 
     if not paymob_order_id:
         logger.error("Webhook missing order ID")
@@ -55,14 +81,16 @@ def process_payment_event(data: dict) -> None:
     # Update payment status based on success flag
     if success and not error_occurred:
         payment.status = 'paid'
-        payment.transaction_id = txn_id
+        payment.transaction_id = str(txn_id)
         # Update order payment status
         payment.order.payment_status = 'C'
         payment.order.save(update_fields=['payment_status'])
+        logger.info(f"Payment successful for order {payment.order.id}")
     else:
         payment.status = 'failed'
         payment.order.payment_status = 'F'
         payment.order.save(update_fields=['payment_status'])
+        logger.info(f"Payment failed for order {payment.order.id}")
 
     payment.save(update_fields=['status', 'transaction_id', 'updated_at'])
     logger.info(f"Processed webhook for Payment ID {payment.id}, status: {payment.status}")
@@ -72,17 +100,25 @@ def handle_webhook(request) -> dict:
     Orchestrates verification and processing of a Paymob webhook.
     Returns a dict with 'success' and 'message'.
     """
-    # PayMob sends HMAC in query parameter, not header
+    # PayMob sends HMAC in query parameter
     signature = request.GET.get('hmac', '')
-    payload = request.body
+
+    # Parse the JSON data
+    try:
+        data = request.data  # DRF parsed JSON
+    except Exception as e:
+        logger.error(f"Failed to parse webhook JSON: {e}")
+        return {'success': False, 'message': 'Invalid JSON'}
+
+    # Log incoming webhook for debugging
+    logger.info(f"Webhook received: order={data.get('order')}, success={data.get('success')}")
 
     # 1) Signature verification
-    if not verify_webhook_signature(payload, signature):
+    if not verify_webhook_signature(data, signature):
         logger.warning("Invalid webhook signature")
         return {'success': False, 'message': 'Invalid signature'}
 
     # 2) Delegate to event processor
-    data = request.data  # parsed JSON
     try:
         process_payment_event(data)
     except Exception as e:

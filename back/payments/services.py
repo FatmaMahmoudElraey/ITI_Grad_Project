@@ -65,7 +65,7 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
 
     # Log for debugging
     logger.info("=" * 80)
-    logger.info("🔐 HMAC VERIFICATION")
+    logger.info("HMAC VERIFICATION")
     logger.info("=" * 80)
     logger.info(f"Concatenated String (first 100 chars): {concatenated_string[:100]}...")
     logger.info(f"Computed HMAC: {computed}")
@@ -122,17 +122,35 @@ def handle_webhook(request) -> dict:
 
     # Parse the JSON data
     try:
-        data = request.data  # DRF parsed JSON
+        raw_data = request.data  # DRF parsed JSON
+
+        # Log the complete webhook payload for debugging
+        logger.info("=" * 80)
+        logger.info("WEBHOOK RECEIVED - RAW DATA")
+        logger.info("=" * 80)
+        logger.info(f"Raw data type: {type(raw_data)}")
+        logger.info(f"Raw data keys: {raw_data.keys() if isinstance(raw_data, dict) else 'N/A'}")
+        logger.info(f"Full raw data:\n{json.dumps(raw_data, indent=2, default=str)}")
+        logger.info("=" * 80)
+
+        # PayMob wraps transaction data in 'obj' key
+        if isinstance(raw_data, dict) and 'obj' in raw_data:
+            data = raw_data['obj']
+            logger.info("Found 'obj' key in webhook data")
+        elif isinstance(raw_data, dict) and 'type' in raw_data:
+            # Some PayMob webhooks have 'type' and 'obj' structure
+            data = raw_data.get('obj', raw_data)
+            logger.info("Using webhook data from 'obj' or root")
+        else:
+            data = raw_data
+            logger.info("Using raw data directly (no 'obj' wrapper)")
+
+        logger.info(f"Transaction data keys: {data.keys() if isinstance(data, dict) else 'N/A'}")
+        logger.info(f"Transaction data:\n{json.dumps(data, indent=2, default=str)}")
+
     except Exception as e:
         logger.error(f"Failed to parse webhook JSON: {e}")
         return {'success': False, 'message': 'Invalid JSON'}
-
-    # Log the complete webhook payload for debugging
-    logger.info("=" * 80)
-    logger.info("📥 WEBHOOK RECEIVED")
-    logger.info("=" * 80)
-    logger.info(f"Full webhook data:\n{json.dumps(data, indent=2)}")
-    logger.info("=" * 80)
 
     # 1) Signature verification
     if not verify_webhook_signature(data, signature):

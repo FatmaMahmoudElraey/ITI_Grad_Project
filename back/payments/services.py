@@ -20,7 +20,19 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
     Verify that the incoming webhook payload was signed by Paymob.
     PayMob concatenates specific fields in order before hashing.
     """
+    # Helper function to safely get nested values
+    def get_nested(data, *keys):
+        """Get nested dictionary values"""
+        value = data
+        for key in keys:
+            if isinstance(value, dict):
+                value = value.get(key, '')
+            else:
+                return ''
+        return value
+
     # PayMob concatenates these fields in this exact order
+    # For nested fields like source_data.pan, access as nested dict
     concatenated_string = (
         str(data.get('amount_cents', '')) +
         str(data.get('created_at', '')) +
@@ -38,9 +50,9 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
         str(data.get('order', '')) +
         str(data.get('owner', '')) +
         str(data.get('pending', '')) +
-        str(data.get('source_data.pan', '')) +
-        str(data.get('source_data.sub_type', '')) +
-        str(data.get('source_data.type', '')) +
+        str(get_nested(data, 'source_data', 'pan')) +
+        str(get_nested(data, 'source_data', 'sub_type')) +
+        str(get_nested(data, 'source_data', 'type')) +
         str(data.get('success', ''))
     )
 
@@ -48,14 +60,19 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
     computed = hmac.new(
         settings.PAYMOB_HMAC_KEY.encode('utf-8'),
         concatenated_string.encode('utf-8'),
-        hashlib.sha512  # PayMob uses SHA512, not SHA256
+        hashlib.sha512
     ).hexdigest()
 
-    # Log for debugging (remove in production)
+    # Log for debugging
+    logger.info("=" * 80)
+    logger.info("🔐 HMAC VERIFICATION")
+    logger.info("=" * 80)
+    logger.info(f"Concatenated String (first 100 chars): {concatenated_string[:100]}...")
     logger.info(f"Computed HMAC: {computed}")
     logger.info(f"Received HMAC: {signature}")
+    logger.info(f"Match: {hmac.compare_digest(computed, signature)}")
+    logger.info("=" * 80)
 
-    # Constant-time compare to prevent timing attacks
     return hmac.compare_digest(computed, signature)
 
 def process_payment_event(data: dict) -> None:
@@ -110,17 +127,31 @@ def handle_webhook(request) -> dict:
         logger.error(f"Failed to parse webhook JSON: {e}")
         return {'success': False, 'message': 'Invalid JSON'}
 
-    # Log incoming webhook for debugging
-    logger.info(f"Webhook received: order={data.get('order')}, success={data.get('success')}")
+    # Log the complete webhook payload for debugging
+    logger.info("=" * 80)
+    logger.info("📥 WEBHOOK RECEIVED")
+    logger.info("=" * 80)
+    logger.info(f"Full webhook data:\n{json.dumps(data, indent=2)}")
+    logger.info("=" * 80)
 
     # 1) Signature verification
     if not verify_webhook_signature(data, signature):
         logger.warning("Invalid webhook signature")
+        # Log the raw data for debugging HMAC issues
+        logger.error(f"HMAC mismatch details:")
+        logger.error(f"  amount_cents: {data.get('amount_cents')}")
+        logger.error(f"  created_at: {data.get('created_at')}")
+        logger.error(f"  order: {data.get('order')}")
+        logger.error(f"  success: {data.get('success')}")
+        logger.error(f"  source_data: {data.get('source_data')}")
         return {'success': False, 'message': 'Invalid signature'}
+
+    logger.info("Webhook signature verified successfully")
 
     # 2) Delegate to event processor
     try:
         process_payment_event(data)
+        logger.info("Payment event processed successfully")
     except Exception as e:
         logger.exception(f"Error processing webhook: {e}")
         return {'success': False, 'message': 'Error processing event'}

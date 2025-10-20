@@ -32,34 +32,40 @@ def verify_webhook_signature(payload: bytes, signature: str) -> bool:
 def process_payment_event(data: dict) -> None:
     """
     Update the Payment record based on the Paymob webhook event.
-    Recognized events: 'payment_succeeded', 'payment_failed'.
     """
-    event = data.get('event')
-    order_id = data.get('order', {}).get('id')
-    txn_id = data.get('transaction', {}).get('id')
+    # PayMob sends different structure - check for 'obj' key
+    obj = data.get('obj', data)
 
-    if not order_id:
-        logger.error("Webhook missing order ID")  # robust logging :contentReference[oaicite:1]{index=1}
+    # Extract values from PayMob's structure
+    success = obj.get('success', False)
+    paymob_order_id = obj.get('order')
+    txn_id = obj.get('id')
+    error_occurred = obj.get('error_occured', False)
+
+    if not paymob_order_id:
+        logger.error("Webhook missing order ID")
         return
 
     try:
-        payment = Payment.objects.get(paymob_order_id=order_id)
+        payment = Payment.objects.get(paymob_order_id=paymob_order_id)
     except Payment.DoesNotExist:
-        logger.error(f"No Payment found for Paymob order {order_id}")
+        logger.error(f"No Payment found for Paymob order {paymob_order_id}")
         return
 
-    # Map events to internal statuses :contentReference[oaicite:2]{index=2}
-    if event == 'payment_succeeded':
+    # Update payment status based on success flag
+    if success and not error_occurred:
         payment.status = 'paid'
         payment.transaction_id = txn_id
-    elif event == 'payment_failed':
-        payment.status = 'failed'
+        # Update order payment status
+        payment.order.payment_status = 'C'
+        payment.order.save(update_fields=['payment_status'])
     else:
-        logger.warning(f"Unhandled Paymob event type: {event}")
-        return
+        payment.status = 'failed'
+        payment.order.payment_status = 'F'
+        payment.order.save(update_fields=['payment_status'])
 
     payment.save(update_fields=['status', 'transaction_id', 'updated_at'])
-    logger.info(f"Processed '{event}' for Payment ID {payment.id}")
+    logger.info(f"Processed webhook for Payment ID {payment.id}, status: {payment.status}")
 
 def handle_webhook(request) -> dict:
     """

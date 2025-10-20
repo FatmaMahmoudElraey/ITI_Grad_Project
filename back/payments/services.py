@@ -66,8 +66,8 @@ def handle_webhook(request) -> dict:
     Orchestrates verification and processing of a Paymob webhook.
     Returns a dict with 'success' and 'message'.
     """
-    # DRF provides request.META for HTTP headers :contentReference[oaicite:3]{index=3}
-    signature = request.headers.get('X-Paymob-Signature', '')
+    # PayMob sends HMAC in query parameter, not header
+    signature = request.GET.get('hmac', '')
     payload = request.body
 
     # 1) Signature verification
@@ -76,11 +76,11 @@ def handle_webhook(request) -> dict:
         return {'success': False, 'message': 'Invalid signature'}
 
     # 2) Delegate to event processor
-    data = request.data  # parsed JSON :contentReference[oaicite:4]{index=4}
+    data = request.data  # parsed JSON
     try:
         process_payment_event(data)
     except Exception as e:
-        logger.exception(f"Error processing webhook: {e}")  # full traceback in logs :contentReference[oaicite:5]{index=5}
+        logger.exception(f"Error processing webhook: {e}")
         return {'success': False, 'message': 'Error processing event'}
 
     return {'success': True, 'message': 'Webhook processed'}

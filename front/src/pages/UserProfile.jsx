@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { ENDPOINTS } from "../api/constants";
-=import {
+import {
   fetchUserProfile,
   deleteUserAccount,
   updateUserProfile,
@@ -219,7 +219,6 @@ export default function UserProfile() {
       });
     }
   };
-
   const handleDownload = async (productId) => {
     try {
       // Use axios to download (cookies sent automatically)
@@ -230,12 +229,8 @@ export default function UserProfile() {
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`Download failed: ${response.statusText}`);
-      }
-
       // Get the filename from the Content-Disposition header if available
-      const contentDisposition = response.headers.get("Content-Disposition");
+      const contentDisposition = response.headers["content-disposition"];
       let filename = `product-${productId}.zip`; // Default filename
 
       if (contentDisposition) {
@@ -245,8 +240,10 @@ export default function UserProfile() {
         }
       }
 
-      // Convert the response to a blob
-      const blob = await response.blob();
+      // The blob is in response.data for axios
+      const blob = new Blob([response.data], {
+        type: response.headers["content-type"],
+      });
 
       // Create a temporary URL for the blob
       const url = window.URL.createObjectURL(blob);
@@ -273,28 +270,6 @@ export default function UserProfile() {
       });
     }
   };
-
-  // Mock favorites data
-  // const favorites = [
-  //   {
-  //     id: 5,
-  //     title: "Portfolio Website Template",
-  //     image: "https://i.imgur.com/Nd4sSJz.jpg",
-  //     author: "WebMasters",
-  //     category: "HTML Templates",
-  //     price: 29,
-  //     rating: 4.7
-  //   },
-  //   {
-  //     id: 6,
-  //     title: "Mobile App UI Kit",
-  //     image: "https://i.imgur.com/K8YzQdL.jpg",
-  //     author: "AppDesign",
-  //     category: "UI Templates",
-  //     price: 49,
-  //     rating: 4.9
-  //   }
-  // ];
 
   if (loading) {
     return (

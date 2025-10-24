@@ -125,17 +125,20 @@ def process_payment_event(data: dict) -> None:
     Update the Payment record based on the Paymob webhook event.
     """
     try:
-        success = data.get('success', False)
+        # Extract the transaction object from the nested 'obj' key
+        transaction = data.get('obj', {})
+
+        success = transaction.get('success', False)
 
         # Handle nested order object
-        order_value = data.get('order')
+        order_value = transaction.get('order')
         if isinstance(order_value, dict):
             paymob_order_id = order_value.get('id')
         else:
             paymob_order_id = order_value
 
-        txn_id = data.get('id')
-        error_occurred = data.get('error_occured', False)
+        txn_id = transaction.get('id')
+        error_occurred = transaction.get('error_occured', False)
 
         print(f"📥 Processing webhook: order={paymob_order_id}, txn={txn_id}, success={success}")
 

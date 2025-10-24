@@ -13,7 +13,6 @@ from .models import Payment
 logger = logging.getLogger(__name__)
 
 def verify_webhook_signature(data: dict, signature: str) -> bool:
-def verify_webhook_signature(data: dict, signature: str) -> bool:
     """
     Verify webhook signature according to PayMob's HMAC specification.
 

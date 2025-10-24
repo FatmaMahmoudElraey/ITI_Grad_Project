@@ -15,16 +15,11 @@ logger = logging.getLogger(__name__)
 def verify_webhook_signature(data: dict, signature: str) -> bool:
     """
     Verify webhook signature according to PayMob's HMAC specification.
-
-    Steps:
-    1. Sort data keys lexicographically
-    2. Concatenate values in sorted order
-    3. Hash with SHA-512 using HMAC secret
-    4. Compare with received HMAC
     """
     try:
         # Validate HMAC key exists
         if not settings.PAYMOB_HMAC_KEY:
+            print("❌ PAYMOB_HMAC_KEY is not configured!")
             logger.error("PAYMOB_HMAC_KEY is not configured!")
             return False
 
@@ -52,7 +47,6 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
             order_id = order_value
 
         # PayMob's required fields in LEXICOGRAPHICAL order
-        # Based on their example: amount_cents, created_at, currency, error_occured, etc.
         fields_dict = {
             'amount_cents': str(data.get('amount_cents', '')),
             'created_at': str(data.get('created_at', '')),
@@ -76,24 +70,24 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
             'success': bool_to_str(data.get('success', ''))
         }
 
-        # Step 1: Sort keys lexicographically (already sorted above)
+        # Step 1: Sort keys lexicographically
         sorted_keys = sorted(fields_dict.keys())
 
         # Step 2: Concatenate values in sorted order
         concatenated_string = ''.join(fields_dict[key] for key in sorted_keys)
 
-        logger.info("=" * 80)
-        logger.info(" PAYMOB HMAC VERIFICATION")
-        logger.info("=" * 80)
-        logger.info(f"HMAC Key configured: {bool(settings.PAYMOB_HMAC_KEY)}")
-        logger.info(f"HMAC Key length: {len(settings.PAYMOB_HMAC_KEY) if settings.PAYMOB_HMAC_KEY else 0}")
-        logger.info(f"\ Field Values (sorted):")
+        print("\n" + "=" * 80)
+        print("🔐 PAYMOB HMAC VERIFICATION DEBUG")
+        print("=" * 80)
+        print(f"HMAC Key configured: {bool(settings.PAYMOB_HMAC_KEY)}")
+        print(f"HMAC Key length: {len(settings.PAYMOB_HMAC_KEY) if settings.PAYMOB_HMAC_KEY else 0}")
+        print(f"HMAC Key (first 10 chars): {settings.PAYMOB_HMAC_KEY[:10] if settings.PAYMOB_HMAC_KEY else 'N/A'}")
+        print("\n📊 Field Values (in sorted order):")
         for key in sorted_keys:
-            logger.info(f"  {key}: {fields_dict[key]}")
-        logger.info(f"\n🔗 Concatenated String:")
-        logger.info(f"  Length: {len(concatenated_string)}")
-        logger.info(f"  First 150 chars: {concatenated_string[:150]}")
-        logger.info(f"  Last 50 chars: {concatenated_string[-50:]}")
+            print(f"  {key:25s} = {fields_dict[key]}")
+        print(f"\n🔗 Concatenated String:")
+        print(f"  Total Length: {len(concatenated_string)}")
+        print(f"  Full String: {concatenated_string}")
 
         # Step 3 & 4: Calculate HMAC using SHA-512
         computed_hmac = hmac.new(
@@ -102,18 +96,20 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
             hashlib.sha512
         ).hexdigest()
 
-        logger.info(f"\nHMAC Comparison:")
-        logger.info(f"  Computed: {computed_hmac}")
-        logger.info(f"  Received: {signature}")
-        logger.info(f"  Match: {hmac.compare_digest(computed_hmac, signature)}")
-        logger.info("=" * 80)
+        print(f"\n🔑 HMAC Comparison:")
+        print(f"  Computed HMAC: {computed_hmac}")
+        print(f"  Received HMAC: {signature}")
+        print(f"  Match Result: {hmac.compare_digest(computed_hmac, signature)}")
+        print("=" * 80 + "\n")
 
         # Step 5: Compare
         return hmac.compare_digest(computed_hmac, signature)
 
     except Exception as e:
+        print(f"❌ HMAC verification error: {e}")
         logger.error(f"HMAC verification error: {e}")
         import traceback
+        print(traceback.format_exc())
         logger.error(traceback.format_exc())
         return False
 
@@ -134,16 +130,18 @@ def process_payment_event(data: dict) -> None:
         txn_id = data.get('id')
         error_occurred = data.get('error_occured', False)
 
-        logger.info(f" Processing webhook: order={paymob_order_id}, txn={txn_id}, success={success}")
+        print(f"📥 Processing webhook: order={paymob_order_id}, txn={txn_id}, success={success}")
 
         if not paymob_order_id:
+            print("❌ Webhook missing order ID")
             logger.error("Webhook missing order ID")
             return
 
         try:
             payment = Payment.objects.get(paymob_order_id=paymob_order_id)
-            logger.info(f"Found payment: ID={payment.id}, status={payment.status}")
+            print(f"✅ Found payment: ID={payment.id}, status={payment.status}")
         except Payment.DoesNotExist:
+            print(f"❌ No Payment found for Paymob order {paymob_order_id}")
             logger.error(f"No Payment found for Paymob order {paymob_order_id}")
             return
 
@@ -153,20 +151,21 @@ def process_payment_event(data: dict) -> None:
             payment.transaction_id = str(txn_id)
             payment.order.payment_status = 'C'
             payment.order.save(update_fields=['payment_status'])
-            logger.info(f"Payment successful for order {payment.order.id}")
+            print(f"✅ Payment successful for order {payment.order.id}")
         else:
             payment.status = 'failed'
             payment.order.payment_status = 'F'
             payment.order.save(update_fields=['payment_status'])
-            logger.info(f"Payment failed for order {payment.order.id}")
+            print(f"❌ Payment failed for order {payment.order.id}")
 
         payment.save(update_fields=['status', 'transaction_id', 'updated_at'])
-        logger.info(f"Updated Payment ID {payment.id} to status: {payment.status}")
+        print(f"✅ Updated Payment ID {payment.id} to status: {payment.status}")
 
     except Exception as e:
+        print(f"❌ Error in process_payment_event: {e}")
         logger.error(f"Error in process_payment_event: {e}")
         import traceback
-        logger.error(traceback.format_exc())
+        print(traceback.format_exc())
         raise
 
 def handle_webhook(request) -> dict:
@@ -177,37 +176,43 @@ def handle_webhook(request) -> dict:
         # PayMob sends HMAC as query parameter
         signature = request.GET.get('hmac', '')
 
-        logger.info("=" * 80)
-        logger.info("📬 WEBHOOK RECEIVED")
-        logger.info(f"Signature (first 20): {signature[:20]}...")
-        logger.info("=" * 80)
+        print("\n" + "=" * 80)
+        print("📬 WEBHOOK RECEIVED FROM PAYMOB")
+        print(f"Signature (first 30 chars): {signature[:30]}...")
+        print("=" * 80)
 
         # Parse webhook data
         try:
             data = request.data
+            print(f"Webhook data type: {type(data)}")
+            print(f"Webhook keys: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
         except Exception as e:
+            print(f"❌ Failed to parse JSON: {e}")
             logger.error(f"Failed to parse JSON: {e}")
             return {'success': False, 'message': 'Invalid JSON'}
 
         # Verify signature
         if not verify_webhook_signature(data, signature):
+            print("❌ HMAC verification failed")
             logger.warning("HMAC verification failed")
             return {'success': False, 'message': 'Invalid signature'}
 
-        logger.info("HMAC verified successfully")
+        print("✅ HMAC verified successfully")
 
         # Process payment
         try:
             process_payment_event(data)
             return {'success': True, 'message': 'Webhook processed'}
         except Exception as e:
+            print(f"❌ Error processing webhook: {e}")
             logger.exception(f"Error processing webhook: {e}")
             return {'success': False, 'message': 'Processing error'}
 
     except Exception as e:
+        print(f"❌ Error in handle_webhook: {e}")
         logger.error(f"Error in handle_webhook: {e}")
         import traceback
-        logger.error(traceback.format_exc())
+        print(traceback.format_exc())
         return {'success': False, 'message': 'Internal error'}
 
 def get_paymob_auth_token():

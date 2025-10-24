@@ -13,6 +13,7 @@ from .models import Payment
 logger = logging.getLogger(__name__)
 
 def verify_webhook_signature(data: dict, signature: str) -> bool:
+def verify_webhook_signature(data: dict, signature: str) -> bool:
     """
     Verify webhook signature according to PayMob's HMAC specification.
 
@@ -217,6 +218,7 @@ def get_paymob_auth_token():
             "https://accept.paymobsolutions.com/api/auth/tokens",
             json={"api_key": settings.PAYMOB_API_KEY}
         )
+        response.raise_for_status()
         response.raise_for_status()
         return response.json()["token"]
     except Exception as e:

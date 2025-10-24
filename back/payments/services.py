@@ -218,7 +218,6 @@ def get_paymob_auth_token():
             json={"api_key": settings.PAYMOB_API_KEY}
         )
         response.raise_for_status()
-        response.raise_for_status()
         return response.json()["token"]
     except Exception as e:
         logger.error(f"Error getting auth token: {e}")

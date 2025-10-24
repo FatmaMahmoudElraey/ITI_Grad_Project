@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 def verify_webhook_signature(data: dict, signature: str) -> bool:
     """
     Verify webhook signature according to PayMob's HMAC specification.
+    PayMob sends transaction data nested in the 'obj' key.
     """
     try:
         # Validate HMAC key exists
@@ -22,6 +23,12 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
             print("❌ PAYMOB_HMAC_KEY is not configured!")
             logger.error("PAYMOB_HMAC_KEY is not configured!")
             return False
+
+        # Extract the actual transaction object from the webhook payload
+        transaction = data.get('obj', {})
+
+        print(f"🔍 Webhook structure - Top level keys: {list(data.keys())}")
+        print(f"🔍 Transaction object keys: {list(transaction.keys()) if isinstance(transaction, dict) else 'Not a dict'}")
 
         # Helper to convert boolean to lowercase string
         def bool_to_str(value):
@@ -39,35 +46,35 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
                     return ''
             return value
 
-        # Extract order ID from nested dict
-        order_value = data.get('order', '')
+        # Extract order ID from nested dict - use transaction object
+        order_value = transaction.get('order', '')
         if isinstance(order_value, dict):
             order_id = order_value.get('id', '')
         else:
             order_id = order_value
 
-        # PayMob's required fields in LEXICOGRAPHICAL order
+        # PayMob's required fields in LEXICOGRAPHICAL order - use transaction object
         fields_dict = {
-            'amount_cents': str(data.get('amount_cents', '')),
-            'created_at': str(data.get('created_at', '')),
-            'currency': str(data.get('currency', '')),
-            'error_occured': bool_to_str(data.get('error_occured', '')),
-            'has_parent_transaction': bool_to_str(data.get('has_parent_transaction', '')),
-            'id': str(data.get('id', '')),
-            'integration_id': str(data.get('integration_id', '')),
-            'is_3d_secure': bool_to_str(data.get('is_3d_secure', '')),
-            'is_auth': bool_to_str(data.get('is_auth', '')),
-            'is_capture': bool_to_str(data.get('is_capture', '')),
-            'is_refunded': bool_to_str(data.get('is_refunded', '')),
-            'is_standalone_payment': bool_to_str(data.get('is_standalone_payment', '')),
-            'is_voided': bool_to_str(data.get('is_voided', '')),
+            'amount_cents': str(transaction.get('amount_cents', '')),
+            'created_at': str(transaction.get('created_at', '')),
+            'currency': str(transaction.get('currency', '')),
+            'error_occured': bool_to_str(transaction.get('error_occured', '')),
+            'has_parent_transaction': bool_to_str(transaction.get('has_parent_transaction', '')),
+            'id': str(transaction.get('id', '')),
+            'integration_id': str(transaction.get('integration_id', '')),
+            'is_3d_secure': bool_to_str(transaction.get('is_3d_secure', '')),
+            'is_auth': bool_to_str(transaction.get('is_auth', '')),
+            'is_capture': bool_to_str(transaction.get('is_capture', '')),
+            'is_refunded': bool_to_str(transaction.get('is_refunded', '')),
+            'is_standalone_payment': bool_to_str(transaction.get('is_standalone_payment', '')),
+            'is_voided': bool_to_str(transaction.get('is_voided', '')),
             'order': str(order_id),
-            'owner': str(data.get('owner', '')),
-            'pending': bool_to_str(data.get('pending', '')),
-            'source_data_pan': str(get_nested(data, 'source_data', 'pan')),
-            'source_data_sub_type': str(get_nested(data, 'source_data', 'sub_type')),
-            'source_data_type': str(get_nested(data, 'source_data', 'type')),
-            'success': bool_to_str(data.get('success', ''))
+            'owner': str(transaction.get('owner', '')),
+            'pending': bool_to_str(transaction.get('pending', '')),
+            'source_data_pan': str(get_nested(transaction, 'source_data', 'pan')),
+            'source_data_sub_type': str(get_nested(transaction, 'source_data', 'sub_type')),
+            'source_data_type': str(get_nested(transaction, 'source_data', 'type')),
+            'success': bool_to_str(transaction.get('success', ''))
         }
 
         # Step 1: Sort keys lexicographically

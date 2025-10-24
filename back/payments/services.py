@@ -9,21 +9,33 @@ import json
 from datetime import datetime
 from django.conf import settings
 from .models import Payment
-from requests.exceptions import ConnectionError, Timeout, RequestException
-from rest_framework.exceptions import APIException
-from rest_framework import status
 
 logger = logging.getLogger(__name__)
 
 def verify_webhook_signature(data: dict, signature: str) -> bool:
     """
-    Verify that the incoming webhook payload was signed by Paymob.
-    PayMob concatenates specific fields in order before hashing.
+    Verify webhook signature according to PayMob's HMAC specification.
+
+    Steps:
+    1. Sort data keys lexicographically
+    2. Concatenate values in sorted order
+    3. Hash with SHA-512 using HMAC secret
+    4. Compare with received HMAC
     """
     try:
-        # Helper function to safely get nested values
+        # Validate HMAC key exists
+        if not settings.PAYMOB_HMAC_KEY:
+            logger.error("PAYMOB_HMAC_KEY is not configured!")
+            return False
+
+        # Helper to convert boolean to lowercase string
+        def bool_to_str(value):
+            if isinstance(value, bool):
+                return str(value).lower()
+            return str(value) if value is not None else ''
+
+        # Helper to get nested values
         def get_nested(data, *keys):
-            """Get nested dictionary values"""
             value = data
             for key in keys:
                 if isinstance(value, dict):
@@ -32,65 +44,72 @@ def verify_webhook_signature(data: dict, signature: str) -> bool:
                     return ''
             return value
 
-        # Helper to convert boolean to lowercase string (true/false)
-        def bool_to_str(value):
-            """Convert Python boolean to lowercase string for PayMob"""
-            if isinstance(value, bool):
-                return str(value).lower()
-            return str(value)
-
-        # Extract order ID - PayMob sends it as nested dict in webhook
+        # Extract order ID from nested dict
         order_value = data.get('order', '')
         if isinstance(order_value, dict):
             order_id = order_value.get('id', '')
         else:
             order_id = order_value
 
+        # PayMob's required fields in LEXICOGRAPHICAL order
+        # Based on their example: amount_cents, created_at, currency, error_occured, etc.
+        fields_dict = {
+            'amount_cents': str(data.get('amount_cents', '')),
+            'created_at': str(data.get('created_at', '')),
+            'currency': str(data.get('currency', '')),
+            'error_occured': bool_to_str(data.get('error_occured', '')),
+            'has_parent_transaction': bool_to_str(data.get('has_parent_transaction', '')),
+            'id': str(data.get('id', '')),
+            'integration_id': str(data.get('integration_id', '')),
+            'is_3d_secure': bool_to_str(data.get('is_3d_secure', '')),
+            'is_auth': bool_to_str(data.get('is_auth', '')),
+            'is_capture': bool_to_str(data.get('is_capture', '')),
+            'is_refunded': bool_to_str(data.get('is_refunded', '')),
+            'is_standalone_payment': bool_to_str(data.get('is_standalone_payment', '')),
+            'is_voided': bool_to_str(data.get('is_voided', '')),
+            'order': str(order_id),
+            'owner': str(data.get('owner', '')),
+            'pending': bool_to_str(data.get('pending', '')),
+            'source_data_pan': str(get_nested(data, 'source_data', 'pan')),
+            'source_data_sub_type': str(get_nested(data, 'source_data', 'sub_type')),
+            'source_data_type': str(get_nested(data, 'source_data', 'type')),
+            'success': bool_to_str(data.get('success', ''))
+        }
+
+        # Step 1: Sort keys lexicographically (already sorted above)
+        sorted_keys = sorted(fields_dict.keys())
+
+        # Step 2: Concatenate values in sorted order
+        concatenated_string = ''.join(fields_dict[key] for key in sorted_keys)
+
         logger.info("=" * 80)
-        logger.info("🔐 STARTING HMAC VERIFICATION")
-        logger.info(f"Order type: {type(order_value)}, Extracted ID: {order_id}")
+        logger.info(" PAYMOB HMAC VERIFICATION")
         logger.info("=" * 80)
+        logger.info(f"HMAC Key configured: {bool(settings.PAYMOB_HMAC_KEY)}")
+        logger.info(f"HMAC Key length: {len(settings.PAYMOB_HMAC_KEY) if settings.PAYMOB_HMAC_KEY else 0}")
+        logger.info(f"\ Field Values (sorted):")
+        for key in sorted_keys:
+            logger.info(f"  {key}: {fields_dict[key]}")
+        logger.info(f"\n🔗 Concatenated String:")
+        logger.info(f"  Length: {len(concatenated_string)}")
+        logger.info(f"  First 150 chars: {concatenated_string[:150]}")
+        logger.info(f"  Last 50 chars: {concatenated_string[-50:]}")
 
-        # PayMob concatenates these fields in this exact order
-        concatenated_string = (
-            str(data.get('amount_cents', '')) +
-            str(data.get('created_at', '')) +
-            str(data.get('currency', '')) +
-            bool_to_str(data.get('error_occured', '')) +
-            bool_to_str(data.get('has_parent_transaction', '')) +
-            str(data.get('id', '')) +
-            str(data.get('integration_id', '')) +
-            bool_to_str(data.get('is_3d_secure', '')) +
-            bool_to_str(data.get('is_auth', '')) +
-            bool_to_str(data.get('is_capture', '')) +
-            bool_to_str(data.get('is_refunded', '')) +
-            bool_to_str(data.get('is_standalone_payment', '')) +
-            bool_to_str(data.get('is_voided', '')) +
-            str(order_id) +
-            str(data.get('owner', '')) +
-            bool_to_str(data.get('pending', '')) +
-            str(get_nested(data, 'source_data', 'pan')) +
-            str(get_nested(data, 'source_data', 'sub_type')) +
-            str(get_nested(data, 'source_data', 'type')) +
-            bool_to_str(data.get('success', ''))
-        )
-
-        logger.info(f"Concatenated string (first 150): {concatenated_string[:150]}")
-        logger.info(f"Total length: {len(concatenated_string)}")
-
-        # Compute HMAC using your secret key
-        computed = hmac.new(
+        # Step 3 & 4: Calculate HMAC using SHA-512
+        computed_hmac = hmac.new(
             settings.PAYMOB_HMAC_KEY.encode('utf-8'),
             concatenated_string.encode('utf-8'),
             hashlib.sha512
         ).hexdigest()
 
-        logger.info(f"Computed HMAC: {computed}")
-        logger.info(f"Received HMAC: {signature}")
-        logger.info(f"Match: {hmac.compare_digest(computed, signature)}")
+        logger.info(f"\nHMAC Comparison:")
+        logger.info(f"  Computed: {computed_hmac}")
+        logger.info(f"  Received: {signature}")
+        logger.info(f"  Match: {hmac.compare_digest(computed_hmac, signature)}")
         logger.info("=" * 80)
 
-        return hmac.compare_digest(computed, signature)
+        # Step 5: Compare
+        return hmac.compare_digest(computed_hmac, signature)
 
     except Exception as e:
         logger.error(f"HMAC verification error: {e}")
@@ -103,7 +122,6 @@ def process_payment_event(data: dict) -> None:
     Update the Payment record based on the Paymob webhook event.
     """
     try:
-        # Extract values directly from the webhook data
         success = data.get('success', False)
 
         # Handle nested order object
@@ -116,7 +134,7 @@ def process_payment_event(data: dict) -> None:
         txn_id = data.get('id')
         error_occurred = data.get('error_occured', False)
 
-        logger.info(f"Processing payment event: order={paymob_order_id}, txn={txn_id}, success={success}")
+        logger.info(f" Processing webhook: order={paymob_order_id}, txn={txn_id}, success={success}")
 
         if not paymob_order_id:
             logger.error("Webhook missing order ID")
@@ -124,16 +142,15 @@ def process_payment_event(data: dict) -> None:
 
         try:
             payment = Payment.objects.get(paymob_order_id=paymob_order_id)
-            logger.info(f"Found payment record: ID={payment.id}, current status={payment.status}")
+            logger.info(f"Found payment: ID={payment.id}, status={payment.status}")
         except Payment.DoesNotExist:
             logger.error(f"No Payment found for Paymob order {paymob_order_id}")
             return
 
-        # Update payment status based on success flag
+        # Update payment status
         if success and not error_occurred:
             payment.status = 'paid'
             payment.transaction_id = str(txn_id)
-            # Update order payment status
             payment.order.payment_status = 'C'
             payment.order.save(update_fields=['payment_status'])
             logger.info(f"Payment successful for order {payment.order.id}")
@@ -144,7 +161,7 @@ def process_payment_event(data: dict) -> None:
             logger.info(f"Payment failed for order {payment.order.id}")
 
         payment.save(update_fields=['status', 'transaction_id', 'updated_at'])
-        logger.info(f"Processed webhook for Payment ID {payment.id}, status: {payment.status}")
+        logger.info(f"Updated Payment ID {payment.id} to status: {payment.status}")
 
     except Exception as e:
         logger.error(f"Error in process_payment_event: {e}")
@@ -155,36 +172,37 @@ def process_payment_event(data: dict) -> None:
 def handle_webhook(request) -> dict:
     """
     Orchestrates verification and processing of a Paymob webhook.
-    Returns a dict with 'success' and 'message'.
     """
     try:
-        # PayMob sends HMAC in query parameter
+        # PayMob sends HMAC as query parameter
         signature = request.GET.get('hmac', '')
-        logger.info(f"📥 Webhook signature received: {signature[:20]}...")
 
-        # Parse the JSON data
+        logger.info("=" * 80)
+        logger.info("📬 WEBHOOK RECEIVED")
+        logger.info(f"Signature (first 20): {signature[:20]}...")
+        logger.info("=" * 80)
+
+        # Parse webhook data
         try:
-            data = request.data  # DRF parsed JSON
-            logger.info(f"Webhook data keys: {list(data.keys())}")
+            data = request.data
         except Exception as e:
-            logger.error(f"Failed to parse webhook JSON: {e}")
+            logger.error(f"Failed to parse JSON: {e}")
             return {'success': False, 'message': 'Invalid JSON'}
 
-        # 1) Signature verification
+        # Verify signature
         if not verify_webhook_signature(data, signature):
-            logger.warning("Invalid webhook signature")
+            logger.warning("HMAC verification failed")
             return {'success': False, 'message': 'Invalid signature'}
 
-        logger.info("Webhook signature verified")
+        logger.info("HMAC verified successfully")
 
-        # 2) Delegate to event processor
+        # Process payment
         try:
             process_payment_event(data)
+            return {'success': True, 'message': 'Webhook processed'}
         except Exception as e:
             logger.exception(f"Error processing webhook: {e}")
-            return {'success': False, 'message': 'Error processing event'}
-
-        return {'success': True, 'message': 'Webhook processed'}
+            return {'success': False, 'message': 'Processing error'}
 
     except Exception as e:
         logger.error(f"Error in handle_webhook: {e}")

@@ -137,43 +137,35 @@ const Cart = () => {
               </Card.Header>
               <Card.Body>
                 {items.map((item) => (
-                  <Row key={item.id} className="mb-4 border-bottom pb-4">
-                    <Col xs={3} md={2}>
+                  <Row key={item.id} className="mb-4 border-bottom pb-1">
+                    <Col xs={12} md={4}>
                       <Image 
                         src={item.image || '/placeholder-image.jpg'} 
                         alt={item.title} 
                         fluid 
                         rounded 
                         className="shadow-sm"
-                        style={{ height: '80px', width: '100%', objectFit: 'cover' }}
+                        style={{ height: '150px', width: '100%', objectFit: 'cover' }}
                         onError={(e) => {
                           e.target.src = '/placeholder-image.jpg';
                         }}
                       />
                     </Col>
-                    <Col xs={9} md={5}>
+                    <Col xs={12} md={5} className='mt-3'>
                       <h6 className="mb-1">{item.title}</h6>
-                      <p className="text-muted small mb-1">
-                        {item.category_name && `Category: ${item.category_name}`}
-                      </p>
                       <p className="fw-bold mb-0" style={{ color: '#660ff1' }}>
                         ${item.price}
                       </p>
                     </Col>
-                    <Col xs={6} md={3} className="d-flex align-items-center">
-                      <div className="d-flex align-items-center">
-                        <span className="mx-3">Quantity: {item.quantity}</span>
-                      </div>
-                    </Col>
-                    <Col xs={6} md={2} className="d-flex align-items-center justify-content-end">
-                      <div className="d-flex flex-column align-items-end">
-                        <span className="fw-bold mb-2">${(item.price * item.quantity).toFixed(2)}</span>
+
+                    <Col xs={12} md={3} className="mt-3">
+                      <div className="text-end ">
                         <Button 
                           variant="link" 
                           className="text-danger p-0" 
                           onClick={() => handleRemoveItem(item.id)}
                         >
-                          <FontAwesomeIcon icon={faTrash} /> Remove
+                          <FontAwesomeIcon className='fs-4' icon={faTrash} />  
                         </Button>
                       </div>
                     </Col>
@@ -182,8 +174,8 @@ const Cart = () => {
                 
                 <div className="d-flex justify-content-between mt-3">
                   <Link to="/shop">
-                    <Button variant="outline-primary">
-                      <FontAwesomeIcon icon={faArrowLeft} className="me-2" />
+                    <Button variant="outline-primary me-3">
+                      <FontAwesomeIcon icon={faArrowLeft} className="me-1" />
                       Continue Shopping
                     </Button>
                   </Link>

@@ -411,7 +411,7 @@ const Checkout = () => {
                 <Card.Body className="p-4">
                   {step === 1 && (
                     <>
-                      <h4 className="mb-4">Shipping Information</h4>
+                      <h4 className="mb-4">Billing Information</h4>
                       <Form noValidate validated={validated} onSubmit={handleSubmit}>
                         <Row>
                           <Col md={6}>
@@ -479,70 +479,8 @@ const Checkout = () => {
                           </Col>
                         </Row>
 
-                        <Form.Group className="mb-3">
-                          <Form.Label>Address</Form.Label>
-                          <Form.Control
-                            type="text"
-                            name="address"
-                            value={formData.address}
-                            onChange={handleChange}
-                            required
-                          />
-                          <Form.Control.Feedback type="invalid">
-                            Please provide your address.
-                          </Form.Control.Feedback>
-                        </Form.Group>
-
                         <Row>
-                          <Col md={6}>
-                            <Form.Group className="mb-3">
-                              <Form.Label>City</Form.Label>
-                              <Form.Control
-                                type="text"
-                                name="city"
-                                value={formData.city}
-                                onChange={handleChange}
-                                required
-                              />
-                              <Form.Control.Feedback type="invalid">
-                                Please provide your city.
-                              </Form.Control.Feedback>
-                            </Form.Group>
-                          </Col>
-                          <Col md={6}>
-                            <Form.Group className="mb-3">
-                              <Form.Label>State/Province</Form.Label>
-                              <Form.Control
-                                type="text"
-                                name="state"
-                                value={formData.state}
-                                onChange={handleChange}
-                                required
-                              />
-                              <Form.Control.Feedback type="invalid">
-                                Please provide your state/province.
-                              </Form.Control.Feedback>
-                            </Form.Group>
-                          </Col>
-                        </Row>
-
-                        <Row>
-                          <Col md={6}>
-                            <Form.Group className="mb-3">
-                              <Form.Label>Zip/Postal Code</Form.Label>
-                              <Form.Control
-                                type="text"
-                                name="zipCode"
-                                value={formData.zipCode}
-                                onChange={handleChange}
-                                required
-                              />
-                              <Form.Control.Feedback type="invalid">
-                                Please provide your zip/postal code.
-                              </Form.Control.Feedback>
-                            </Form.Group>
-                          </Col>
-                          <Col md={6}>
+                          <Col>
                             <Form.Group className="mb-3">
                               <Form.Label>Country</Form.Label>
                               <Form.Select
@@ -657,7 +595,6 @@ const Checkout = () => {
                       <div key={item.id} className="d-flex justify-content-between mb-2">
                         <div>
                           <span className="fw-medium">{item.title}</span>
-                          <small className="text-muted d-block">Qty: {item.quantity}</small>
                         </div>
                         <span>${(item.price * item.quantity).toFixed(2)}</span>
                       </div>
@@ -670,12 +607,6 @@ const Checkout = () => {
                     <span>Subtotal</span>
                     <span>${subtotal.toFixed(2)}</span>
                   </div>
-
-                  <div className="d-flex justify-content-between mb-2">
-                    <span>Shipping</span>
-                    <span>${shipping.toFixed(2)}</span>
-                  </div>
-
                   <div className="d-flex justify-content-between mb-3">
                     <span>Tax (14%)</span>
                     <span>${tax.toFixed(2)}</span>

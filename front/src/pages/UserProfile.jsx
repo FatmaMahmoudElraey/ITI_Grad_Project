@@ -326,13 +326,6 @@ export default function UserProfile() {
       >
         <div
           className="position-absolute w-100 h-100"
-          style={{
-            backgroundImage:
-              "url('https://images.pexels.com/photos/430207/pexels-photo-430207.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1')",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            opacity: 0.2,
-          }}
         />
         <Container className="h-100 d-flex flex-column justify-content-end">
           <div className="d-flex align-items-center mb-4">
@@ -404,7 +397,7 @@ export default function UserProfile() {
                   <FaStar className="me-1" size={12} />
                   Member since{" "}
                   {userProfile?.user?.date_joined
-                    ? new Date(userProfile?.user?.date_joined).getFullYear()
+                    ? (new Date(userProfile?.user?.date_joined).getMonth()) + "/" + new Date(userProfile?.user?.date_joined).getFullYear()
                     : "2023"}
                 </Badge>
               </motion.div>
@@ -486,7 +479,7 @@ export default function UserProfile() {
                     className="d-flex align-items-center justify-content-center"
                     onClick={() => setShowDeleteConfirm(true)}
                   >
-                    <FaTrash className="me-2" /> Deactivate Account
+                    <FaTrash className="me-2" /> Deactivate
                   </Button>
                   <Button
                     variant="danger"
@@ -502,7 +495,7 @@ export default function UserProfile() {
 
           {/* Right Column - Purchased Items & Favorites */}
           <Col lg={9}>
-            <Card className="shadow-sm">
+            <Card className="shadow-sm p-0">
               <Card.Header className="bg-white pt-3">
                 <div className="d-flex border-bottom">
                   <Button
@@ -528,25 +521,14 @@ export default function UserProfile() {
                       userProfile.orders.map((order) => (
                         <div
                           key={order.id}
-                          style={{
-                            border: "1px solid #e0e0e0",
-                            borderRadius: "8px",
-                            padding: "1rem",
-                            marginBottom: "1.5rem",
-                            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                          }}
+
                         >
                           {order.items?.map((item) => (
                             <div key={item.id} className="mb-3">
                               {/* Header Row */}
                               <div className="d-flex justify-content-between text-muted border-bottom pb-2 small fw-semibold">
                                 <div style={{ flex: 2 }}>Product</div>
-                                <div
-                                  className="text-center"
-                                  style={{ flex: 1 }}
-                                >
-                                  Quantity
-                                </div>
+
                                 <div className="text-end" style={{ flex: 1 }}>
                                   Price
                                 </div>
@@ -557,12 +539,7 @@ export default function UserProfile() {
                                 <div style={{ flex: 2 }}>
                                   {item.product?.title}
                                 </div>
-                                <div
-                                  className="text-center"
-                                  style={{ flex: 1 }}
-                                >
-                                  {item.quantity}
-                                </div>
+
                                 <div className="text-end" style={{ flex: 1 }}>
                                   ${item.product.price}
                                 </div>
@@ -855,7 +832,7 @@ export default function UserProfile() {
         size="sm"
       >
         <Modal.Header closeButton className="border-bottom-0">
-          <Modal.Title className="text-danger">Deactivate Account</Modal.Title>
+          <Modal.Title className="text-danger">Deactivate</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div className="text-center mb-4">
@@ -878,7 +855,7 @@ export default function UserProfile() {
             Cancel
           </Button>
           <Button variant="danger" onClick={handleDeleteAccount}>
-            Deactivate Account
+            Deactivate
           </Button>
         </Modal.Footer>
       </Modal>

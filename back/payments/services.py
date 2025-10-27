@@ -225,6 +225,12 @@ def handle_webhook(request) -> dict:
         print(traceback.format_exc())
         return {'success': False, 'message': 'Internal error'}
 
+    except Exception as e:
+        logger.error(f"Error in handle_webhook: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return {'success': False, 'message': 'Internal error'}
+
 def get_paymob_auth_token():
     """Get authentication token from Paymob API"""
     try:

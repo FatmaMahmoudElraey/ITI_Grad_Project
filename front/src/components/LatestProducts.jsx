@@ -16,7 +16,7 @@ const LatestProducts = () => {
 
   return (
     <div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
-      <h2 className="my-4 text-center text-light p-2" style={{backgroundColor: '#660ff1'}}> 
+      <h2 className="my-4 text-center fw-bold text-light p-2" style={{backgroundColor: '#660ff1', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)', borderRadius: '8px'}}> 
         Latest Products
       </h2>
       {loading && <Spinner animation="border" role="status"><span className="visually-hidden">Loading...</span></Spinner>} 

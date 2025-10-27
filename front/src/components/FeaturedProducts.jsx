@@ -17,7 +17,7 @@ const FeaturedProducts = () => {
 
   return (
     <div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
-      <h2 className="my-4 text-center text-light p-2" style={{backgroundColor: '#660ff1' }}> 
+      <h2 className="my-4 text-center fw-bold text-light p-2" style={{backgroundColor: '#660ff1', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)', borderRadius: '8px'}}> 
         Featured Products
       </h2>
       {loading && <Spinner animation="border" role="status"><span className="visually-hidden">Loading...</span></Spinner>} 
@@ -25,6 +25,7 @@ const FeaturedProducts = () => {
       {!loading && !error && featuredItems.length > 0 && (
         <div>
           <Swiper
+            className = "pb-4"
             spaceBetween={10}
             slidesPerView={1.2}
             breakpoints={{

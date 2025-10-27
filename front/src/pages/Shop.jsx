@@ -49,10 +49,10 @@ export default function Shop() {
     const calculateStats = () => {
       if (products && categories) {
         setStats({
-          templates: products.length,
-          categories: categories.length,
-          customers: products.reduce((sum, product) => sum + (product.sales || 0), 0),
-          downloads: products.reduce((sum, product) => sum + (product.downloads || 0), 0)
+          templates: typeof count === 'number' ? count : (products?.length || 0),
+          categories: categories?.length || 0,
+          customers: products?.reduce((sum, product) => sum + (product.customers || product.sales || 0), 0) || 0,
+          downloads: products?.reduce((sum, product) => sum + (product.downloads || 0), 0) || 0
         });
       }
     };

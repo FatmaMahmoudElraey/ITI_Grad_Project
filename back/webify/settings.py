@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'products',
     'orders',
     'payments.apps.PaymentsConfig',
+    'drf_spectacular',
 
 ]
 
@@ -89,13 +90,8 @@ CHANNEL_LAYERS = {
 }
 
 REST_FRAMEWORK = {
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
-}
-
-
-ROOT_URLCONF = 'webify.urls'
-
-REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'authsys.authentication.CookieJWTAuthentication',
     ),
@@ -103,6 +99,15 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     )
 }
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Your Project API',
+    'DESCRIPTION': 'Your project description',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
+
+ROOT_URLCONF = 'webify.urls'
 
 CACHES = {
     'default': {

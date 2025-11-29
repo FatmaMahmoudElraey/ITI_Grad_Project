@@ -25,7 +25,7 @@ class CookieTokenObtainPairView(TokenObtainPairView):
             access_cookie_params = dict(httponly=True, secure=False, samesite='Lax', path='/', domain=None)
             refresh_cookie_params = dict(httponly=True, secure=False, samesite='Lax', path='/', domain=None)
         else:
-            cookie_domain = getattr(settings, '', None)
+            cookie_domain =os.get_env('DOMAIN_FOR_COOKIES')
             access_cookie_params = dict(httponly=True, secure=True, samesite='None', path='/', domain=cookie_domain)
             refresh_cookie_params = dict(httponly=True, secure=True, samesite='None', path='/', domain=cookie_domain)
 

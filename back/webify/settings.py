@@ -27,7 +27,7 @@ PAYMOB_PAYMENT_KEY_URL= "https://accept.paymobsolutions.com/api/acceptance/payme
 SECRET_KEY = 'django-insecure-)mx5num+p$9vtlb$+)n5022t7nx#&q57w7u1hqp6t&v4i6pr3y'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 #setting of token time, and headers type
 SIMPLE_JWT = {

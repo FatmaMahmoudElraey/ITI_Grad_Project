@@ -7,9 +7,7 @@ export const loadUser = createAsyncThunk(
   "auth/loadUser",
   async (_, thunkAPI) => {
     try {
-      // With cookie-based auth we rely on the cookie being present and sent via credentials
-      const response = await axios.get(ENDPOINTS.USER_DETAILS);
-
+      const response = await axios.get(ENDPOINTS.USER_DETAILS, { withCredentials: true });
       return response.data; // User data
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data || "Failed to load user");
@@ -23,14 +21,9 @@ export const loginUser = createAsyncThunk(
   async (credentials, { rejectWithValue }) => {
     try {
       const response = await axios.post(ENDPOINTS.LOGIN, credentials, { withCredentials: true });
-      // If server returns tokens (and cookies couldn't be set due to dev cross-origin),
-      // set a temporary in-memory Authorization header so subsequent requests work in this session.
       if (response.data?.access) {
         axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
       }
-      // With cookie-based flow the server sets HttpOnly cookies for access/refresh
-      // so we don't store tokens in client storage or set Authorization header.
-      // Fetch user data (cookies are sent automatically thanks to withCredentials)
       const userResponse = await axios.get(ENDPOINTS.USER_DETAILS, { withCredentials: true });
       return { user: userResponse.data };
     } catch (error) {
@@ -59,9 +52,7 @@ export const logoutUser = createAsyncThunk(
   "auth/logoutUser",
   async (_, { rejectWithValue }) => {
     try {
-      // Call server logout endpoint so it can blacklist refresh token and clear cookies
       await axios.post(`${BASE_URL}/api/auth/jwt/logout/`, {}, { withCredentials: true });
-      // Ensure any client-side auth state is cleared; cookies removed by server
       delete axios.defaults.headers.common['Authorization'];
       return null;
     } catch (error) {
@@ -74,18 +65,12 @@ export const refreshToken = createAsyncThunk(
   "auth/refreshToken",
   async (_, { rejectWithValue }) => {
     try {
-      // Server will read refresh token from cookie if present
       const response = await axios.post(ENDPOINTS.REFRESH_TOKEN, {}, { withCredentials: true });
-
-      // If backend returned a new access token, update in-memory header for this session
       if (response.data?.access) {
         axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
       }
-
-      // Server will update cookies; client doesn't persist tokens
       return response.data;
     } catch (error) {
-      // If refresh token is invalid, clear client auth state
       delete axios.defaults.headers.common['Authorization'];
       return rejectWithValue(
         error.response ? error.response.data : "Token refresh failed"

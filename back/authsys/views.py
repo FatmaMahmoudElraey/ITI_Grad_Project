@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from dotenv import load_dotenv
-
+import os
 load_dotenv()
 
 def redirect_to_frontend(request, uid, token):
@@ -25,7 +25,7 @@ class CookieTokenObtainPairView(TokenObtainPairView):
             access_cookie_params = dict(httponly=True, secure=False, samesite='Lax', path='/', domain=None)
             refresh_cookie_params = dict(httponly=True, secure=False, samesite='Lax', path='/', domain=None)
         else:
-            cookie_domain =os.get_env('DOMAIN_FOR_COOKIES')
+            cookie_domain = os.getenv('DOMAIN_FOR_COOKIES')
             access_cookie_params = dict(httponly=True, secure=True, samesite='None', path='/', domain=cookie_domain)
             refresh_cookie_params = dict(httponly=True, secure=True, samesite='None', path='/', domain=cookie_domain)
 

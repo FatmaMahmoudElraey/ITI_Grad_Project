@@ -5,7 +5,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
+from dotenv import load_dotenv
 
+load_dotenv()
 
 def redirect_to_frontend(request, uid, token):
     url = f"{settings.FRONTEND_URL}/activate/{uid}/{token}"
@@ -16,34 +18,29 @@ class CookieTokenObtainPairView(TokenObtainPairView):
     """Obtain JWT pair and set them as HttpOnly cookies on response."""
 
     def finalize_response(self, request, response, *args, **kwargs):
-        # TokenObtainPairView returns {'access':..., 'refresh':...} in response.data
         access = response.data.get('access')
         refresh = response.data.get('refresh')
 
+        if settings.DEBUG:
+            access_cookie_params = dict(httponly=True, secure=False, samesite='Lax', path='/', domain=None)
+            refresh_cookie_params = dict(httponly=True, secure=False, samesite='Lax', path='/', domain=None)
+        else:
+            cookie_domain = getattr(settings, '', None)
+            access_cookie_params = dict(httponly=True, secure=True, samesite='None', path='/', domain=cookie_domain)
+            refresh_cookie_params = dict(httponly=True, secure=True, samesite='None', path='/', domain=cookie_domain)
+
         if access:
-            # Set access token cookie
             response.set_cookie(
                 key='access_token',
                 value=access,
-                httponly=True,
-                # In local development (DEBUG=True) use SameSite='Lax' and secure=False.
-                # In production, use SameSite=None with Secure=True for cross-site cookies.
-                secure=True,
-                samesite='None',
-                path='/',
-                domain=None
+                **access_cookie_params
             )
 
         if refresh:
-            # Set refresh token cookie
             response.set_cookie(
                 key='refresh_token',
                 value=refresh,
-                httponly=True,
-                secure=True,
-                samesite=('Lax' if settings.DEBUG else 'None'),
-                path='/',
-                domain=None  
+                **refresh_cookie_params
             )
 
         return super().finalize_response(request, response, *args, **kwargs)
@@ -70,15 +67,19 @@ class CookieTokenRefreshView(TokenRefreshView):
 
         response = Response(serializer.validated_data, status=status.HTTP_200_OK)
 
+        if settings.DEBUG:
+            access_cookie_params = dict(httponly=True, secure=False, samesite='Lax', path='/', domain=None)
+            refresh_cookie_params = dict(httponly=True, secure=False, samesite='Lax', path='/', domain=None)
+        else:
+            cookie_domain =os.get_env('DOMAIN_FOR_COOKIES')
+            access_cookie_params = dict(httponly=True, secure=True, samesite='None', path='/', domain=cookie_domain)
+            refresh_cookie_params = dict(httponly=True, secure=True, samesite='None', path='/', domain=cookie_domain)
+
         if access:
             response.set_cookie(
                 key='access_token',
                 value=access,
-                httponly=True,
-                secure=True,
-                samesite=('Lax' if settings.DEBUG else 'None'),
-                path='/',
-                domain=None  
+                **access_cookie_params
             )
 
         # If refresh rotation enabled, update refresh cookie as well
@@ -86,11 +87,7 @@ class CookieTokenRefreshView(TokenRefreshView):
             response.set_cookie(
                 key='refresh_token',
                 value=refresh,
-                httponly=True,
-                secure=True,
-                samesite=('Lax' if settings.DEBUG else 'None'),
-                path='/',
-                domain=None  
+                **refresh_cookie_params
             )
 
         return response

@@ -1,7 +1,7 @@
 # Webify - E-commerce Platform
 
 ## Overview
-Webify is a full-stack e-commerce platform built with Django REST Framework and React. The platform allows users to browse products, add them to cart, checkout, and manage orders. It includes features for both customers and administrators, with a focus on user experience and modern design.
+Webify is a full-stack multi-vendor E-commerce platform built with Django REST Framework and React. The platform allows users to browse products, add them to cart, checkout, and manage orders. It includes features for both customers and administrators, with a focus on user experience and modern design.
 
 ## Features
 
@@ -22,6 +22,7 @@ Webify is a full-stack e-commerce platform built with Django REST Framework and 
 
 ### Admin Dashboard
 - Product management (add, edit, delete)
+- Approve products from different sellers
 - User management
 - Order management
 - Sales analytics and reporting
@@ -37,8 +38,6 @@ Webify is a full-stack e-commerce platform built with Django REST Framework and 
 - Swiper.js for interactive carousels
 - Interactive components with animations
 
-### AI-Feature
-- AI-powered chatbot for customer support and assistance
 
 ## Technology Stack
 

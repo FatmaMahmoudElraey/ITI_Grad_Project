@@ -18,6 +18,7 @@ cyclonedx-python-lib==9.1.0
 daphne==4.1.2
 dataclasses-json==0.6.7
 defusedxml==0.7.1
+dj-database-url==3.0.1
 dj-rest-auth==7.0.1
 Django==5.2.7
 django-allauth==65.7.0

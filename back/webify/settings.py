@@ -27,8 +27,7 @@ PAYMOB_PAYMENT_KEY_URL= "https://accept.paymobsolutions.com/api/acceptance/payme
 SECRET_KEY = 'django-insecure-)mx5num+p$9vtlb$+)n5022t7nx#&q57w7u1hqp6t&v4i6pr3y'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-
+DEBUG = os.getenv("DEBUG")=='True'
 #setting of token time, and headers type
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
@@ -144,11 +143,14 @@ CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+import dj_database_url
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    "default": dj_database_url.config(
+        default=os.getenv("DATABASE_URL"),
+        conn_max_age=600,
+        ssl_require=True
+    )
 }
 
 

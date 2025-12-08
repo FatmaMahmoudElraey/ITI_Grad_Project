@@ -50,8 +50,8 @@ import Chatbot from "./components/Chatbot.jsx";
 
 function App() {
   return (
-    <AuthLoader>
-      <BrowserRouter>
+    <BrowserRouter>
+      <AuthLoader>
         <Routes>
           <Route path="/" element={<SharedLayout />}>
             <Route index element={<Home />} />
@@ -119,8 +119,8 @@ function App() {
           </Route>
         </Routes>
         <Chatbot />
-      </BrowserRouter>
-    </AuthLoader>
+      </AuthLoader>
+    </BrowserRouter>
   );
 }
 

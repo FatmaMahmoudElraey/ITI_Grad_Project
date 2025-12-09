@@ -1,5 +1,5 @@
 annotated-types==0.7.0
-asgiref==3.8.1
+asgiref==3.11.0
 attrs==25.3.0
 autobahn==24.4.2
 Automat==25.4.16
@@ -20,7 +20,7 @@ dataclasses-json==0.6.7
 defusedxml==0.7.1
 dj-database-url==3.0.1
 dj-rest-auth==7.0.1
-Django==5.2.7
+Django==6.0
 django-allauth==65.7.0
 django-cors-headers==4.7.0
 django-debug-toolbar==5.2.0

@@ -108,10 +108,8 @@ SPECTACULAR_SETTINGS = {
 
 ROOT_URLCONF = 'webify.urls'
 
-import ssl
-import certifi
 
-REDIS_URL = os.getenv("REDIS_TLS_URL", os.getenv("REDIS_URL"))
+REDIS_URL = os.getenv("REDIS_TLS_URL") or os.getenv("REDIS_URL")
 
 CACHES = {
     "default": {
@@ -119,14 +117,11 @@ CACHES = {
         "LOCATION": REDIS_URL,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "CONNECTION_POOL_KWARGS": {
-                "ssl": True,
-                "ssl_cert_reqs": ssl.CERT_REQUIRED,
-                "ssl_ca_certs": certifi.where(),
-            },
-        },
+            "SSL": True,
+        }
     }
 }
+
 
 FRONTEND_URL = os.getenv('FRONTEND_URL')
 

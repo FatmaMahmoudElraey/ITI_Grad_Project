@@ -118,9 +118,10 @@ CACHES = {
         "LOCATION": REDIS_URL,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "REDIS_CLIENT_KWARGS": {
-                "ssl": True,
-                "ssl_cert_reqs": ssl.CERT_NONE,
+            "CONNECTION_POOL_KWARGS": {
+                "ssl_cert_reqs": None,
+                "ssl_check_hostname": False,
+                "ssl_ca_certs": None,
             },
         },
     }
